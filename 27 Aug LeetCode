@@ -1,0 +1,39 @@
+class Solution {
+    public int lenOfVDiagonal(int[][] grid) {
+        int m=grid.length, n=grid[0].length;
+        int[][] dirs={{-1,1},{1,1},{1,-1},{-1,-1}};
+        int [][][][][] memo= new int[m][n][2][3][4];
+        for(int[][][][] layer1:memo)
+            for(int[][][] layer2:layer1)
+                for(int[][] layer3:layer2)
+                    for(int[] layer4:layer3)
+                        Arrays.fill(layer4,-1);
+        int maxLen=0;
+        for(int i=0; i<m; ++i)
+            for(int j=0; j<n; ++j)
+                if(grid[i][j]==1)
+                    for(int d=0; d<4; ++d)
+                        maxLen = Math.max(maxLen, 1 + dfs(grid, i + dirs[d][0], j + dirs[d][1], false, 2, d, memo, dirs));
+                        return maxLen;
+        
+    }
+    private int dfs(int[][] grid, int i, int j, boolean turned, int num, int dir,int [][][][][] memo, int[][]dirs){
+        int m= grid.length, n=grid[0].length;
+        if(i<0||i>=m||j<0||j>=n||grid[i][j]!=num)
+            return 0;
+        int numIndex=num==2?0:1;
+        int turnIndex=turned?1:0;
+        if(memo[i][j][turnIndex][numIndex][dir]!=-1)
+            return memo[i][j][turnIndex][numIndex][dir];
+        int nextNum=num==2?0:2;
+        int res=1+dfs(grid,i+dirs[dir][0],j+dirs[dir][1],turned, nextNum, dir, memo,dirs);
+        if(!turned){
+            int nextDir=(dir+1)%4;
+            res=Math.max(res,1+dfs(grid,i+dirs[nextDir][0],j+dirs[nextDir][1], true, nextNum, nextDir, memo,dirs));
+
+        }
+        memo[i][j][turnIndex][numIndex][dir]=res;
+        return res;
+
+    }
+}
