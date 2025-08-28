@@ -1,0 +1,42 @@
+import java.util.*;
+
+class Solution {
+    public int[][] sortMatrix(int[][] grid) {
+        int n = grid.length;
+        Map<Integer, List<Integer>> diagMap = new HashMap<>();
+
+        
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                int key = i - j;
+                diagMap.putIfAbsent(key, new ArrayList<>());
+                diagMap.get(key).add(grid[i][j]);
+            }
+        }
+
+        
+        for (Map.Entry<Integer, List<Integer>> entry : diagMap.entrySet()) {
+            int key = entry.getKey();
+            List<Integer> arr = entry.getValue();
+
+            if (key >= 0) {  
+                arr.sort(Collections.reverseOrder()); 
+            } else {       
+                Collections.sort(arr);
+            }
+        }
+
+        
+        Map<Integer, Integer> idxMap = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                int key = i - j;
+                int idx = idxMap.getOrDefault(key, 0);
+                grid[i][j] = diagMap.get(key).get(idx);
+                idxMap.put(key, idx + 1);
+            }
+        }
+
+        return grid;
+    }
+}
