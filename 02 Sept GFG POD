@@ -1,0 +1,27 @@
+class Solution {
+    public Node swapKth(Node head, int k) {
+        int n = 0;
+        Node temp = head;
+
+        // Step 1: Count nodes
+        while (temp != null) {
+            n++;
+            temp = temp.next;
+        }
+
+        // Step 2: Check if k is valid
+        if (k > n) return head;
+
+        // Step 3: Find kth node from start and end
+        Node x = head, y = head;
+        for (int i = 1; i < k; i++) x = x.next;
+        for (int i = 1; i < n - k + 1; i++) y = y.next;
+
+        // Step 4: Swap data
+        int tempData = x.data;
+        x.data = y.data;
+        y.data = tempData;
+
+        return head;
+    }
+}
