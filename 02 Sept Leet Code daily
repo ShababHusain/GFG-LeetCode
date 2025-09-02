@@ -1,0 +1,35 @@
+class Solution {
+    public int numberOfPairs(int[][] points) {
+        int n = points.length;
+        int ans = 0;
+
+        for (int i = 0; i < n; i++) {
+            int xa = points[i][0], ya = points[i][1];
+            for (int j = 0; j < n; j++) {
+                if (i == j) continue;
+                int xb = points[j][0], yb = points[j][1];
+
+                // A must be upper-left of B: x_A <= x_B and y_A >= y_B (allow equality)
+                if (!(xa <= xb && ya >= yb)) continue;
+
+                // Ensure there is no other point inside or on the border of the rectangle
+                boolean ok = true;
+                for (int k = 0; k < n; k++) {
+                    if (k == i || k == j) continue;
+                    int xc = points[k][0], yc = points[k][1];
+
+                    // Check if C is inside or on border of rectangle spanned by A and B
+                    // x in [xa, xb] and y in [yb, ya]  (yb <= yc <= ya because yb <= ya if A.y >= B.y)
+                    if (xa <= xc && xc <= xb && yb <= yc && yc <= ya) {
+                        ok = false;
+                        break;
+                    }
+                }
+
+                if (ok) ans++;
+            }
+        }
+
+        return ans;
+    }
+}
