@@ -1,0 +1,50 @@
+class Solution {
+    public Node reverseKGroup(Node head, int k) {
+        if (head == null || k <= 1) return head;
+
+        Node dummy = new Node(0);
+        dummy.next = head;
+        Node prevGroupTail = dummy;
+        Node curr = head;
+
+        while (curr != null) {
+            Node groupHead = curr;
+            int count = 0;
+
+            // Check if there are at least k nodes left
+            Node temp = curr;
+            while (count < k && temp != null) {
+                temp = temp.next;
+                count++;
+            }
+
+            // Reverse k nodes if possible
+            if (count == k) {
+                Node prev = null;
+                for (int i = 0; i < k; i++) {
+                    Node next = curr.next;
+                    curr.next = prev;
+                    prev = curr;
+                    curr = next;
+                }
+
+                // Connect previous group to reversed group
+                prevGroupTail.next = prev;
+                groupHead.next = curr;
+                prevGroupTail = groupHead;
+            } else {
+                // Reverse remaining nodes as a group
+                Node prev = null;
+                while (curr != null) {
+                    Node next = curr.next;
+                    curr.next = prev;
+                    prev = curr;
+                    curr = next;
+                }
+                prevGroupTail.next = prev;
+            }
+        }
+
+        return dummy.next;
+    }
+}
