@@ -1,0 +1,24 @@
+class Solution {
+    public long minOperations(int[][] queries) {
+        long totalOps = 0;
+
+        for (int[] query : queries) {
+            int l = query[0], r = query[1];
+            long stepsSum = 0;
+
+            // Iterate over possible step counts (1 to ~16 for values up to 1e9)
+            for (int s = 1; ; s++) {
+                long low = (long) Math.pow(4, s - 1);
+                long high = (long) Math.pow(4, s) - 1;
+                if (low > r) break;
+
+                long count = Math.max(0, Math.min(r, high) - Math.max(l, low) + 1);
+                stepsSum += count * s;
+            }
+
+            totalOps += (stepsSum + 1) / 2; // ceil(stepsSum / 2)
+        }
+
+        return totalOps;
+    }
+}
