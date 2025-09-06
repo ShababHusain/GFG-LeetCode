@@ -1,0 +1,36 @@
+/*
+class Node {
+    int data;
+    Node next;
+
+    Node(int x) {
+        data = x;
+        next = null;
+    }
+}
+*/
+
+class Solution {
+    public int lengthOfLoop(Node head) {
+        // code here
+        Node slow = head, fast=head;
+        while(fast != null && fast.next !=null){
+            slow = slow.next;
+            fast = fast.next.next;
+            
+            if(slow==fast){
+                return countLoopLength(slow);
+            }
+        }
+        return 0;
+    }
+    private int countLoopLength(Node meetingPoint){
+        int count=1;
+        Node current = meetingPoint.next;
+        while(current != meetingPoint){
+            count++;
+            current=current.next;
+        }
+        return count;
+    }
+}
