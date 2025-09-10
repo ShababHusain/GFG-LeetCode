@@ -1,0 +1,38 @@
+class Solution {
+    public int minimumTeachings(int n, int[][] languages, int[][] friendships) {
+         int m = languages.length;
+    List<Set<Integer>> known = new ArrayList<>();
+    for (int i = 0; i < m; i++) {
+        Set<Integer> set = new HashSet<>();
+        for (int lang : languages[i]) {
+            set.add(lang);
+        }
+        known.add(set);
+    }
+
+    Set<Integer> needTeach = new HashSet<>();
+    for (int[] pair : friendships) {
+        int u = pair[0] - 1;
+        int v = pair[1] - 1;
+        Set<Integer> common = new HashSet<>(known.get(u));
+        common.retainAll(known.get(v));
+        if (common.isEmpty()) {
+            needTeach.add(u);
+            needTeach.add(v);
+        }
+    }
+
+    int minTeach = Integer.MAX_VALUE;
+    for (int lang = 1; lang <= n; lang++) {
+        int count = 0;
+        for (int user : needTeach) {
+            if (known.get(user).contains(lang)) {
+                count++;
+            }
+        }
+        minTeach = Math.min(minTeach, needTeach.size() - count);
+    }
+
+    return minTeach;
+    }
+}
