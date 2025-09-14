@@ -1,0 +1,36 @@
+class Solution {
+    public String[] spellchecker(String[] wordlist, String[] queries) {
+        Set<String> exact = new HashSet<>();
+        Map<String, String> caseInsensitive = new HashMap<>();
+        Map<String, String> vowelMasked = new HashMap<>();
+
+        for (String word : wordlist) {
+            exact.add(word);
+            String lower = word.toLowerCase();
+            caseInsensitive.putIfAbsent(lower, word);
+            vowelMasked.putIfAbsent(maskVowels(lower), word);
+        }
+
+        String[] result = new String[queries.length];
+        for (int i = 0; i < queries.length; i++) {
+            String query = queries[i];
+            if (exact.contains(query)) {
+                result[i] = query;
+            } else {
+                String lower = query.toLowerCase();
+                if (caseInsensitive.containsKey(lower)) {
+                    result[i] = caseInsensitive.get(lower);
+                } else {
+                    String masked = maskVowels(lower);
+                    result[i] = vowelMasked.getOrDefault(masked, "");
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private String maskVowels(String word) {
+        return word.replaceAll("[aeiou]", "*");
+    }
+}
