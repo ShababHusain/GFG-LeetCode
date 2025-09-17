@@ -1,0 +1,51 @@
+class FoodRatings {
+    // Maps food name to its rating
+    private Map<String, Integer> foodToRating = new HashMap<>();
+    // Maps food name to its cuisine
+    private Map<String, String> foodToCuisine = new HashMap<>();
+    // Maps cuisine to a sorted set of foods
+    private Map<String, TreeSet<String>> cuisineToFoods = new HashMap<>();
+
+    // Comparator to sort foods by rating descending, then name ascending
+    private Comparator<String> foodComparator = (a, b) -> {
+        int r1 = foodToRating.get(a);
+        int r2 = foodToRating.get(b);
+        if (r1 != r2) return r2 - r1;
+        return a.compareTo(b);
+    };
+
+    public FoodRatings(String[] foods, String[] cuisines, int[] ratings) {
+        for (int i = 0; i < foods.length; i++) {
+            String food = foods[i];
+            String cuisine = cuisines[i];
+            int rating = ratings[i];
+
+            foodToRating.put(food, rating);
+            foodToCuisine.put(food, cuisine);
+
+            cuisineToFoods.putIfAbsent(cuisine, new TreeSet<>(foodComparator));
+            cuisineToFoods.get(cuisine).add(food);
+        }
+    }
+    
+    public void changeRating(String food, int newRating) {
+        String cuisine = foodToCuisine.get(food);
+        TreeSet<String> set = cuisineToFoods.get(cuisine);
+
+        set.remove(food); // Remove old entry
+        foodToRating.put(food, newRating); // Update rating
+        set.add(food); // Reinsert with new rating
+        
+    }
+    
+    public String highestRated(String cuisine) {
+        return cuisineToFoods.get(cuisine).first();
+    }
+}
+
+/**
+ * Your FoodRatings object will be instantiated and called as such:
+ * FoodRatings obj = new FoodRatings(foods, cuisines, ratings);
+ * obj.changeRating(food,newRating);
+ * String param_2 = obj.highestRated(cuisine);
+ */
