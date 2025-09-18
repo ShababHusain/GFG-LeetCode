@@ -1,0 +1,68 @@
+import java.util.*;
+
+class TaskManager {
+    private static class Task {
+        int userId, taskId, priority;
+
+        Task(int userId, int taskId, int priority) {
+            this.userId = userId;
+            this.taskId = taskId;
+            this.priority = priority;
+        }
+
+        // Equality based on taskId
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Task)) return false;
+            Task task = (Task) o;
+            return taskId == task.taskId;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(taskId);
+        }
+    }
+
+    // Maps taskId to Task object
+    private Map<Integer, Task> taskMap = new HashMap<>();
+
+    // TreeSet to maintain tasks sorted by priority desc, then taskId desc
+    private TreeSet<Task> taskSet = new TreeSet<>((a, b) -> {
+        if (a.priority != b.priority) return Integer.compare(b.priority, a.priority);
+        return Integer.compare(b.taskId, a.taskId);
+    });
+
+    public TaskManager(List<List<Integer>> tasks) {
+        for (List<Integer> task : tasks) {
+            add(task.get(0), task.get(1), task.get(2));
+        }
+    }
+
+    public void add(int userId, int taskId, int priority) {
+        Task task = new Task(userId, taskId, priority);
+        taskMap.put(taskId, task);
+        taskSet.add(task);
+    }
+
+    public void edit(int taskId, int newPriority) {
+        Task oldTask = taskMap.get(taskId);
+        taskSet.remove(oldTask);
+        Task newTask = new Task(oldTask.userId, taskId, newPriority);
+        taskMap.put(taskId, newTask);
+        taskSet.add(newTask);
+    }
+
+    public void rmv(int taskId) {
+        Task task = taskMap.remove(taskId);
+        taskSet.remove(task);
+    }
+
+    public int execTop() {
+        if (taskSet.isEmpty()) return -1;
+        Task top = taskSet.pollFirst();
+        taskMap.remove(top.taskId);
+        return top.userId;
+    }
+}
