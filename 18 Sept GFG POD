@@ -1,0 +1,28 @@
+class Solution {
+    public ArrayList<Integer> nextGreater(int[] arr) {
+        int n = arr.length;
+        int[] res = new int[n];
+        Arrays.fill(res, -1);
+        Stack<Integer> stack = new Stack<>();
+
+        // Traverse the array twice to simulate circular behavior
+        for (int i = 2 * n - 1; i >= 0; i--) {
+            int idx = i % n;
+            while (!stack.isEmpty() && arr[stack.peek()] <= arr[idx]) {
+                stack.pop();
+            }
+            if (i < n && !stack.isEmpty()) {
+                res[idx] = arr[stack.peek()];
+            }
+            stack.push(idx);
+        }
+
+        // Convert int[] to ArrayList<Integer> for return
+        ArrayList<Integer> resultList = new ArrayList<>();
+        for (int val : res) {
+            resultList.add(val);
+        }
+
+        return resultList;
+    }
+}
