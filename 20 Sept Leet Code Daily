@@ -1,0 +1,113 @@
+import java.util.*;
+
+class Router {
+    private int memoryLimit;
+    private Deque<int[]> queue;
+    private Set<String> seen;
+
+    // For each destination, store timestamps and prefix sums
+    private Map<Integer, List<Integer>> timeMap;
+    private Map<Integer, List<Integer>> prefixSumMap;
+
+    public Router(int memoryLimit) {
+        this.memoryLimit = memoryLimit;
+        this.queue = new ArrayDeque<>();
+        this.seen = new HashSet<>();
+        this.timeMap = new HashMap<>();
+        this.prefixSumMap = new HashMap<>();
+    }
+
+    public boolean addPacket(int source, int destination, int timestamp) {
+        String key = source + "#" + destination + "#" + timestamp;
+        if (seen.contains(key)) return false;
+
+        if (queue.size() == memoryLimit) {
+            int[] removed = queue.poll();
+            String oldKey = removed[0] + "#" + removed[1] + "#" + removed[2];
+            seen.remove(oldKey);
+
+            List<Integer> times = timeMap.get(removed[1]);
+            List<Integer> sums = prefixSumMap.get(removed[1]);
+            int idx = Collections.binarySearch(times, removed[2]);
+            if (idx >= 0) {
+                for (int i = idx; i < sums.size(); i++) {
+                    sums.set(i, sums.get(i) - 1);
+                }
+            }
+        }
+
+        queue.offer(new int[]{source, destination, timestamp});
+        seen.add(key);
+
+        timeMap.putIfAbsent(destination, new ArrayList<>());
+        prefixSumMap.putIfAbsent(destination, new ArrayList<>());
+
+        List<Integer> times = timeMap.get(destination);
+        List<Integer> sums = prefixSumMap.get(destination);
+
+        times.add(timestamp);
+        int prev = sums.isEmpty() ? 0 : sums.get(sums.size() - 1);
+        sums.add(prev + 1);
+
+        return true;
+    }
+
+    public int[] forwardPacket() {
+        if (queue.isEmpty()) return new int[0];
+
+        int[] packet = queue.poll();
+        String key = packet[0] + "#" + packet[1] + "#" + packet[2];
+        seen.remove(key);
+
+        List<Integer> times = timeMap.get(packet[1]);
+        List<Integer> sums = prefixSumMap.get(packet[1]);
+        int idx = Collections.binarySearch(times, packet[2]);
+        if (idx >= 0) {
+            for (int i = idx; i < sums.size(); i++) {
+                sums.set(i, sums.get(i) - 1);
+            }
+        }
+
+        return packet;
+    }
+
+    public int getCount(int destination, int startTime, int endTime) {
+        List<Integer> times = timeMap.get(destination);
+        List<Integer> sums = prefixSumMap.get(destination);
+        if (times == null || sums == null) return 0;
+
+        int left = lowerBound(times, startTime);
+        int right = upperBound(times, endTime);
+
+        if (left > right) return 0;
+        return sums.get(right) - (left == 0 ? 0 : sums.get(left - 1));
+    }
+
+    private int lowerBound(List<Integer> list, int target) {
+        int low = 0, high = list.size() - 1, ans = list.size();
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            if (list.get(mid) >= target) {
+                ans = mid;
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+
+    private int upperBound(List<Integer> list, int target) {
+        int low = 0, high = list.size() - 1, ans = -1;
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            if (list.get(mid) <= target) {
+                ans = mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return ans;
+    }
+}
