@@ -1,0 +1,54 @@
+import java.util.*;
+
+class Solution {
+    public static ArrayList<Integer> maxOfMins(int[] arr) {
+        int n = arr.length;
+        int[] left = new int[n];
+        int[] right = new int[n];
+        Arrays.fill(left, -1);
+        Arrays.fill(right, n);
+
+        Stack<Integer> st = new Stack<>();
+
+        // Previous smaller
+        for (int i = 0; i < n; i++) {
+            while (!st.isEmpty() && arr[st.peek()] >= arr[i]) {
+                st.pop();
+            }
+            if (!st.isEmpty()) left[i] = st.peek();
+            st.push(i);
+        }
+
+        st.clear();
+
+        // Next smaller
+        for (int i = n - 1; i >= 0; i--) {
+            while (!st.isEmpty() && arr[st.peek()] >= arr[i]) {
+                st.pop();
+            }
+            if (!st.isEmpty()) right[i] = st.peek();
+            st.push(i);
+        }
+
+        int[] res = new int[n + 1];
+        Arrays.fill(res, 0);
+
+        // max of min for each window length
+        for (int i = 0; i < n; i++) {
+            int len = right[i] - left[i] - 1;
+            res[len] = Math.max(res[len], arr[i]);
+        }
+
+        // fill remaining values
+        for (int i = n - 1; i >= 1; i--) {
+            res[i] = Math.max(res[i], res[i + 1]);
+        }
+
+        ArrayList<Integer> ans = new ArrayList<>();
+        for (int i = 1; i <= n; i++) {
+            ans.add(res[i]);
+        }
+
+        return ans;
+    }
+}
