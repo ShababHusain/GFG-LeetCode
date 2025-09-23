@@ -1,0 +1,20 @@
+class Solution {
+    // Function to reverse the queue
+    public Queue<Integer> reverseQueue(Queue<Integer> q) {
+        Stack<Integer> stack = new Stack<>();
+
+        // Step 1: Push all elements from queue to stack
+        while (!q.isEmpty()) {
+            stack.push(q.poll());
+        }
+
+        // Step 2: Pop from stack and add back to queue
+        while (!stack.isEmpty()) {
+            q.offer(stack.pop());
+        }
+
+        return q;
+    }
+
+    
+}
