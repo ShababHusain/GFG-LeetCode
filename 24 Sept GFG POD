@@ -1,0 +1,49 @@
+import java.util.*;
+
+class SpecialQueue {
+    Queue<Integer> queue;
+    Deque<Integer> minDeque;
+    Deque<Integer> maxDeque;
+
+    public SpecialQueue() {
+        queue = new LinkedList<>();
+        minDeque = new LinkedList<>();
+        maxDeque = new LinkedList<>();
+    }
+
+    public void enqueue(int x) {
+        queue.offer(x);
+
+        while (!minDeque.isEmpty() && minDeque.peekLast() > x) {
+            minDeque.pollLast();
+        }
+        minDeque.offerLast(x);
+
+        while (!maxDeque.isEmpty() && maxDeque.peekLast() < x) {
+            maxDeque.pollLast();
+        }
+        maxDeque.offerLast(x);
+    }
+
+    public void dequeue() {
+        int removed = queue.poll();
+        if (removed == minDeque.peekFirst()) {
+            minDeque.pollFirst();
+        }
+        if (removed == maxDeque.peekFirst()) {
+            maxDeque.pollFirst();
+        }
+    }
+
+    public int getFront() {
+        return queue.peek();
+    }
+
+    public int getMin() {
+        return minDeque.peekFirst();
+    }
+
+    public int getMax() {
+        return maxDeque.peekFirst();
+    }
+}
