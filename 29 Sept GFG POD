@@ -1,0 +1,31 @@
+class Solution {
+    public int maxSubarrSum(int[] arr, int a, int b) {
+        int n = arr.length;
+        long[] prefix = new long[n + 1];
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + arr[i];
+        }
+
+        Deque<Integer> deque = new LinkedList<>();
+        long maxSum = Long.MIN_VALUE;
+
+        for (int i = a; i <= n; i++) {
+            // Maintain deque for indices in [i - b, i - a]
+            while (!deque.isEmpty() && deque.peekFirst() < i - b) {
+                deque.pollFirst();
+            }
+
+            // Add new candidate index
+            int candidate = i - a;
+            while (!deque.isEmpty() && prefix[deque.peekLast()] >= prefix[candidate]) {
+                deque.pollLast();
+            }
+            deque.offerLast(candidate);
+
+            // Calculate max sum using current prefix and min prefix in deque
+            maxSum = Math.max(maxSum, prefix[i] - prefix[deque.peekFirst()]);
+        }
+
+        return (int) maxSum;
+    }
+}
