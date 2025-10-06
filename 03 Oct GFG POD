@@ -1,0 +1,40 @@
+class Solution {
+    // keypad mapping
+    private static final String[] KEYS = {
+        "", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"
+    };
+
+    public static ArrayList<String> possibleWords(int[] arr) {
+        ArrayList<String> result = new ArrayList<>();
+        if (arr == null || arr.length == 0) return result;
+
+        // Filter out digits 0 and 1 (they don't map to letters)
+        ArrayList<Integer> digits = new ArrayList<>();
+        for (int d : arr) {
+            if (d >= 0 && d <= 9 && KEYS[d].length() > 0) {
+                digits.add(d);
+            }
+        }
+
+        // If nothing remains after filtering, return empty list
+        if (digits.isEmpty()) return result;
+
+        StringBuilder sb = new StringBuilder();
+        backtrack(digits, 0, sb, result);
+        return result;
+    }
+
+    private static void backtrack(ArrayList<Integer> digits, int idx, StringBuilder sb, ArrayList<String> result) {
+        if (idx == digits.size()) {
+            result.add(sb.toString());
+            return;
+        }
+
+        String letters = KEYS[digits.get(idx)];
+        for (int i = 0; i < letters.length(); i++) {
+            sb.append(letters.charAt(i));
+            backtrack(digits, idx + 1, sb, result);
+            sb.deleteCharAt(sb.length() - 1);
+        }
+    }
+}
