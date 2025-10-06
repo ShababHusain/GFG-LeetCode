@@ -1,0 +1,32 @@
+class Solution {
+    public ArrayList<String> findExpr(String s, int target) {
+        ArrayList<String> result = new ArrayList<>();
+        dfs(s, target, 0, 0, 0, "", result);
+        Collections.sort(result); // Lexicographically smallest order
+        return result;
+    }
+
+    private void dfs(String s, int target, int pos, long eval, long prev, String path, ArrayList<String> result) {
+        if (pos == s.length()) {
+            if (eval == target) {
+                result.add(path);
+            }
+            return;
+        }
+
+        for (int i = pos; i < s.length(); i++) {
+            String currStr = s.substring(pos, i + 1);
+            if (currStr.length() > 1 && currStr.charAt(0) == '0') break; // Skip leading zeros
+
+            long curr = Long.parseLong(currStr);
+
+            if (pos == 0) {
+                dfs(s, target, i + 1, curr, curr, currStr, result);
+            } else {
+                dfs(s, target, i + 1, eval + curr, curr, path + "+" + currStr, result);
+                dfs(s, target, i + 1, eval - curr, -curr, path + "-" + currStr, result);
+                dfs(s, target, i + 1, eval - prev + prev * curr, prev * curr, path + "*" + currStr, result);
+            }
+        }
+    }
+}
