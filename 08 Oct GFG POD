@@ -1,0 +1,37 @@
+/*
+class Node {
+    int data;
+    Node left, right;
+
+    Node(int val) {
+        data = val;
+        left = right = null;
+    }
+}
+*/
+
+class Solution {
+    int preIndex = 0;
+
+    public Node constructTree(int[] pre, int[] post) {
+        return build(pre, post, 0, post.length - 1);
+    }
+
+    private Node build(int[] pre, int[] post, int postStart, int postEnd) {
+        if (preIndex >= pre.length || postStart > postEnd) return null;
+
+        Node root = new Node(pre[preIndex++]);
+
+        if (postStart == postEnd || preIndex >= pre.length) return root;
+
+        // Find the index of the next preorder element in postorder
+        int idx = postStart;
+        while (post[idx] != pre[preIndex]) idx++;
+
+        // Recursively build left and right subtrees
+        root.left = build(pre, post, postStart, idx);
+        root.right = build(pre, post, idx + 1, postEnd - 1);
+
+        return root;
+    }
+}
