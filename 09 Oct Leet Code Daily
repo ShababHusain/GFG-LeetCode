@@ -1,0 +1,21 @@
+class Solution {
+    public long minTime(int[] skill, int[] mana) {
+        int n = skill.length;
+        long[] free = new long[n]; // earliest time each wizard is free
+
+        for (int x : mana) {
+            long now = free[0]; // start time for wizard 0
+            for (int i = 1; i < n; i++) {
+                now = Math.max(now + (long)skill[i - 1] * x, free[i]);
+            }
+            free[n - 1] = now + (long)skill[n - 1] * x;
+
+            // update earlier wizards' free times in reverse
+            for (int i = n - 2; i >= 0; i--) {
+                free[i] = free[i + 1] - (long)skill[i + 1] * x;
+            }
+        }
+
+        return free[n - 1];
+    }
+}
