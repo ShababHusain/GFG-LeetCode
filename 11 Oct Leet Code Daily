@@ -1,0 +1,28 @@
+class Solution {
+    public long maximumTotalDamage(int[] power) {
+        Map<Integer, Long> damageMap = new HashMap<>();
+        for (int val : power) {
+            damageMap.put(val, damageMap.getOrDefault(val, 0L) + val);
+        }
+
+        List<Integer> keys = new ArrayList<>(damageMap.keySet());
+        Collections.sort(keys);
+
+        int n = keys.size();
+        long[] dp = new long[n];
+
+        for (int i = 0; i < n; i++) {
+            long currentDamage = damageMap.get(keys.get(i));
+            int j = i - 1;
+            while (j >= 0 && keys.get(i) - keys.get(j) <= 2) {
+                j--;
+            }
+            if (j >= 0) {
+                currentDamage += dp[j];
+            }
+            dp[i] = (i > 0) ? Math.max(dp[i - 1], currentDamage) : currentDamage;
+        }
+
+        return dp[n - 1];
+    }
+}
