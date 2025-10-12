@@ -1,0 +1,84 @@
+import java.util.*;
+
+public class Solution {
+    static final int MOD = 1_000_000_007;
+
+    public int magicalSum(int m, int k, int[] nums) {
+        int n = nums.length;
+        int M = m;
+
+        // factorials and inverse factorials up to m
+        long[] fact = new long[M + 1];
+        long[] invFact = new long[M + 1];
+        fact[0] = 1;
+        for (int i = 1; i <= M; i++) fact[i] = fact[i - 1] * i % MOD;
+        invFact[M] = modInv(fact[M]);
+        for (int i = M - 1; i >= 0; i--) invFact[i] = invFact[i + 1] * (i + 1) % MOD;
+
+        // pow[j][c] = nums[j]^c % MOD
+        long[][] pow = new long[n][M + 1];
+        for (int j = 0; j < n; j++) {
+            pow[j][0] = 1;
+            long base = ((nums[j] % MOD) + MOD) % MOD;
+            for (int c = 1; c <= M; c++) pow[j][c] = pow[j][c - 1] * base % MOD;
+        }
+
+        // dp[t][carry][ones] where 0<=t,carry,ones<=M
+        long[][][] dp = new long[M + 1][M + 1][M + 1];
+        dp[0][0][0] = 1;
+
+        for (int j = 0; j < n; j++) {
+            long[][][] ndp = new long[M + 1][M + 1][M + 1];
+            for (int t = 0; t <= M; t++) {
+                for (int carry = 0; carry <= M; carry++) {
+                    for (int ones = 0; ones <= M; ones++) {
+                        long val = dp[t][carry][ones];
+                        if (val == 0) continue;
+                        int maxC = M - t;
+                        for (int c = 0; c <= maxC; c++) {
+                            int nt = t + c;
+                            int sum = c + carry;
+                            int bit = (sum & 1);
+                            int ncarry = sum >> 1;
+                            int nones = ones + bit;
+                            if (nones > M || ncarry > M) continue;
+                            long add = val * pow[j][c] % MOD * invFact[c] % MOD;
+                            ndp[nt][ncarry][nones] += add;
+                            if (ndp[nt][ncarry][nones] >= MOD) ndp[nt][ncarry][nones] -= MOD;
+                        }
+                    }
+                }
+            }
+            dp = ndp;
+        }
+
+        long ans = 0;
+        for (int carry = 0; carry <= M; carry++) {
+            int carryOnes = Integer.bitCount(carry);
+            for (int ones = 0; ones <= M; ones++) {
+                if (dp[M][carry][ones] == 0) continue;
+                if (ones + carryOnes == k) {
+                    ans = (ans + dp[M][carry][ones]) % MOD;
+                }
+            }
+        }
+
+        ans = ans * fact[M] % MOD; // multiply by m!
+        return (int) ans;
+    }
+
+    private static long modInv(long x) {
+        return modPow(x, MOD - 2);
+    }
+
+    private static long modPow(long a, long e) {
+        long r = 1;
+        a %= MOD;
+        while (e > 0) {
+            if ((e & 1) == 1) r = (r * a) % MOD;
+            a = (a * a) % MOD;
+            e >>= 1;
+        }
+        return r;
+    }
+}
