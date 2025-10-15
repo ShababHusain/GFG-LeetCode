@@ -1,0 +1,35 @@
+import java.util.*;
+
+class Solution {
+    public int maxIncreasingSubarrays(List<Integer> nums) {
+        int n = nums.size();
+        int[] inc = new int[n];
+        inc[0] = 1;
+
+        // Step 1: Compute increasing run lengths ending at each index
+        for (int i = 1; i < n; i++) {
+            if (nums.get(i) > nums.get(i - 1))
+                inc[i] = inc[i - 1] + 1;
+            else
+                inc[i] = 1;
+        }
+
+        // Step 2: Compute run lengths starting from each index
+        int[] dec = new int[n];
+        dec[n - 1] = 1;
+        for (int i = n - 2; i >= 0; i--) {
+            if (nums.get(i + 1) > nums.get(i))
+                dec[i] = dec[i + 1] + 1;
+            else
+                dec[i] = 1;
+        }
+
+        // Step 3: Find maximum possible k where two adjacent runs exist
+        int ans = 0;
+        for (int i = 0; i < n - 1; i++) {
+            ans = Math.max(ans, Math.min(inc[i], dec[i + 1]));
+        }
+
+        return ans;
+    }
+}
