@@ -1,0 +1,43 @@
+/*
+class Node {
+    int data;
+    Node left;
+    Node right;
+
+    Node(int data) {
+        this.data = data;
+        left = null;
+        right = null;
+    }
+}
+*/
+
+class Solution {
+    private int count = 0;
+    private int median = -1;
+    private int targetIndex = -1;
+
+    public int findMedian(Node root) {
+        int totalNodes = countNodes(root);
+        targetIndex = (totalNodes % 2 == 0) ? totalNodes / 2 : (totalNodes + 1) / 2;
+        count = 0;
+        inorder(root);
+        return median;
+    }
+
+    private int countNodes(Node root) {
+        if (root == null) return 0;
+        return 1 + countNodes(root.left) + countNodes(root.right);
+    }
+
+    private void inorder(Node root) {
+        if (root == null || median != -1) return;
+        inorder(root.left);
+        count++;
+        if (count == targetIndex) {
+            median = root.data;
+            return;
+        }
+        inorder(root.right);
+    }
+}
