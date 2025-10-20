@@ -1,0 +1,35 @@
+class Solution {
+    public ArrayList<Integer> countBSTs(int[] arr) {
+        ArrayList<Integer> result = new ArrayList<>();
+        for (int i = 0; i < arr.length; i++) {
+            int leftCount = 0;
+            int rightCount = 0;
+
+            // Count nodes less than arr[i] (left subtree)
+            for (int j = 0; j < arr.length; j++) {
+                if (arr[j] < arr[i]) leftCount++;
+                else if (arr[j] > arr[i]) rightCount++;
+            }
+
+            int leftBSTs = catalan(leftCount);
+            int rightBSTs = catalan(rightCount);
+            result.add(leftBSTs * rightBSTs);
+        }
+        return result;
+    }
+
+    // Catalan number: number of unique BSTs for n nodes
+    private int catalan(int n) {
+        int[] dp = new int[n + 1];
+        dp[0] = 1;
+
+        for (int i = 1; i <= n; i++) {
+            dp[i] = 0;
+            for (int j = 0; j < i; j++) {
+                dp[i] += dp[j] * dp[i - j - 1];
+            }
+        }
+
+        return dp[n];
+    }
+}
