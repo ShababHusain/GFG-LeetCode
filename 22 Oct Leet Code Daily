@@ -1,0 +1,34 @@
+class Solution {
+    public int maxFrequency(int[] nums, int k, int numOperations) {
+        // Map to store the original frequency of each element
+        Map<Integer, Integer> frequencyMap = new HashMap<>();
+        // TreeMap for tracking sweep line/difference array events (sorted keys)
+        TreeMap<Integer, Integer> rangeBoundaries = new TreeMap<>();
+        
+        // Populate frequency and sweep line data
+        for (int num : nums) {
+            // Count the occurrence of this original value
+            frequencyMap.merge(num, 1, Integer::sum);
+            // Explicitly initialize this value in the event map (critical for correctness)
+            rangeBoundaries.putIfAbsent(num, 0);
+            // Mark the start of range [num - k, num + k]
+            rangeBoundaries.merge(num - k, 1, Integer::sum);
+            // Mark the end boundary (exclusive) at num + k + 1
+            rangeBoundaries.merge(num + k + 1, -1, Integer::sum);
+        }
+        
+        int maxResult = 0;
+        int currentOverlap = 0;
+        // Sweep through sorted boundary points
+        for (Map.Entry<Integer, Integer> entry : rangeBoundaries.entrySet()) {
+            int position = entry.getKey();
+            int delta = entry.getValue();
+            currentOverlap += delta;
+            // Calculate maximum frequency possible at this position
+            int originalFrequency = frequencyMap.getOrDefault(position, 0);
+            int achievableFrequency = Math.min(currentOverlap, originalFrequency + numOperations);
+            maxResult = Math.max(maxResult, achievableFrequency);
+        }
+        return maxResult;
+    }
+}
