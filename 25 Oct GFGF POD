@@ -1,0 +1,24 @@
+class Solution {
+    public int minOperations(int[] arr) {
+        PriorityQueue<Double> maxHeap = new PriorityQueue<>(Collections.reverseOrder());
+        double total = 0;
+
+        for (int num : arr) {
+            total += num;
+            maxHeap.offer((double) num);
+        }
+
+        double target = total / 2;
+        int steps = 0;
+
+        while (total > target) {
+            double largest = maxHeap.poll();
+            double halved = largest / 2;
+            total -= halved;
+            maxHeap.offer(halved);
+            steps++;
+        }
+
+        return steps;
+    }
+}
