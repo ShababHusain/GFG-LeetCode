@@ -1,0 +1,51 @@
+class Solution {
+    public ArrayList<ArrayList<Integer>> nearest(int[][] grid) {
+        int rows = grid.length;
+        int cols = grid[0].length;
+
+        ArrayList<ArrayList<Integer>> result = new ArrayList<>();
+        int[][] dist = new int[rows][cols];
+        boolean[][] visited = new boolean[rows][cols];
+        Queue<int[]> queue = new LinkedList<>();
+
+        // Initialize queue with all cells containing 1
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (grid[i][j] == 1) {
+                    queue.offer(new int[]{i, j});
+                    visited[i][j] = true;
+                }
+            }
+        }
+
+        int[][] directions = {{0,1}, {1,0}, {0,-1}, {-1,0}};
+
+        // BFS traversal
+        while (!queue.isEmpty()) {
+            int[] cell = queue.poll();
+            int x = cell[0], y = cell[1];
+
+            for (int[] dir : directions) {
+                int nx = x + dir[0];
+                int ny = y + dir[1];
+
+                if (nx >= 0 && ny >= 0 && nx < rows && ny < cols && !visited[nx][ny]) {
+                    dist[nx][ny] = dist[x][y] + 1;
+                    visited[nx][ny] = true;
+                    queue.offer(new int[]{nx, ny});
+                }
+            }
+        }
+
+        // Convert dist[][] to ArrayList<ArrayList<Integer>>
+        for (int i = 0; i < rows; i++) {
+            ArrayList<Integer> row = new ArrayList<>();
+            for (int j = 0; j < cols; j++) {
+                row.add(dist[i][j]);
+            }
+            result.add(row);
+        }
+
+        return result;
+    }
+}
