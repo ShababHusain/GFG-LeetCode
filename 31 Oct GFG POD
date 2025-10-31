@@ -1,0 +1,39 @@
+class Solution {
+    public int shortCycle(int V, int[][] edges) {
+        List<List<Integer>> graph = new ArrayList<>();
+        for (int i = 0; i < V; i++) graph.add(new ArrayList<>());
+        for (int[] edge : edges) {
+            graph.get(edge[0]).add(edge[1]);
+            graph.get(edge[1]).add(edge[0]);
+        }
+
+        int minCycle = Integer.MAX_VALUE;
+
+        for (int start = 0; start < V; start++) {
+            int[] dist = new int[V];
+            Arrays.fill(dist, -1);
+            int[] parent = new int[V];
+            Arrays.fill(parent, -1);
+
+            Queue<Integer> queue = new LinkedList<>();
+            queue.offer(start);
+            dist[start] = 0;
+
+            while (!queue.isEmpty()) {
+                int u = queue.poll();
+                for (int v : graph.get(u)) {
+                    if (dist[v] == -1) {
+                        dist[v] = dist[u] + 1;
+                        parent[v] = u;
+                        queue.offer(v);
+                    } else if (parent[u] != v) {
+                        // Found a cycle
+                        minCycle = Math.min(minCycle, dist[u] + dist[v] + 1);
+                    }
+                }
+            }
+        }
+
+        return minCycle == Integer.MAX_VALUE ? -1 : minCycle;
+    }
+}
