@@ -1,0 +1,55 @@
+class Solution {
+    public int maxEdgesToAdd(int V, int[][] edges) {
+        List<List<Integer>> graph = new ArrayList<>();
+        for (int i = 0; i < V; i++) graph.add(new ArrayList<>());
+        boolean[][] existing = new boolean[V][V];
+
+        for (int[] edge : edges) {
+            graph.get(edge[0]).add(edge[1]);
+            existing[edge[0]][edge[1]] = true;
+        }
+
+        // Step 1: Topological Sort
+        List<Integer> topo = topologicalSort(V, graph);
+
+        // Step 2: Count all possible edges u -> v where u comes before v in topo
+        int count = 0;
+        for (int i = 0; i < V; i++) {
+            for (int j = i + 1; j < V; j++) {
+                int u = topo.get(i);
+                int v = topo.get(j);
+                if (!existing[u][v]) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    private List<Integer> topologicalSort(int V, List<List<Integer>> graph) {
+        int[] inDegree = new int[V];
+        for (List<Integer> neighbors : graph) {
+            for (int v : neighbors) {
+                inDegree[v]++;
+            }
+        }
+
+        Queue<Integer> queue = new LinkedList<>();
+        for (int i = 0; i < V; i++) {
+            if (inDegree[i] == 0) queue.offer(i);
+        }
+
+        List<Integer> topo = new ArrayList<>();
+        while (!queue.isEmpty()) {
+            int u = queue.poll();
+            topo.add(u);
+            for (int v : graph.get(u)) {
+                inDegree[v]--;
+                if (inDegree[v] == 0) queue.offer(v);
+            }
+        }
+
+        return topo;
+    }
+}
