@@ -1,0 +1,37 @@
+class Solution {
+    public int[] findXSum(int[] nums, int k, int x) {
+        int n = nums.length;
+        int[] result = new int[n - k + 1];
+
+        for (int i = 0; i <= n - k; i++) {
+            Map<Integer, Integer> freq = new HashMap<>();
+            for (int j = i; j < i + k; j++) {
+                freq.put(nums[j], freq.getOrDefault(nums[j], 0) + 1);
+            }
+
+            // Sort by frequency descending, then value descending
+            List<Integer> topElements = freq.entrySet().stream()
+                .sorted((a, b) -> {
+                    if (b.getValue().equals(a.getValue())) {
+                        return b.getKey() - a.getKey(); // higher value first
+                    }
+                    return b.getValue() - a.getValue(); // higher frequency first
+                })
+                .limit(x)
+                .map(Map.Entry::getKey)
+                .toList();
+
+            // Sum only the occurrences of top x elements
+            int sum = 0;
+            for (int j = i; j < i + k; j++) {
+                if (topElements.contains(nums[j])) {
+                    sum += nums[j];
+                }
+            }
+
+            result[i] = sum;
+        }
+
+        return result;
+    }
+}
