@@ -1,0 +1,129 @@
+class Solution {
+    private static class Node {
+        int val;
+        int freq;
+        Node(int v, int f) { val = v; freq = f; }
+    }
+
+    public long[] findXSum(int[] nums, int k, int x) {
+        int n = nums.length;
+        long[] ans = new long[n - k + 1];
+        if (n == 0) return ans;
+
+        // comparator: higher freq first, then higher value -> we make "better" nodes compare smaller
+        Comparator<Node> comp = (a, b) -> {
+            if (a.freq != b.freq) return Integer.compare(b.freq, a.freq);
+            if (a.val != b.val) return Integer.compare(b.val, a.val);
+            return 0;
+        };
+
+        // data structures
+        Map<Integer, Node> map = new HashMap<>();        // value -> Node object
+        TreeSet<Node> top = new TreeSet<>(comp);        // best x nodes
+        TreeSet<Node> bottom = new TreeSet<>(comp);     // the rest
+        long topSum = 0L;
+
+        for (int i = 0; i < n; i++) {
+            topSum = add(nums[i], map, top, bottom, x, comp, topSum);
+            if (i >= k) {
+                topSum = remove(nums[i - k], map, top, bottom, x, comp, topSum);
+            }
+            if (i >= k - 1) ans[i - k + 1] = topSum;
+        }
+
+        return ans;
+    }
+
+    private long add(int val, Map<Integer, Node> map, TreeSet<Node> top, TreeSet<Node> bottom,
+                     int x, Comparator<Node> comp, long topSum) {
+        Node node = map.get(val);
+        boolean wasInTop = false;
+        if (node == null) {
+            node = new Node(val, 0);
+            map.put(val, node);
+        } else {
+            // remove existing node from whichever set
+            if (top.remove(node)) {
+                wasInTop = true;
+                topSum -= (long) node.val * node.freq;
+            } else {
+                bottom.remove(node);
+            }
+        }
+
+        node.freq++; // increment frequency
+
+        // insert to bottom first, will rebalance
+        bottom.add(node);
+
+        // rebalance so top has up to x best nodes
+        // move best from bottom to top if needed
+        while (top.size() < x && !bottom.isEmpty()) {
+            Node best = bottom.pollFirst();
+            top.add(best);
+            topSum += (long) best.val * best.freq;
+        }
+
+        // if top has elements and bottom best is better than top worst, swap
+        while (!bottom.isEmpty() && !top.isEmpty() && comp.compare(bottom.first(), top.last()) < 0) {
+            Node b = bottom.pollFirst();
+            Node t = top.pollLast();
+            topSum -= (long) t.val * t.freq;
+            top.add(b);
+            bottom.add(t);
+            topSum += (long) b.val * b.freq;
+        }
+
+        return topSum;
+    }
+
+    private long remove(int val, Map<Integer, Node> map, TreeSet<Node> top, TreeSet<Node> bottom,
+                        int x, Comparator<Node> comp, long topSum) {
+        Node node = map.get(val);
+        if (node == null) return topSum; // shouldn't happen
+
+        // Remove current node from whichever set and subtract contribution if in top
+        if (top.remove(node)) {
+            topSum -= (long) node.val * node.freq;
+        } else {
+            bottom.remove(node);
+        }
+
+        node.freq--; // decrement
+        if (node.freq == 0) {
+            map.remove(val);
+        } else {
+            // insert back to bottom (will rebalance)
+            bottom.add(node);
+        }
+
+        // fill top up to x from bottom if possible
+        while (top.size() < x && !bottom.isEmpty()) {
+            Node best = bottom.pollFirst();
+            top.add(best);
+            topSum += (long) best.val * best.freq;
+        }
+
+        // swap if bottom has an element better than the worst in top
+        while (!bottom.isEmpty() && !top.isEmpty() && comp.compare(bottom.first(), top.last()) < 0) {
+            Node b = bottom.pollFirst();
+            Node t = top.pollLast();
+            topSum -= (long) t.val * t.freq;
+            top.add(b);
+            bottom.add(t);
+            topSum += (long) b.val * b.freq;
+        }
+
+        return topSum;
+    }
+
+    // quick test
+    public static void main(String[] args) {
+        Solution s = new Solution();
+        int[] nums1 = {1,1,2,2,3,4,2,3};
+        System.out.println(Arrays.toString(s.findXSum(nums1, 6, 2))); // [6,10,12]
+
+        int[] nums2 = {3,8,7,8,7,5};
+        System.out.println(Arrays.toString(s.findXSum(nums2, 2, 2))); // [11,15,15,15,12]
+    }
+}
