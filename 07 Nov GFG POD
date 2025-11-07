@@ -1,0 +1,41 @@
+class Solution {
+    public int maxProfit(int[][] jobs) {
+        int n = jobs.length;
+
+        // Sort jobs by end time
+        Arrays.sort(jobs, Comparator.comparingInt(a -> a[1]));
+
+        // dp[i] stores max profit for jobs[0..i]
+        int[] dp = new int[n];
+        dp[0] = jobs[0][2];
+
+        for (int i = 1; i < n; i++) {
+            int profitIncludingCurrent = jobs[i][2];
+            int lastNonConflict = findLastNonConflictingJob(jobs, i);
+            if (lastNonConflict != -1) {
+                profitIncludingCurrent += dp[lastNonConflict];
+            }
+
+            dp[i] = Math.max(dp[i - 1], profitIncludingCurrent);
+        }
+
+        return dp[n - 1];
+    }
+
+    // Binary search to find the last job that doesn't conflict
+    private int findLastNonConflictingJob(int[][] jobs, int index) {
+        int low = 0, high = index - 1;
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            if (jobs[mid][1] <= jobs[index][0]) {
+                if (mid == high || jobs[mid + 1][1] > jobs[index][0]) {
+                    return mid;
+                }
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return -1;
+    }
+}
