@@ -1,0 +1,22 @@
+class Solution {
+    public int maxProfit(int[] prices) {
+        if (prices.length == 0) return 0;
+
+        int n = prices.length;
+        int hold = -prices[0]; // Buying on day 0
+        int sold = 0;          // No profit yet
+        int rest = 0;          // No action
+
+        for (int i = 1; i < n; i++) {
+            int prevHold = hold;
+            int prevSold = sold;
+            int prevRest = rest;
+
+            hold = Math.max(prevHold, prevRest - prices[i]); // Buy or keep holding
+            sold = prevHold + prices[i];                     // Sell today
+            rest = Math.max(prevRest, prevSold);             // Cooldown or stay idle
+        }
+
+        return Math.max(sold, rest); // Final profit can't be in hold state
+    }
+}
