@@ -1,0 +1,21 @@
+public class Solution {
+    public int minOperations(int[] nums) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        int ops = 0;
+        for (int v : nums) {
+            if (v == 0) {
+                // zero clears current positive runs
+                while (!stack.isEmpty()) stack.pop();
+                continue;
+            }
+            // remove values greater than current
+            while (!stack.isEmpty() && stack.peek() > v) stack.pop();
+            // if same value already on top, nothing to do
+            if (!stack.isEmpty() && stack.peek() == v) continue;
+            // need a new operation for this value
+            stack.push(v);
+            ops++;
+        }
+        return ops;
+    }
+}
