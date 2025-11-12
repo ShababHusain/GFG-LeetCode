@@ -1,0 +1,35 @@
+class Solution {
+    public int minOperations(int[] nums) {
+        int n = nums.length;
+        int countOnes = 0;
+        for (int v : nums) if (v == 1) countOnes++;
+        if (countOnes > 0) {
+            return n - countOnes;
+        }
+        // no ones: find shortest subarray with gcd == 1
+        int bestLen = Integer.MAX_VALUE;
+        for (int i = 0; i < n; i++) {
+            int g = nums[i];
+            if (g == 1) { bestLen = 1; break; }
+            for (int j = i + 1; j < n; j++) {
+                g = gcd(g, nums[j]);
+                if (g == 1) {
+                    bestLen = Math.min(bestLen, j - i + 1);
+                    break; // no need to extend this i further
+                }
+            }
+        }
+        if (bestLen == Integer.MAX_VALUE) return -1;
+        // (bestLen - 1) operations to make one element 1, then (n - 1) to make all 1
+        return (bestLen - 1) + (n - 1);
+    }
+
+    private int gcd(int a, int b) {
+        while (b != 0) {
+            int t = a % b;
+            a = b;
+            b = t;
+        }
+        return a;
+    }
+}
