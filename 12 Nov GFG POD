@@ -1,0 +1,45 @@
+public class Solution {
+    /**
+     * Returns true if pattern pat matches the entire text.
+     * '?' matches any single character.
+     * '*' matches any sequence of characters (including empty).
+     */
+    public boolean wildCard(String text, String pat) {
+        if (text == null || pat == null) return false;
+        int n = text.length();
+        int m = pat.length();
+        // dp[j] = whether pat[0..i-1] matches text[0..j-1] for current i
+        boolean[] dp = new boolean[n + 1];
+        dp[0] = true; // empty pattern matches empty text for i=0
+
+        for (int i = 1; i <= m; i++) {
+            char pc = pat.charAt(i - 1);
+            if (pc == '*') {
+                // '*' can match empty (dp[0] remains what it was)
+                // or match one more character: dp[j] = dp[j] || dp[j-1]
+                for (int j = 1; j <= n; j++) {
+                    dp[j] = dp[j] || dp[j - 1];
+                }
+                // dp[0] stays as before (star can match empty)
+            } else {
+                // For non-star (either '?' or exact char) we must use previous row values.
+                // Iterate j from n down to 1 to avoid overwriting dp[j-1] needed for computation.
+                for (int j = n; j >= 1; j--) {
+                    dp[j] = dp[j - 1] && (pc == '?' || pc == text.charAt(j - 1));
+                }
+                dp[0] = false; // non-star cannot match empty text
+            }
+        }
+        return dp[n];
+    }
+
+    // Optional quick manual tests
+    public static void main(String[] args) {
+        Solution g = new Solution();
+        System.out.println(g.wildCard("abcde", "a?c*"));    // true
+        System.out.println(g.wildCard("baaabab", "a*ab")); // false
+        System.out.println(g.wildCard("abc", "*"));        // true
+        System.out.println(g.wildCard("abcd", "a*d"));     // true
+        System.out.println(g.wildCard("abcd", "a*c?"));    // false
+    }
+}
