@@ -1,0 +1,22 @@
+class Solution {
+    public int maxOperations(String s) {
+        long ones = 0;
+        long ans = 0;
+        int n = s.length();
+
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if (c == '1') {
+                ones++;
+            } else { // c == '0'
+                // If this zero is the last char or the next char is '1',
+                // then each previously seen '1' can be moved across some zeros here in one operation.
+                if (i == n - 1 || s.charAt(i + 1) == '1') {
+                    ans += ones;
+                }
+            }
+        }
+
+        return (int) ans; // cast for driver compatibility; internal sum uses long
+    }
+}
