@@ -1,0 +1,74 @@
+import java.util.*;
+
+class Solution {
+    public int numberOfSubstrings(String s) {
+        int n = s.length();
+        int[] zeros = new int[n + 1];
+        int[] ones = new int[n + 1];
+        for (int i = 0; i < n; i++) {
+            zeros[i + 1] = zeros[i] + (s.charAt(i) == '0' ? 1 : 0);
+            ones[i + 1] = ones[i] + (s.charAt(i) == '1' ? 1 : 0);
+        }
+
+        // pos[z] will store all indices l (0..n) where zeros[l] == z
+        List<Integer>[] pos = new ArrayList[n + 1];
+        for (int i = 0; i <= n; i++) pos[i] = new ArrayList<>();
+        for (int l = 0; l <= n; l++) pos[zeros[l]].add(l);
+
+        int K = (int) Math.sqrt(n) + 2; // safe upper bound for zeros to test
+        long ans = 0L;
+
+        for (int r = 1; r <= n; r++) {
+            for (int z = 0; z <= K; z++) {
+                int target = zeros[r] - z;
+                if (target < 0) break;
+
+                List<Integer> list = pos[target];
+                if (list.isEmpty()) continue;
+
+                // find rightmost index in list with value <= r-1
+                int idx = upperBound(list, r - 1) - 1;
+                if (idx < 0) continue;
+
+                int threshold = ones[r] - z * z;
+                if (threshold < 0) continue; // no l can satisfy ones[l] <= negative
+
+                // find rightmost j in [0..idx] such that ones[list.get(j)] <= threshold
+                int lo = 0, hi = idx, best = -1;
+                while (lo <= hi) {
+                    int mid = (lo + hi) >>> 1;
+                    int lidx = list.get(mid);
+                    if (ones[lidx] <= threshold) {
+                        best = mid;
+                        lo = mid + 1;
+                    } else {
+                        hi = mid - 1;
+                    }
+                }
+                if (best >= 0) {
+                    ans += (best + 1); // count of valid l in this list prefix
+                }
+            }
+        }
+
+        return (int) ans;
+    }
+
+    // returns first index in sorted list with value > key
+    private int upperBound(List<Integer> list, int key) {
+        int lo = 0, hi = list.size(); // hi = size -> 'first > key' can be size
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            if (list.get(mid) <= key) lo = mid + 1;
+            else hi = mid;
+        }
+        return lo;
+    }
+
+    // quick local test
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        System.out.println(sol.numberOfSubstrings("00011")); // expected 5
+        System.out.println(sol.numberOfSubstrings("101101")); // expected 16
+    }
+}
