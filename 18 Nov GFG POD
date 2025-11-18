@@ -1,0 +1,48 @@
+import java.util.*;
+
+public class Solution {
+    private static final long INF = Long.MAX_VALUE / 4;
+    private static final int MOD = 1_000_000_007;
+
+    public int countPaths(int V, int[][] edges) {
+        List<List<int[]>> adj = new ArrayList<>(V);
+        for (int i = 0; i < V; i++) adj.add(new ArrayList<>());
+
+        for (int[] e : edges) {
+            int u = e[0], v = e[1], w = e[2];
+            adj.get(u).add(new int[] { v, w });
+            adj.get(v).add(new int[] { u, w });
+        }
+
+        long[] dist = new long[V];
+        long[] ways = new long[V];
+        Arrays.fill(dist, INF);
+        dist[0] = 0;
+        ways[0] = 1;
+
+        PriorityQueue<long[]> pq = new PriorityQueue<>(Comparator.comparingLong(a -> a[0]));
+        pq.offer(new long[] { 0L, 0L }); // {distance, node}
+
+        while (!pq.isEmpty()) {
+            long[] cur = pq.poll();
+            long d = cur[0];
+            int u = (int) cur[1];
+            if (d > dist[u]) continue;
+
+            for (int[] nb : adj.get(u)) {
+                int v = nb[0], w = nb[1];
+                long nd = d + w;
+                if (nd < dist[v]) {
+                    dist[v] = nd;
+                    ways[v] = ways[u];
+                    pq.offer(new long[] { nd, v });
+                } else if (nd == dist[v]) {
+                    ways[v] = (ways[v] + ways[u]) % MOD;
+                }
+            }
+        }
+
+        return (int) (ways[V - 1] % MOD);
+    }
+
+}
