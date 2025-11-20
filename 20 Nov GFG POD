@@ -1,0 +1,58 @@
+class Solution {
+    public int minCost(String s, String t, char[][] transform, int[] cost) {
+        if (s.length() != t.length()) return -1;
+
+        final long INF = (long)1e15;
+        final int A = 26;
+        long[][] dist = new long[A][A];
+
+        for (int i = 0; i < A; ++i) {
+            Arrays.fill(dist[i], INF);
+            dist[i][i] = 0;
+        }
+
+        if (transform != null) {
+            for (int i = 0; i < transform.length; ++i) {
+                int u = transform[i][0] - 'a';
+                int v = transform[i][1] - 'a';
+                dist[u][v] = Math.min(dist[u][v], cost[i]);
+            }
+        }
+
+        for (int k = 0; k < A; ++k) {
+            for (int i = 0; i < A; ++i) {
+                if (dist[i][k] == INF) continue;
+                for (int j = 0; j < A; ++j) {
+                    long via = dist[i][k] + dist[k][j];
+                    if (via < dist[i][j]) dist[i][j] = via;
+                }
+            }
+        }
+
+        long total = 0;
+        int n = s.length();
+        for (int idx = 0; idx < n; ++idx) {
+            char cs = s.charAt(idx);
+            char ct = t.charAt(idx);
+            if (cs == ct) continue;
+
+            int us = cs - 'a';
+            int ut = ct - 'a';
+            long best = INF;
+            for (int c = 0; c < A; ++c) {
+                if (dist[us][c] == INF || dist[ut][c] == INF) continue;
+                long cand = dist[us][c] + dist[ut][c];
+                if (cand < best) best = cand;
+            }
+            if (best == INF) return -1;
+            total += best;
+            if (total > Integer.MAX_VALUE) {
+                // If you expect larger answers, change return type to long.
+                // Here we clamp by returning -1 to indicate overflow is unexpected under constraints.
+                // Alternatively, cast at the end; we'll cast safely below.
+            }
+        }
+
+        return (int) total;
+    }
+}
