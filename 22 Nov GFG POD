@@ -1,0 +1,41 @@
+import java.util.*;
+
+class Solution {
+    static class DSU {
+        int[] parent;
+        int[] rank;
+        int components;
+        DSU(int n) {
+            parent = new int[n];
+            rank = new int[n];
+            components = n;
+            for (int i = 0; i < n; ++i) parent[i] = i;
+        }
+        int find(int x) {
+            if (parent[x] != x) parent[x] = find(parent[x]);
+            return parent[x];
+        }
+        boolean union(int a, int b) {
+            int ra = find(a), rb = find(b);
+            if (ra == rb) return false;
+            if (rank[ra] < rank[rb]) parent[ra] = rb;
+            else if (rank[rb] < rank[ra]) parent[rb] = ra;
+            else { parent[rb] = ra; rank[ra]++; }
+            components--;
+            return true;
+        }
+    }
+
+    public int minConnect(int V, int[][] edges) {
+        DSU dsu = new DSU(V);
+        int redundant = 0;
+        if (edges == null) edges = new int[0][];
+        for (int[] e : edges) {
+            if (e == null || e.length < 2) continue;
+            int u = e[0], v = e[1];
+            if (!dsu.union(u, v)) redundant++;
+        }
+        int need = dsu.components - 1;
+        return redundant >= need ? need : -1;
+    }
+}
