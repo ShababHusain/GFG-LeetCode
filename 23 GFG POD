@@ -1,0 +1,44 @@
+import java.util.*;
+
+class Solution {
+    static class DSU {
+        int[] parent;
+        int[] rank;
+        int comps;
+        DSU(int n) {
+            parent = new int[n];
+            rank = new int[n];
+            comps = n;
+            for (int i = 0; i < n; ++i) parent[i] = i;
+        }
+        int find(int x) {
+            if (parent[x] != x) parent[x] = find(parent[x]);
+            return parent[x];
+        }
+        boolean union(int a, int b) {
+            int ra = find(a), rb = find(b);
+            if (ra == rb) return false;
+            if (rank[ra] < rank[rb]) parent[ra] = rb;
+            else if (rank[rb] < rank[ra]) parent[rb] = ra;
+            else { parent[rb] = ra; rank[ra]++; }
+            comps--;
+            return true;
+        }
+    }
+
+    public int maxRemove(int[][] stones) {
+        int n = stones.length;
+        if (n == 0) return 0;
+        DSU dsu = new DSU(n);
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j) {
+                if (stones[i][0] == stones[j][0] || stones[i][1] == stones[j][1]) {
+                    dsu.union(i, j);
+                }
+            }
+        }
+        return n - dsu.comps;
+    }
+
+    
+}
