@@ -1,0 +1,18 @@
+class Solution {
+    public int maxSumDivThree(int[] nums) {
+        // dp[r] = max sum with remainder r modulo 3
+        final long NEG = Long.MIN_VALUE / 4;
+        long[] dp = new long[]{0, NEG, NEG};
+        for (int v : nums) {
+            int r = v % 3;
+            long[] ndp = new long[]{dp[0], dp[1], dp[2]};
+            for (int rem = 0; rem < 3; ++rem) {
+                if (dp[rem] == NEG) continue;
+                int nrem = (rem + r) % 3;
+                ndp[nrem] = Math.max(ndp[nrem], dp[rem] + v);
+            }
+            dp = ndp;
+        }
+        return (int) Math.max(0, dp[0]);
+    }
+}
