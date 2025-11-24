@@ -1,0 +1,14 @@
+import java.util.*;
+
+class Solution {
+    public List<Boolean> prefixesDivBy5(int[] nums) {
+        List<Boolean> ans = new ArrayList<>(nums.length);
+        int rem = 0; // current prefix value modulo 5
+        for (int b : nums) {
+            rem = (rem * 2 + b) % 5;
+            ans.add(rem == 0);
+        }
+        return ans;
+    }
+
+}
