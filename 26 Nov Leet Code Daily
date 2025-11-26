@@ -1,0 +1,77 @@
+import java.util.Arrays;
+
+class Solution {
+    private static final int MOD = 1_000_000_007;
+
+    public int numberOfPaths(int[][] grid, int k) {
+        int m = grid.length;
+        int n = grid[0].length;
+
+        // prev[j][r] = number of ways to reach cell (current row, column j) with remainder r
+        int[][] prev = new int[n][k];
+        int[][] curr = new int[n][k];
+
+        // initialize (0,0)
+        int startRem = grid[0][0] % k;
+        prev[0][startRem] = 1;
+
+        // fill first row (row 0) using only left neighbor
+        for (int j = 1; j < n; ++j) {
+            int v = grid[0][j] % k;
+            for (int r = 0; r < k; ++r) {
+                int cnt = prev[j - 1][r];
+                if (cnt != 0) {
+                    int newR = (r + v) % k;
+                    prev[j][newR] = (int) ((prev[j][newR] + (long) cnt) % MOD);
+                }
+            }
+        }
+
+        // process remaining rows
+        for (int i = 1; i < m; ++i) {
+            // clear curr row
+            for (int j = 0; j < n; ++j) Arrays.fill(curr[j], 0);
+
+            // first column of current row: can only come from top (prev[0])
+            int v0 = grid[i][0] % k;
+            for (int r = 0; r < k; ++r) {
+                int cntTop = prev[0][r];
+                if (cntTop != 0) {
+                    int newR = (r + v0) % k;
+                    curr[0][newR] = (int) ((curr[0][newR] + (long) cntTop) % MOD);
+                }
+            }
+
+            // remaining columns: combine from top (prev[j]) and left (curr[j-1])
+            for (int j = 1; j < n; ++j) {
+                int v = grid[i][j] % k;
+
+                // from top
+                for (int r = 0; r < k; ++r) {
+                    int cntTop = prev[j][r];
+                    if (cntTop != 0) {
+                        int newR = (r + v) % k;
+                        curr[j][newR] = (int) ((curr[j][newR] + (long) cntTop) % MOD);
+                    }
+                }
+
+                // from left
+                for (int r = 0; r < k; ++r) {
+                    int cntLeft = curr[j - 1][r];
+                    if (cntLeft != 0) {
+                        int newR = (r + v) % k;
+                        curr[j][newR] = (int) ((curr[j][newR] + (long) cntLeft) % MOD);
+                    }
+                }
+            }
+
+            // swap prev and curr for next iteration
+            int[][] tmp = prev;
+            prev = curr;
+            curr = tmp;
+        }
+
+        // result is number of ways to reach (m-1,n-1) with remainder 0
+        return prev[n - 1][0];
+    }
+}
