@@ -1,0 +1,32 @@
+class Solution {
+    public long maxSubarraySum(int[] nums, int k) {
+        int n = nums.length;
+        // minPref[r] = minimum prefix sum seen so far at indices with index % k == r
+        long[] minPref = new long[k];
+        final long INF = Long.MAX_VALUE / 4;
+        for (int i = 0; i < k; ++i) minPref[i] = INF;
+        // prefix index 0 has remainder 0 and prefix sum 0
+        minPref[0] = 0L;
+
+        long pref = 0L;
+        long ans = Long.MIN_VALUE;
+
+        // iterate prefix indices 1..n (pref after including nums[i-1])
+        for (int i = 1; i <= n; ++i) {
+            pref += nums[i - 1];
+            int rem = i % k;
+            // if we have seen a prefix with same remainder, consider subarray sum
+            if (minPref[rem] != INF) {
+                ans = Math.max(ans, pref - minPref[rem]);
+            }
+            // update minimum prefix for this remainder
+            minPref[rem] = Math.min(minPref[rem], pref);
+        }
+
+        // If ans was never updated (shouldn't happen because minPref[0]=0 allows full-prefix),
+        // but keep safe fallback
+        if (ans == Long.MIN_VALUE) return Long.MIN_VALUE;
+        return ans;
+        
+    }
+}
