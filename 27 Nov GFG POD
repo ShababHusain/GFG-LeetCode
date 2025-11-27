@@ -1,0 +1,11 @@
+class Solution {
+    int subsetXORSum(int arr[]) {
+        // code here
+        int n = arr.length;
+        int orAll = 0;
+        for (int v : arr) orAll |= v;
+        long factor = 1L << (n - 1); // 2^(n-1)
+        long ans = orAll * factor;
+        return (int) ans;
+    }
+}
