@@ -1,0 +1,49 @@
+class Solution {
+    private int n;
+    private long k;
+    private List<Integer>[] adj;
+    private long[] vals;
+    private int cuts; // number of edges we can cut (child subtree divisible by k)
+
+    public int maxKDivisibleComponents(int n, int[][] edges, int[] values, int k) {
+        this.n = n;
+        this.k = k;
+        this.cuts = 0;
+
+        // build adjacency
+        adj = new ArrayList[n];
+        for (int i = 0; i < n; ++i) adj[i] = new ArrayList<>();
+        for (int[] e : edges) {
+            int a = e[0], b = e[1];
+            adj[a].add(b);
+            adj[b].add(a);
+        }
+
+        vals = new long[n];
+        for (int i = 0; i < n; ++i) vals[i] = values[i];
+
+        // run DFS from node 0 (tree is connected)
+        dfs(0, -1);
+
+        // number of components = cuts + 1
+        return cuts + 1;
+    }
+
+    // returns subtree sum for node u
+    private long dfs(int u, int parent) {
+        long sum = vals[u];
+        for (int v : adj[u]) {
+            if (v == parent) continue;
+            long childSum = dfs(v, u);
+            if (childSum % k == 0) {
+                // we can cut edge u-v, child subtree becomes its own component
+                cuts++;
+                // do not add childSum to sum (it is separated)
+            } else {
+                sum += childSum;
+            }
+        }
+        return sum;
+    }
+
+}
