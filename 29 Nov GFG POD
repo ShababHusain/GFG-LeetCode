@@ -1,0 +1,24 @@
+class Solution {
+    public static int countSetBits(int n) {
+        int total = 0;
+        int i = 0;
+
+        // Loop through each bit position until 2^i > n
+        while ((1 << i) <= n) {
+            int cycleLen = 1 << (i + 1); // length of cycle for bit i
+            int fullCycles = (n + 1) / cycleLen;
+
+            // Contribution from complete cycles
+            total += fullCycles * (1 << i);
+
+            // Contribution from remainder part
+            int remainder = (n + 1) % cycleLen;
+            total += Math.max(0, remainder - (1 << i));
+
+            i++;
+        }
+        return total;
+    }
+
+    
+}
