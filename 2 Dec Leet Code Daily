@@ -1,0 +1,32 @@
+import java.util.*;
+
+public class Solution {
+    private static final long MOD = 1_000_000_007L;
+
+    public int countTrapezoids(int[][] points) {
+        // count points per y-coordinate
+        HashMap<Long, Integer> cnt = new HashMap<>();
+        for (int[] p : points) {
+            long y = p[1];
+            cnt.put(y, cnt.getOrDefault(y, 0) + 1);
+        }
+
+        long S = 0L;   // sum of A_i = sum C(c,2)
+        long S2 = 0L;  // sum of A_i^2
+        for (int c : cnt.values()) {
+            if (c >= 2) {
+                long comb = (1L * c * (c - 1) / 2) % MOD; // C(c,2) mod MOD
+                S = (S + comb) % MOD;
+                S2 = (S2 + (comb * comb) % MOD) % MOD;
+            }
+        }
+
+        // result = ((S*S - S2) / 2) mod MOD
+        long res = ( ( (S * S) % MOD - S2 ) % MOD + MOD ) % MOD;
+        long inv2 = (MOD + 1) / 2; // modular inverse of 2 under prime MOD
+        res = (res * inv2) % MOD;
+        return (int) res;
+    }
+
+    
+}
