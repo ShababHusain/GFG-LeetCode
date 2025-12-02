@@ -1,0 +1,74 @@
+import java.util.*;
+
+class Solution {
+    public int maxScore(String s, char[][] jumps) {
+        int n = s.length();
+        char[] a = s.toCharArray();
+
+        // Prefix sum of ASCII values: prefix[i] = sum of ASCII of s[0..i-1]
+        long[] prefix = new long[n + 1];
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + (int) a[i];
+        }
+
+        // allowed[src] holds list of target characters you can jump to from 'src'
+        @SuppressWarnings("unchecked")
+        ArrayList<Character>[] allowed = new ArrayList[256];
+        for (int i = 0; i < 256; i++) allowed[i] = new ArrayList<>();
+        for (char[] p : jumps) {
+            char s1 = p[0], s2 = p[1];
+            allowed[s1].add(s2);
+        }
+
+        // bestTo[t]: best incoming potential to target char t so far
+        long[] bestTo = new long[256];
+        Arrays.fill(bestTo, Long.MIN_VALUE / 4);
+
+        // seenCount[t]: number of occurrences of char t seen up to index i-1
+        int[] seenCount = new int[256];
+
+        long ans = 0;
+
+        for (int i = 0; i < n; i++) {
+            char ch = a[i];
+            int tAscii = (int) ch;
+
+            // rank_t(j-1) for j = i is seenCount[ch]
+            long currentReach;
+            if (i == 0) {
+                // Start at index 0 with score 0 (no jump needed to be "at" index 0)
+                currentReach = 0;
+            } else {
+                long incoming = bestTo[ch];
+                if (incoming <= Long.MIN_VALUE / 8) {
+                    currentReach = Long.MIN_VALUE / 4; // unreachable
+                } else {
+                    currentReach = prefix[i] - (long) seenCount[ch] * tAscii + incoming;
+                }
+            }
+
+            // Track the best total score achievable (ending at any index)
+            if (currentReach > ans) ans = currentReach;
+
+            // If this index is reachable, update outgoing potentials for targets
+            if (currentReach > Long.MIN_VALUE / 8) {
+                // Same-character jump is always allowed
+                long candSame = currentReach - prefix[i] + (long) seenCount[ch] * tAscii;
+                if (candSame > bestTo[ch]) bestTo[ch] = candSame;
+
+                // Jumps defined by rules from ch to each target
+                for (char tgt : allowed[ch]) {
+                    int tgtAscii = (int) tgt;
+                    long cand = currentReach - prefix[i] + (long) seenCount[tgt] * tgtAscii;
+                    if (cand > bestTo[tgt]) bestTo[tgt] = cand;
+                }
+            }
+
+            // Advance ranks
+            seenCount[ch]++;
+        }
+
+        // Answer is the best reachable score at any index
+        return (int) ans;
+    }
+}
