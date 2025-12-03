@@ -1,0 +1,105 @@
+import java.util.*;
+
+class Solution {
+    private static class Pair {
+        int first, second;
+        Pair(int f, int s) { first = f; second = s; }
+        @Override public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Pair)) return false;
+            Pair p = (Pair) o;
+            return first == p.first && second == p.second;
+        }
+        @Override public int hashCode() { return first * 31 + second; }
+    }
+
+    public int countTrapezoids(int[][] points) {
+        int n = points.length;
+        Map<Pair, Map<Pair, Integer>> slopeToIntercept = new HashMap<>();
+        Map<Pair, Map<Pair, Integer>> midToSlope = new HashMap<>();
+
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j) {
+                int x1 = points[i][0], y1 = points[i][1];
+                int x2 = points[j][0], y2 = points[j][1];
+                int dx = x2 - x1, dy = y2 - y1;
+                int g = gcd(Math.abs(dx), Math.abs(dy));
+                if (g == 0) continue;  // Same point, but constraints prevent
+                dx /= g; dy /= g;
+
+                // Normalize slope: make dx >= 0, or dx=0 and dy > 0
+                if (dx < 0 || (dx == 0 && dy < 0)) {
+                    dx = -dx; dy = -dy;
+                }
+                Pair slope = new Pair(dx, dy);
+
+                // Intercept key: for non-vertical, rational b = (y1*dx - x1*dy) / dx
+                Pair intercept;
+                if (dx == 0) {  // Vertical: use x as intercept
+                    intercept = new Pair(x1, 1);
+                } else {
+                    // To avoid float: use (y1*dx - x1*dy, dx) as fraction num/den
+                    int num = y1 * dx - x1 * dy;
+                    int den = dx;
+                    int gb = gcd(Math.abs(num), Math.abs(den));
+                    num /= gb; den /= gb;
+                    if (den < 0) { num = -num; den = -den; }
+                    intercept = new Pair(num, den);
+                }
+
+                slopeToIntercept.computeIfAbsent(slope, k -> new HashMap<>())
+                                .merge(intercept, 1, Integer::sum);
+
+                // Midpoint key: ((x1+x2)/2, (y1+y2)/2) as fraction, scaled to int
+                // Scale by 2*den to clear denominators: but simplify
+                int mxNum = x1 + x2, mxDen = 2;
+                int myNum = y1 + y2, myDen = 2;
+                int gm = gcd(Math.abs(mxNum), mxDen);
+                mxNum /= gm; mxDen /= gm;
+                gm = gcd(Math.abs(myNum), myDen);
+                myNum /= gm; myDen /= gm;
+                // To hash single key, combine with large multiplier (avoid collision)
+                long midHash = (long) (mxNum * 1000000007L + mxDen) * 1000000009L + (long) (myNum * 1000000007L + myDen);
+                Pair midKey = new Pair((int) (midHash % Integer.MAX_VALUE), 0);  // Simplified for demo; use better hash if needed
+                // Better: use separate map for x-mid, y-mid but for simplicity, adjust to int encoding
+                // Actual fix: use (x1+x2)*2001 + (y1+y2) + 4000*2001 to shift negatives
+                int midX = x1 + x2 + 2000;
+                int midY = y1 + y2 + 2000;
+                int midEncoded = midX * 4001 + midY;
+                midToSlope.computeIfAbsent(new Pair(midEncoded, 0), k -> new HashMap<>())
+                          .merge(slope, 1, Integer::sum);
+            }
+        }
+
+        long total = 0;
+
+        // Trapezoid count
+        for (Map<Pair, Integer> inters : slopeToIntercept.values()) {
+            int prefix = 0;
+            for (int cnt : inters.values()) {
+                total += (long) prefix * cnt;
+                prefix += cnt;
+            }
+        }
+
+        // Subtract parallelograms
+        for (Map<Pair, Integer> slps : midToSlope.values()) {
+            int prefix = 0;
+            for (int cnt : slps.values()) {
+                total -= (long) prefix * cnt;
+                prefix += cnt;
+            }
+        }
+
+        return (int) total;
+    }
+
+    private int gcd(int a, int b) {
+        while (b != 0) {
+            int t = b;
+            b = a % b;
+            a = t;
+        }
+        return a;
+    }
+}
