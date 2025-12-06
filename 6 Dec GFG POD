@@ -1,0 +1,38 @@
+class Solution {
+    public int maximumAmount(int arr[]) {
+        int n = (arr == null) ? 0 : arr.length;
+        if (n == 0) return 0;
+
+        // Use long to avoid overflow for large values/sums
+        long[][] dp = new long[n][n];
+
+        // Base cases: single coin
+        for (int i = 0; i < n; i++) dp[i][i] = arr[i];
+
+        // Base cases: two coins
+        for (int i = 0; i + 1 < n; i++) dp[i][i + 1] = Math.max(arr[i], arr[i + 1]);
+
+        // Fill DP for lengths >= 3
+        for (int len = 3; len <= n; len++) {
+            for (int i = 0; i + len - 1 < n; i++) {
+                int j = i + len - 1;
+
+                // If player picks arr[i], opponent will choose to minimize player's future gain:
+                // opponent can pick arr[i+1] -> dp[i+2][j]
+                // or pick arr[j]     -> dp[i+1][j-1]
+                long a = (i + 2 <= j) ? dp[i + 2][j] : 0L;
+                long b = (i + 1 <= j - 1) ? dp[i + 1][j - 1] : 0L;
+                long c = (i <= j - 2) ? dp[i][j - 2] : 0L;
+
+                long pickLeft  = arr[i] + Math.min(a, b);
+                long pickRight = arr[j] + Math.min(b, c);
+
+                dp[i][j] = Math.max(pickLeft, pickRight);
+            }
+        }
+
+        long result = dp[0][n - 1];
+        // safe to cast to int given constraints; if concerned, change return type to long
+        return (int) result;
+    }
+}
