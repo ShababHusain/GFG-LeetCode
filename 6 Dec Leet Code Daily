@@ -1,0 +1,44 @@
+class Solution {
+    public int countPartitions(int[] nums, int k) {
+        if (nums == null) return 0;
+        int n = nums.length;
+        if (n == 0) return 0;
+
+        final long MOD = 1_000_000_007L;
+        long[] dp = new long[n + 1];   // dp[i] = ways to partition first i elements (nums[0..i-1])
+        long[] pref = new long[n + 1]; // pref[i] = sum(dp[0..i]) mod MOD
+
+        dp[0] = 1;
+        pref[0] = 1;
+
+        Deque<Integer> maxD = new ArrayDeque<>(); // indices with decreasing values
+        Deque<Integer> minD = new ArrayDeque<>(); // indices with increasing values
+        int L = 0;
+
+        for (int i = 0; i < n; i++) {
+            // add nums[i] to max deque (decreasing)
+            while (!maxD.isEmpty() && nums[maxD.peekLast()] <= nums[i]) maxD.pollLast();
+            maxD.addLast(i);
+
+            // add nums[i] to min deque (increasing)
+            while (!minD.isEmpty() && nums[minD.peekLast()] >= nums[i]) minD.pollLast();
+            minD.addLast(i);
+
+            // move L until window [L..i] satisfies max - min <= k
+            while (!maxD.isEmpty() && !minD.isEmpty() && (long)nums[maxD.peekFirst()] - (long)nums[minD.peekFirst()] > k) {
+                if (!maxD.isEmpty() && maxD.peekFirst() == L) maxD.pollFirst();
+                if (!minD.isEmpty() && minD.peekFirst() == L) minD.pollFirst();
+                L++;
+            }
+
+            // dp for prefix length i+1 is sum dp[L..i] = pref[i] - pref[L-1]
+            long subtract = (L - 1 >= 0) ? pref[L - 1] : 0L;
+            long sumRange = (pref[i] - subtract) % MOD;
+            if (sumRange < 0) sumRange += MOD;
+            dp[i + 1] = sumRange;
+            pref[i + 1] = (pref[i] + dp[i + 1]) % MOD;
+        }
+
+        return (int)(dp[n] % MOD);
+    }
+}
