@@ -1,0 +1,43 @@
+class Solution {
+    public String matrixChainOrder(int arr[]) {
+        // code here
+         int n = arr.length;
+        if (n < 2) return "";           // no matrices
+        int m = n - 1;                  // number of matrices (A..)
+
+        // cost[i][j] = minimum cost to multiply matrices i..j (0-based)
+        long[][] cost = new long[m][m];
+        // split[i][j] = index k where optimal split is between (i..k) and (k+1..j)
+        int[][] split = new int[m][m];
+
+        // initialize cost[i][i] = 0
+        for (int i = 0; i < m; i++) cost[i][i] = 0;
+
+        // chain length L = 2..m
+        for (int L = 2; L <= m; L++) {
+            for (int i = 0; i <= m - L; i++) {
+                int j = i + L - 1;
+                cost[i][j] = Long.MAX_VALUE;
+                for (int k = i; k < j; k++) {
+                    long q = cost[i][k] + cost[k + 1][j] + (long) arr[i] * arr[k + 1] * arr[j + 1];
+                    if (q < cost[i][j]) {
+                        cost[i][j] = q;
+                        split[i][j] = k;
+                    }
+                }
+            }
+        }
+
+        return buildParenthesis(0, m - 1, split);
+    }
+
+    private String buildParenthesis(int i, int j, int[][] split) {
+        if (i == j) {
+            return String.valueOf((char) ('A' + i));
+        }
+        int k = split[i][j];
+        String left = buildParenthesis(i, k, split);
+        String right = buildParenthesis(k + 1, j, split);
+        return "(" + left + right + ")";
+    }
+}
