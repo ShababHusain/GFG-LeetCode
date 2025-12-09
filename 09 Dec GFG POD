@@ -1,0 +1,23 @@
+public class Solution {
+    public int specialTriplets(int[] nums) {
+        final int MOD = 1_000_000_007;
+        final int MAX = 200_000;
+        int[] left = new int[MAX + 1];
+        int[] right = new int[MAX + 1];
+
+        for (int x : nums) right[x]++;
+
+        long ans = 0L;
+        for (int x : nums) {
+            right[x]--;
+            int target = x * 2;
+            if (target <= MAX) {
+                long leftCount = left[target];
+                long rightCount = right[target];
+                ans = (ans + (leftCount * rightCount) % MOD) % MOD;
+            }
+            left[x]++;
+        }
+        return (int) ans;
+    }
+}
