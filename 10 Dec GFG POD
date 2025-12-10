@@ -1,0 +1,37 @@
+
+class Solution {
+    ArrayList<Integer> findTwoElement(int arr[]) {
+        int n = arr.length;
+        long sumArr = 0L;
+        long sumSqArr = 0L;
+        for (int v : arr) {
+            sumArr += v;
+            sumSqArr += 1L * v * v;
+        }
+
+        long sumExp = 1L * n * (n + 1) / 2;                     // 1 + 2 + ... + n
+        long sqExp = 1L * n * (n + 1) * (2L * n + 1) / 6;      // 1^2 + 2^2 + ... + n^2
+
+        long D = sumExp - sumArr;      // M - R
+        long E = sqExp - sumSqArr;     // M^2 - R^2 = D * (M + R)
+
+        ArrayList<Integer> ans = new ArrayList<>();
+
+        // Defensive: D should not be zero for valid input (one missing and one repeating).
+        if (D == 0) {
+            // Fallback: return empty or handle as per judge expectation.
+            // Here we return [0,0] to indicate an unexpected case.
+            ans.add(0);
+            ans.add(0);
+            return ans;
+        }
+
+        long sumMR = E / D;            // M + R
+        long missing = (D + sumMR) / 2;
+        long repeating = missing - D;  // or: (sumMR - missing)
+
+        ans.add((int) repeating);
+        ans.add((int) missing);
+        return ans;
+    }
+}
