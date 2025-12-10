@@ -1,0 +1,16 @@
+class Solution {
+    public int countPermutations(int[] complexity) {
+        final int MOD = 1_000_000_007;
+        int n = complexity.length;
+        int root = complexity[0];
+        // feasibility: every other element must be strictly greater than root
+        for (int i = 1; i < n; ++i) {
+            if (complexity[i] <= root) return 0;
+        }
+        long fact = 1L;
+        for (int i = 1; i <= n - 1; ++i) {
+            fact = (fact * i) % MOD;
+        }
+        return (int) fact;
+    }
+}
