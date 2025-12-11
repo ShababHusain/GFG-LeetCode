@@ -1,0 +1,36 @@
+class Solution {
+    public int countCoveredBuildings(int n, int[][] buildings) {
+        // maps: row x -> list of y's; column y -> list of x's
+        Map<Integer, List<Integer>> rows = new HashMap<>();
+        Map<Integer, List<Integer>> cols = new HashMap<>();
+
+        for (int[] b : buildings) {
+            int x = b[0], y = b[1];
+            rows.computeIfAbsent(x, k -> new ArrayList<>()).add(y);
+            cols.computeIfAbsent(y, k -> new ArrayList<>()).add(x);
+        }
+
+        // sort all lists
+        for (List<Integer> ys : rows.values()) Collections.sort(ys);
+        for (List<Integer> xs : cols.values()) Collections.sort(xs);
+
+        int covered = 0;
+        for (int[] b : buildings) {
+            int x = b[0], y = b[1];
+
+            List<Integer> ys = rows.get(x);
+            List<Integer> xs = cols.get(y);
+
+            // find index of y in ys
+            int yi = Collections.binarySearch(ys, y);
+            if (yi <= 0 || yi >= ys.size() - 1) continue; // no left or no right
+
+            int xi = Collections.binarySearch(xs, x);
+            if (xi <= 0 || xi >= xs.size() - 1) continue; // no above or no below
+
+            covered++;
+        }
+
+        return covered;
+    }
+}
