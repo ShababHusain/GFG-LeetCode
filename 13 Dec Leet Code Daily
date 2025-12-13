@@ -1,0 +1,36 @@
+import java.util.*;
+import java.util.regex.Pattern;
+
+class Solution {
+    public List<String> validateCoupons(String[] code, String[] businessLine, boolean[] isActive) {
+        List<String> result = new ArrayList<>();
+        if (code == null || businessLine == null || isActive == null) return result;
+        int n = code.length;
+        if (businessLine.length != n || isActive.length != n) return result;
+
+        String[] order = {"electronics", "grocery", "pharmacy", "restaurant"};
+        Map<String, List<String>> buckets = new HashMap<>();
+        for (String b : order) buckets.put(b, new ArrayList<>());
+
+        Pattern validCode = Pattern.compile("^[A-Za-z0-9_]+$");
+
+        for (int i = 0; i < n; ++i) {
+            if (!isActive[i]) continue;
+            String b = businessLine[i];
+            if (!buckets.containsKey(b)) continue;
+            String c = code[i];
+            if (c == null || c.length() == 0) continue;
+            if (!validCode.matcher(c).matches()) continue;
+            buckets.get(b).add(c);
+        }
+
+        for (String b : order) {
+            List<String> list = buckets.get(b);
+            if (list == null || list.isEmpty()) continue;
+            Collections.sort(list);
+            result.addAll(list);
+        }
+
+        return result;
+    }
+}
