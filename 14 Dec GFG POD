@@ -1,0 +1,45 @@
+import java.util.ArrayList;
+
+class Solution {
+    public ArrayList<Integer> prefixSum2D(int[][] mat, int[][] queries) {
+        int n = mat.length;
+        int m = mat[0].length;
+        
+        // 1. Create a prefix sum array with (n+1) x (m+1) dimensions.
+        // The extra row and column (index 0) are padded with 0s to simplify
+        // boundary checks (avoiding index out of bounds for r1-1 or c1-1).
+        int[][] pref = new int[n + 1][m + 1];
+
+        // 2. Build the 2D Prefix Sum Array
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                pref[i + 1][j + 1] = mat[i][j] 
+                                   + pref[i][j + 1]      // Sum above
+                                   + pref[i + 1][j]      // Sum to the left
+                                   - pref[i][j];         // Subtract overlap (top-left)
+            }
+        }
+
+        ArrayList<Integer> result = new ArrayList<>();
+
+        // 3. Process each query using the Inclusion-Exclusion Principle
+        for (int[] q : queries) {
+            int r1 = q[0];
+            int c1 = q[1];
+            int r2 = q[2];
+            int c2 = q[3];
+
+            // Because our pref array is 1-based (padded):
+            // The coordinate (r, c) in 'mat' corresponds to (r+1, c+1) in 'pref'.
+            // Formula: Sum = BottomRight - TopRegion - LeftRegion + TopLeftOverlap
+            int sum = pref[r2 + 1][c2 + 1] 
+                    - pref[r1][c2 + 1] 
+                    - pref[r2 + 1][c1] 
+                    + pref[r1][c1];
+            
+            result.add(sum);
+        }
+
+        return result;
+    }
+}
