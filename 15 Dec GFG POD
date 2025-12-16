@@ -1,0 +1,34 @@
+class Solution {
+    public int cntWays(int[] arr) {
+        int n = arr.length;
+        long totalEven = 0, totalOdd = 0;
+
+        // Step 1: compute total sums of even and odd indices
+        for (int i = 0; i < n; i++) {
+            if (i % 2 == 0) totalEven += arr[i];
+            else totalOdd += arr[i];
+        }
+
+        long prefixEven = 0, prefixOdd = 0;
+        int count = 0;
+
+        // Step 2: iterate over each index to check balance after removal
+        for (int i = 0; i < n; i++) {
+            // remove arr[i] from totals
+            if (i % 2 == 0) totalEven -= arr[i];
+            else totalOdd -= arr[i];
+
+            // after removal, elements after i flip parity
+            long newEven = prefixEven + totalOdd;
+            long newOdd = prefixOdd + totalEven;
+
+            if (newEven == newOdd) count++;
+
+            // add arr[i] back to prefix sums
+            if (i % 2 == 0) prefixEven += arr[i];
+            else prefixOdd += arr[i];
+        }
+
+        return count;
+    }
+}
