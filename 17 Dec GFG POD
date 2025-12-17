@@ -1,0 +1,21 @@
+class Solution {
+    public ArrayList<int[]> mergeOverlap(int[][] arr) {
+        // Step 1: Sort intervals by start time
+        Arrays.sort(arr, (a, b) -> Integer.compare(a[0], b[0]));
+        
+        ArrayList<int[]> result = new ArrayList<>();
+        
+        // Step 2: Iterate through intervals
+        for (int[] interval : arr) {
+            // If result is empty OR no overlap → add interval
+            if (result.isEmpty() || result.get(result.size() - 1)[1] < interval[0]) {
+                result.add(interval);
+            } else {
+                // Overlap → merge with last interval
+                result.get(result.size() - 1)[1] = Math.max(result.get(result.size() - 1)[1], interval[1]);
+            }
+        }
+        
+        return result;
+    }
+}
