@@ -1,0 +1,44 @@
+class Solution {
+    public long maxProfit(int[] prices, int[] strategy, int k) {
+        int n = prices.length;
+        int k2 = k / 2;
+
+        // 1) Original profit
+        long original = 0;
+        for (int i = 0; i < n; i++) {
+            original += (long) strategy[i] * prices[i];
+        }
+
+        // 2) Initialize window [l, r) with l = 0, r = k
+        long winSP = 0;        // sum of strategy[i]*prices[i] over the window
+        long lastHalf = 0;     // sum of prices over [mid, r) where mid = l + k/2
+
+        for (int i = 0; i < k; i++) {
+            winSP += (long) strategy[i] * prices[i];
+        }
+        for (int i = k2; i < k; i++) {    // half-open: i in [k/2, k)
+            lastHalf += prices[i];
+        }
+
+        long maxDelta = lastHalf - winSP;
+
+        // 3) Slide the window: l -> l+1 (so mid and r move by +1 as well)
+        for (int l = 1; l + k <= n; l++) {
+            int rIdx = l + k - 1;              // new element entering window (at r-1)
+            int leaveIdx = l - 1;              // element leaving window (at old l)
+            int midOld = leaveIdx + k2;        // price at old mid to remove from lastHalf
+
+            // update window sum of strategy*price
+            winSP += (long) strategy[rIdx] * prices[rIdx]
+                   - (long) strategy[leaveIdx] * prices[leaveIdx];
+
+            // update lastHalf: remove old mid, add new r-1
+            lastHalf += prices[rIdx] - prices[midOld];
+
+            maxDelta = Math.max(maxDelta, lastHalf - winSP);
+        }
+
+        // 4) Apply the best modification only if it helps
+        return original + Math.max(0, maxDelta);
+    }
+}
