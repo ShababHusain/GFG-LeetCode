@@ -1,0 +1,28 @@
+class Solution {
+    public void sortIt(int[] arr) {
+        // Step 1: Separate odds and evens
+        ArrayList<Integer> odds = new ArrayList<>();
+        ArrayList<Integer> evens = new ArrayList<>();
+        
+        for (int num : arr) {
+            if (num % 2 == 0) {
+                evens.add(num);
+            } else {
+                odds.add(num);
+            }
+        }
+        
+        // Step 2: Sort odds in descending order and evens in ascending order
+        Collections.sort(odds, Collections.reverseOrder());
+        Collections.sort(evens);
+        
+        // Step 3: Merge back into arr
+        int index = 0;
+        for (int num : odds) {
+            arr[index++] = num;
+        }
+        for (int num : evens) {
+            arr[index++] = num;
+        }
+    }
+}
