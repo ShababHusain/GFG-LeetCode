@@ -1,0 +1,54 @@
+class Solution {
+    public List<Integer> findAllPeople(int n, int[][] meetings, int firstPerson) {
+        // Step 1: Group meetings by time
+        Map<Integer, List<int[]>> timeMap = new TreeMap<>();
+        for (int[] m : meetings) {
+            timeMap.computeIfAbsent(m[2], k -> new ArrayList<>()).add(new int[]{m[0], m[1]});
+        }
+
+        // Step 2: Track who knows the secret
+        Set<Integer> secret = new HashSet<>();
+        secret.add(0);
+        secret.add(firstPerson);
+
+        // Step 3: Process meetings in chronological order
+        for (int time : timeMap.keySet()) {
+            List<int[]> list = timeMap.get(time);
+
+            // Build graph for this time
+            Map<Integer, List<Integer>> graph = new HashMap<>();
+            Set<Integer> participants = new HashSet<>();
+            for (int[] m : list) {
+                graph.computeIfAbsent(m[0], k -> new ArrayList<>()).add(m[1]);
+                graph.computeIfAbsent(m[1], k -> new ArrayList<>()).add(m[0]);
+                participants.add(m[0]);
+                participants.add(m[1]);
+            }
+
+            // BFS/DFS from participants who already know the secret
+            Queue<Integer> q = new LinkedList<>();
+            Set<Integer> visited = new HashSet<>();
+            for (int p : participants) {
+                if (secret.contains(p)) {
+                    q.add(p);
+                    visited.add(p);
+                }
+            }
+
+            while (!q.isEmpty()) {
+                int cur = q.poll();
+                secret.add(cur);
+                if (graph.containsKey(cur)) {
+                    for (int nei : graph.get(cur)) {
+                        if (!visited.contains(nei)) {
+                            visited.add(nei);
+                            q.add(nei);
+                        }
+                    }
+                }
+            }
+        }
+
+        return new ArrayList<>(secret);
+    }
+}
