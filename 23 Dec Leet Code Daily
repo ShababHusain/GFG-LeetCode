@@ -1,0 +1,52 @@
+import java.util.Arrays;
+import java.util.Comparator;
+
+class Solution {
+    public int maxTwoEvents(int[][] events) {
+        // Sort events by end time (ascending)
+        Arrays.sort(events, Comparator.comparingInt(a -> a[1]));
+        int n = events.length;
+        
+        // ends[i] = end time of i-th event in sorted order
+        int[] ends = new int[n];
+        // bestEndVal[i] = maximum single-event value among events[0..i]
+        int[] prefMax = new int[n];
+        
+        for (int i = 0; i < n; ++i) {
+            ends[i] = events[i][1];
+            prefMax[i] = events[i][2];
+            if (i > 0) prefMax[i] = Math.max(prefMax[i], prefMax[i - 1]);
+        }
+        
+        int ans = 0;
+        // Consider each event as the second event; combine with best compatible earlier event
+        for (int i = 0; i < n; ++i) {
+            int start = events[i][0];
+            int val = events[i][2];
+            
+            // Binary search for rightmost index j with ends[j] < start (non-overlapping)
+            int j = rightmostLess(ends, start);
+            int bestBefore = (j >= 0) ? prefMax[j] : 0;
+            
+            ans = Math.max(ans, val + bestBefore); // combine
+            ans = Math.max(ans, val);               // or take this event alone
+        }
+        
+        return ans;
+    }
+    
+    // returns largest index k such that arr[k] < target, or -1 if none
+    private int rightmostLess(int[] arr, int target) {
+        int lo = 0, hi = arr.length - 1, res = -1;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (arr[mid] < target) {
+                res = mid;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        return res;
+    }
+}
