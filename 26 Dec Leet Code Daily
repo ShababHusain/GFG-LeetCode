@@ -1,0 +1,31 @@
+class Solution {
+    public int bestClosingTime(String customers) {
+        int n = customers.length();
+        // penalty when closing at 0: all hours closed -> penalty = count of 'Y'
+        int penalty = 0;
+        for (int i = 0; i < n; ++i) {
+            if (customers.charAt(i) == 'Y') penalty++;
+        }
+
+        int bestHour = 0;
+        int minPenalty = penalty;
+
+        // move closing time from j to j+1 (j from 0 to n-1)
+        for (int j = 0; j < n; ++j) {
+            // hour j moves from closed to open
+            if (customers.charAt(j) == 'Y') {
+                penalty -= 1; // was a closed-hour penalty, now served
+            } else { // 'N'
+                penalty += 1; // becomes an open-hour penalty
+            }
+
+            if (penalty < minPenalty) {
+                minPenalty = penalty;
+                bestHour = j + 1; // closing after hour j
+            }
+            // if equal penalty, we keep earlier bestHour (no change)
+        }
+
+        return bestHour;
+    }
+}
