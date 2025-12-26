@@ -1,0 +1,28 @@
+class Solution {
+    public int kthMissing(int[] arr, int k) {
+        int n = arr.length;
+        // missing(i) = arr[i] - (i + 1)
+        // if kth missing is after the last element
+        int missingLast = arr[n - 1] - n;
+        if (missingLast < k) {
+            return arr[n - 1] + (k - missingLast);
+        }
+
+        // binary search for first index idx with missing(idx) >= k
+        int lo = 0, hi = n - 1;
+        while (lo < hi) {
+            int mid = lo + (hi - lo) / 2;
+            int missingMid = arr[mid] - (mid + 1);
+            if (missingMid < k) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
+            }
+        }
+        int idx = lo;
+        // if idx == 0, the k-th missing is simply k (numbers 1..k are missing before arr[0])
+        if (idx == 0) return k;
+        int missingPrev = arr[idx - 1] - idx; // missing(idx-1) = arr[idx-1] - (idx)
+        return arr[idx - 1] + (k - missingPrev);
+    }
+}
