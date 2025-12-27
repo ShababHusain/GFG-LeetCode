@@ -1,0 +1,39 @@
+class Solution {
+    public int kthSmallest(int[][] mat, int k) {
+        int n = mat.length;
+        int low = mat[0][0];
+        int high = mat[n - 1][n - 1];
+
+        while (low < high) {
+            int mid = low + (high - low) / 2;
+            int cnt = countLE(mat, mid);
+            if (cnt >= k) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return low;
+    }
+
+    // count number of elements <= target in the matrix
+    private int countLE(int[][] mat, int target) {
+        int n = mat.length;
+        int count = 0;
+        for (int r = 0; r < n; ++r) {
+            count += upperBound(mat[r], target);
+        }
+        return count;
+    }
+
+    // returns first index > target (i.e., number of elements <= target) in sorted row
+    private int upperBound(int[] row, int target) {
+        int l = 0, r = row.length;
+        while (l < r) {
+            int m = l + (r - l) / 2;
+            if (row[m] <= target) l = m + 1;
+            else r = m;
+        }
+        return l;
+    }
+}
