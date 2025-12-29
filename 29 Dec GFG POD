@@ -1,0 +1,50 @@
+class Solution {
+    // returns the k-th element (1-indexed) of the merged sorted array of a and b
+    public int kthElement(int[] a, int[] b, int k) {
+        int n = a.length;
+        int m = b.length;
+        // ensure we binary-search on the smaller array
+        if (n > m) return kthElement(b, a, k);
+
+        // i elements taken from a, j = k - i from b
+        int lo = Math.max(0, k - m);
+        int hi = Math.min(k, n);
+
+        while (lo <= hi) {
+            int i = lo + (hi - lo) / 2;
+            int j = k - i;
+
+            int Aleft  = (i == 0) ? Integer.MIN_VALUE : a[i - 1];
+            int Aright = (i == n) ? Integer.MAX_VALUE : a[i];
+            int Bleft  = (j == 0) ? Integer.MIN_VALUE : b[j - 1];
+            int Bright = (j == m) ? Integer.MAX_VALUE : b[j];
+
+            if (Aleft <= Bright && Bleft <= Aright) {
+                return Math.max(Aleft, Bleft);
+            } else if (Aleft > Bright) {
+                // too many taken from a, decrease i
+                hi = i - 1;
+            } else {
+                // too few taken from a, increase i
+                lo = i + 1;
+            }
+        }
+
+        // Fallback (shouldn't happen with valid inputs)
+        return -1;
+    }
+
+    // Optional: simple O(k) merge approach (useful when k is small)
+    public int kthElementMerge(int[] a, int[] b, int k) {
+        int i = 0, j = 0;
+        int val = -1;
+        while (k-- > 0) {
+            if (i < a.length && (j >= b.length || a[i] <= b[j])) {
+                val = a[i++];
+            } else {
+                val = b[j++];
+            }
+        }
+        return val;
+    }
+}
