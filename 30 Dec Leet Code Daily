@@ -1,0 +1,54 @@
+class Solution {
+    public int numMagicSquaresInside(int[][] grid) {
+        int rows = grid.length;
+        int cols = grid[0].length;
+        int count = 0;
+        // iterate top-left corner of each 3x3 subgrid
+        for (int i = 0; i + 2 < rows; ++i) {
+            for (int j = 0; j + 2 < cols; ++j) {
+                if (isMagic(grid, i, j)) count++;
+            }
+        }
+        return count;
+    }
+
+    private boolean isMagic(int[][] g, int r, int c) {
+        // center must be 5 for any 3x3 magic square using 1..9
+        if (g[r+1][c+1] != 5) return false;
+
+        boolean[] seen = new boolean[10]; // indices 1..9
+        // check all values are in 1..9 and distinct
+        for (int i = r; i <= r + 2; ++i) {
+            for (int j = c; j <= c + 2; ++j) {
+                int v = g[i][j];
+                if (v < 1 || v > 9) return false;
+                if (seen[v]) return false;
+                seen[v] = true;
+            }
+        }
+
+        // all numbers 1..9 must appear
+        for (int k = 1; k <= 9; ++k) {
+            if (!seen[k]) return false;
+        }
+
+        // check sums: each row, each column, both diagonals must be 15
+        int target = 15;
+        // rows
+        for (int i = r; i <= r + 2; ++i) {
+            int s = g[i][c] + g[i][c+1] + g[i][c+2];
+            if (s != target) return false;
+        }
+        // cols
+        for (int j = c; j <= c + 2; ++j) {
+            int s = g[r][j] + g[r+1][j] + g[r+2][j];
+            if (s != target) return false;
+        }
+        // diagonals
+        int d1 = g[r][c] + g[r+1][c+1] + g[r+2][c+2];
+        int d2 = g[r][c+2] + g[r+1][c+1] + g[r+2][c];
+        if (d1 != target || d2 != target) return false;
+
+        return true;
+    }
+}
