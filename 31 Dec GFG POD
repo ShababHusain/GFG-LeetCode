@@ -1,0 +1,63 @@
+/*
+class Node {
+    int data;
+    Node next;
+
+    Node(int d) {
+        data = d;
+        next = null;
+    }
+}*/
+
+class Solution {
+    public boolean isPalindrome(Node head) {
+        if (head == null || head.next == null) return true;
+
+        // 1. Find end of first half
+        Node firstHalfEnd = endOfFirstHalf(head);
+        // 2. Reverse second half
+        Node secondHalfStart = reverseList(firstHalfEnd.next);
+
+        // 3. Compare the two halves
+        Node p1 = head;
+        Node p2 = secondHalfStart;
+        boolean result = true;
+        while (p2 != null) {
+            if (p1.data != p2.data) {
+                result = false;
+                break;
+            }
+            p1 = p1.next;
+            p2 = p2.next;
+        }
+
+        // 4. Restore the list (optional)
+        firstHalfEnd.next = reverseList(secondHalfStart);
+
+        return result;
+    }
+
+    // reverse linked list and return new head
+    private Node reverseList(Node head) {
+        Node prev = null;
+        Node curr = head;
+        while (curr != null) {
+            Node next = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = next;
+        }
+        return prev;
+    }
+
+    // return the end node of the first half
+    private Node endOfFirstHalf(Node head) {
+        Node slow = head;
+        Node fast = head;
+        while (fast.next != null && fast.next.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return slow;
+    }
+}
