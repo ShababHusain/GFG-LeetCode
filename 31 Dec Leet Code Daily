@@ -1,0 +1,57 @@
+import java.util.*;
+
+class Solution {
+    public int latestDayToCross(int row, int col, int[][] cells) {
+        // dayGrid[r][c] = day (1-based) when cell becomes water
+        int[][] dayGrid = new int[row][col];
+        for (int i = 0; i < cells.length; ++i) {
+            int r = cells[i][0] - 1;
+            int c = cells[i][1] - 1;
+            dayGrid[r][c] = i + 1; // day i+1 becomes water
+        }
+
+        int lo = 0;
+        int hi = cells.length; // maximum possible day
+        while (lo < hi) {
+            int mid = lo + (hi - lo + 1) / 2; // try later day first
+            if (canCrossOnDay(dayGrid, mid)) {
+                lo = mid; // crossing possible on mid, try later
+            } else {
+                hi = mid - 1; // not possible, try earlier
+            }
+        }
+        return lo;
+    }
+
+    private boolean canCrossOnDay(int[][] dayGrid, int day) {
+        int rows = dayGrid.length;
+        int cols = dayGrid[0].length;
+        boolean[][] seen = new boolean[rows][cols];
+        ArrayDeque<int[]> q = new ArrayDeque<>();
+
+        // push all land cells in top row (dayGrid[0][c] > day)
+        for (int c = 0; c < cols; ++c) {
+            if (dayGrid[0][c] > day) {
+                q.offer(new int[]{0, c});
+                seen[0][c] = true;
+            }
+        }
+
+        int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
+        while (!q.isEmpty()) {
+            int[] cur = q.poll();
+            int r = cur[0], c = cur[1];
+            if (r == rows - 1) return true; // reached bottom row
+            for (int[] d : dirs) {
+                int nr = r + d[0], nc = c + d[1];
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !seen[nr][nc]) {
+                    if (dayGrid[nr][nc] > day) { // it's land on this day
+                        seen[nr][nc] = true;
+                        q.offer(new int[]{nr, nc});
+                    }
+                }
+            }
+        }
+        return false;
+    }
+}
