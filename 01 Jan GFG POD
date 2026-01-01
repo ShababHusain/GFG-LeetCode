@@ -1,0 +1,28 @@
+/*
+class Node {
+    int data;
+    Node next;
+
+    Node(int d) {
+        data = d;
+        next = null;
+    }
+}
+*/
+
+class Solution {
+    public Node intersectPoint(Node head1, Node head2) {
+        if (head1 == null || head2 == null) return null;
+
+        Node p = head1;
+        Node q = head2;
+
+        // Traverse both lists; when one pointer reaches the end, redirect it to the other head.
+        // They will meet at the intersection node (or both become null if no intersection).
+        while (p != q) {
+            p = (p == null) ? head2 : p.next;
+            q = (q == null) ? head1 : q.next;
+        }
+        return p; // either intersection node or null
+    }
+}
