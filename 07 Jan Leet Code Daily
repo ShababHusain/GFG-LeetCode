@@ -1,0 +1,48 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    private static final long MOD = 1_000_000_007L;
+    private long totalSum = 0L;
+    private long maxProduct = 0L;
+    
+    public int maxProduct(TreeNode root) {
+        // 1) compute total sum of tree
+        totalSum = computeSum(root);
+        // reset maxProduct and compute subtree sums again to evaluate products
+        maxProduct = 0L;
+        computeAndCheck(root);
+        return (int)(maxProduct % MOD);
+    }
+    
+    // Post-order to compute total sum
+    private long computeSum(TreeNode node) {
+        if (node == null) return 0L;
+        long left = computeSum(node.left);
+        long right = computeSum(node.right);
+        return left + right + node.val;
+    }
+    
+    // Post-order to compute each subtree sum and update maxProduct
+    private long computeAndCheck(TreeNode node) {
+        if (node == null) return 0L;
+        long left = computeAndCheck(node.left);
+        long right = computeAndCheck(node.right);
+        long subtreeSum = left + right + node.val;
+        long product = subtreeSum * (totalSum - subtreeSum);
+        if (product > maxProduct) maxProduct = product;
+        return subtreeSum;
+    }
+}
