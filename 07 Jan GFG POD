@@ -1,0 +1,37 @@
+import java.util.*;
+
+class Solution {
+    ArrayList<Integer> countDistinct(int arr[], int k) {
+        ArrayList<Integer> result = new ArrayList<>();
+        if (arr == null || arr.length == 0 || k <= 0) return result;
+
+        HashMap<Integer, Integer> freq = new HashMap<>();
+        int n = arr.length;
+
+        // Build frequency map for the first window
+        for (int i = 0; i < k && i < n; i++) {
+            freq.put(arr[i], freq.getOrDefault(arr[i], 0) + 1);
+        }
+        if (n >= k) result.add(freq.size());
+
+        // Slide the window across the array
+        for (int i = k; i < n; i++) {
+            // element going out
+            int out = arr[i - k];
+            int countOut = freq.get(out);
+            if (countOut == 1) {
+                freq.remove(out);
+            } else {
+                freq.put(out, countOut - 1);
+            }
+
+            // element coming in
+            int in = arr[i];
+            freq.put(in, freq.getOrDefault(in, 0) + 1);
+
+            result.add(freq.size());
+        }
+
+        return result;
+    }
+}
