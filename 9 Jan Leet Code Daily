@@ -1,0 +1,44 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    private static class Result {
+        int depth;       // max depth under this node (0 for leaf)
+        TreeNode node;   // smallest subtree root containing all deepest nodes in this subtree
+        Result(int d, TreeNode n) { depth = d; node = n; }
+    }
+    
+    public TreeNode subtreeWithAllDeepest(TreeNode root) {
+        return dfs(root).node;
+    }
+    
+    private Result dfs(TreeNode root) {
+        if (root == null) return new Result(-1, null); // null has depth -1 so leaf becomes 0
+        
+        Result left = dfs(root.left);
+        Result right = dfs(root.right);
+        
+        if (left.depth == right.depth) {
+            // deepest nodes are equally deep in both subtrees -> current node is LCA
+            return new Result(left.depth + 1, root);
+        } else if (left.depth > right.depth) {
+            // deepest nodes lie in left subtree
+            return new Result(left.depth + 1, left.node);
+        } else {
+            // deepest nodes lie in right subtree
+            return new Result(right.depth + 1, right.node);
+        }
+    }
+}
