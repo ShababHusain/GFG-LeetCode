@@ -1,0 +1,24 @@
+// Main.java
+
+
+// Solution is package-private (no public modifier)
+class Solution {
+    public long countSubarrays(int[] arr, int k) {
+        int n = arr.length;
+        ArrayList<Integer> oddIdx = new ArrayList<>();
+        for (int i = 0; i < n; i++) if ((arr[i] & 1) == 1) oddIdx.add(i);
+        int t = oddIdx.size();
+        if (t < k) return 0L;
+        long ans = 0L;
+        for (int i = 0; i + k - 1 < t; i++) {
+            int leftOddIndex = oddIdx.get(i);
+            int prevOddIndex = (i == 0) ? -1 : oddIdx.get(i - 1);
+            long leftGap = leftOddIndex - prevOddIndex - 1;
+            int rightOddIndex = oddIdx.get(i + k - 1);
+            int nextOddIndex = (i + k - 1 == t - 1) ? n : oddIdx.get(i + k);
+            long rightGap = nextOddIndex - rightOddIndex - 1;
+            ans += (leftGap + 1) * (rightGap + 1);
+        }
+        return ans;
+    }
+}
