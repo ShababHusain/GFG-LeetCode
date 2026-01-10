@@ -1,0 +1,31 @@
+class Solution {
+    public int countSubstr(String s, int k) {
+        if (s == null || s.length() == 0 || k <= 0) return 0;
+        long res = atMostK(s, k) - atMostK(s, k - 1);
+        return (int) res;
+    }
+
+    private long atMostK(String s, int k) {
+        if (k < 0) return 0L;
+        int[] freq = new int[26];
+        int left = 0;
+        int distinct = 0;
+        long count = 0L;
+
+        for (int right = 0; right < s.length(); right++) {
+            int r = s.charAt(right) - 'a';
+            if (freq[r] == 0) distinct++;
+            freq[r]++;
+
+            while (distinct > k) {
+                int l = s.charAt(left) - 'a';
+                freq[l]--;
+                if (freq[l] == 0) distinct--;
+                left++;
+            }
+
+            count += (right - left + 1);
+        }
+        return count;
+    }
+}
