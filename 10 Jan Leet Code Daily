@@ -1,0 +1,29 @@
+class Solution {
+    public int minimumDeleteSum(String s1, String s2) {
+        int n = s1.length(), m = s2.length();
+        // ensure we iterate smaller string as columns to minimize space
+        if (m > n) {
+            // swap so m <= n
+            String t = s1; s1 = s2; s2 = t;
+            int tmp = n; n = m; m = tmp;
+        }
+        int[] dp = new int[m + 1];
+        // base: dp[0..m]
+        for (int j = 1; j <= m; j++) dp[j] = dp[j - 1] + s2.charAt(j - 1);
+
+        for (int i = 1; i <= n; i++) {
+            int prevDiag = dp[0]; // dp[i-1][0]
+            dp[0] += s1.charAt(i - 1); // dp[i][0]
+            for (int j = 1; j <= m; j++) {
+                int temp = dp[j]; // will become prevDiag for next j
+                if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+                    dp[j] = prevDiag;
+                } else {
+                    dp[j] = Math.min(dp[j] + s1.charAt(i - 1), dp[j - 1] + s2.charAt(j - 1));
+                }
+                prevDiag = temp;
+            }
+        }
+        return dp[m];
+    }
+}
