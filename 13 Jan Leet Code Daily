@@ -1,0 +1,43 @@
+class Solution {
+    public double separateSquares(int[][] squares) {
+        int n=squares.length;
+        double total =0.0;
+        double lo= Double.POSITIVE_INFINITY;
+        double hi= Double.NEGATIVE_INFINITY;
+
+        for(int[] s: squares){
+            double yi=s[1];
+            double li=s[2];
+            total += li*li;
+            lo=Math.min(lo,yi);
+            hi=Math.max(hi,yi+li);
+        }
+        double half=total/2.0;
+        for(int iter=0; iter <80; iter++){
+            double mid = (lo + hi)/2.0;
+            double below = areaBelow(squares, mid);
+            if(below>=half){
+                hi=mid;
+            }else{
+                lo=mid;
+            }
+        }
+        return hi;
+        
+    }
+    private double areaBelow(int[][] squares, double y){
+        double sum=0.0;
+        for(int[] s:squares){
+            double yi=s[1];
+            double li=s[2];
+            double h=y-yi;
+            if(h<=0) continue;
+            if(h>=li){
+                sum+=li*li;
+            }else{
+                sum += li*h;
+            }
+        }
+        return sum;
+    }
+}
