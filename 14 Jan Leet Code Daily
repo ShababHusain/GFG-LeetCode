@@ -1,0 +1,164 @@
+import java.util.Arrays;
+
+class Solution {
+    private static class Event implements Comparable<Event> {
+        double y;
+        double x1, x2;
+        int type; // +1 add, -1 remove
+        Event(double y, double x1, double x2, int type) {
+            this.y = y; this.x1 = x1; this.x2 = x2; this.type = type;
+        }
+        public int compareTo(Event o) {
+            return Double.compare(this.y, o.y);
+        }
+    }
+
+    // Segment tree storing cover counts and covered length over elementary x segments
+    private static class SegTree {
+        int n;              // number of elementary segments (m-1)
+        int[] cover;        // cover count per node
+        double[] length;    // covered length per node
+        double[] xs;        // compressed x coordinates (size m)
+        SegTree(int n, double[] xs) {
+            this.n = n;
+            this.xs = xs;
+            cover = new int[4 * n];
+            length = new double[4 * n];
+        }
+        void update(int idx, int left, int right, int l, int r, int val) {
+            if (r < left || right < l) return;
+            if (l <= left && right <= r) {
+                cover[idx] += val;
+            } else {
+                int mid = (left + right) >>> 1;
+                update(idx<<1, left, mid, l, r, val);
+                update(idx<<1|1, mid+1, right, l, r, val);
+            }
+            if (cover[idx] > 0) {
+                // fully covered
+                length[idx] = xs[right + 1] - xs[left];
+            } else {
+                if (left == right) length[idx] = 0.0;
+                else length[idx] = length[idx<<1] + length[idx<<1|1];
+            }
+        }
+        double coveredLength() {
+            return length[1];
+        }
+    }
+
+    public double separateSquares(int[][] squares) {
+        int n = squares.length;
+        if (n == 0) return 0.0;
+
+        // Build events and x endpoints arrays
+        Event[] events = new Event[2 * n];
+        double[] xs = new double[2 * n];
+        int eidx = 0, xidx = 0;
+        for (int i = 0; i < n; ++i) {
+            double x = squares[i][0];
+            double y = squares[i][1];
+            double l = squares[i][2];
+            events[eidx++] = new Event(y, x, x + l, +1);       // add at bottom
+            events[eidx++] = new Event(y + l, x, x + l, -1);   // remove at top
+            xs[xidx++] = x;
+            xs[xidx++] = x + l;
+        }
+
+        // compress x coordinates (unique sorted)
+        Arrays.sort(xs, 0, xidx);
+        int m = 0;
+        for (int i = 0; i < xidx; ++i) {
+            if (m == 0 || Double.compare(xs[i], xs[m-1]) != 0) {
+                xs[m++] = xs[i];
+            }
+        }
+        if (m < 2) return 0.0; // no horizontal span
+
+        double[] xcoords = Arrays.copyOf(xs, m);
+
+        // sort events by y
+        Arrays.sort(events, 0, eidx);
+
+        // segment tree over elementary segments [xcoords[i], xcoords[i+1]) for i=0..m-2
+        SegTree st = new SegTree(m - 1, xcoords);
+
+        // We'll record slabs: for each distinct y interval [y_cur, y_next) store covered_x_length
+        // But we don't need to store all slabs if we accumulate on the fly into arrays.
+        double[] slabY = new double[eidx];        // y start of slab
+        double[] slabLen = new double[eidx];      // covered x length for that slab
+        double[] slabDy = new double[eidx];       // delta y for that slab
+        int slabCount = 0;
+
+        int i = 0;
+        while (i < eidx) {
+            double curY = events[i].y;
+            // process all events at curY
+            int j = i;
+            while (j < eidx && Double.compare(events[j].y, curY) == 0) {
+                Event ev = events[j];
+                int l = lowerBound(xcoords, ev.x1);
+                int r = lowerBound(xcoords, ev.x2) - 1; // inclusive elementary segment index
+                if (l <= r) st.update(1, 0, st.n - 1, l, r, ev.type);
+                j++;
+            }
+            double nextY = (j < eidx) ? events[j].y : curY;
+            double coveredX = st.coveredLength();
+            double dy = nextY - curY;
+            if (dy > 0 && coveredX > 0) {
+                slabY[slabCount] = curY;
+                slabLen[slabCount] = coveredX;
+                slabDy[slabCount] = dy;
+                slabCount++;
+            } else if (dy > 0) {
+                // slab with zero covered length still contributes nothing; we can record or skip
+                slabY[slabCount] = curY;
+                slabLen[slabCount] = 0.0;
+                slabDy[slabCount] = dy;
+                slabCount++;
+            }
+            i = j;
+        }
+
+        // compute total union area from slabs
+        double total = 0.0;
+        for (int k = 0; k < slabCount; ++k) {
+            total += slabLen[k] * slabDy[k];
+        }
+        double half = total / 2.0;
+
+        // find minimal y where cumulative area >= half
+        double cum = 0.0;
+        for (int k = 0; k < slabCount; ++k) {
+            double add = slabLen[k] * slabDy[k];
+            if (cum + add < half - 1e-12) {
+                cum += add;
+                continue;
+            }
+            // target is inside this slab
+            double need = half - cum;
+            if (slabLen[k] <= 0) {
+                // covered length zero but need > 0 shouldn't happen because add==0; continue
+                continue;
+            }
+            double yAnswer = slabY[k] + need / slabLen[k];
+            return yAnswer;
+        }
+
+        // If we didn't reach half due to numerical issues, return topmost y
+        // topmost y is last event y
+        double topY = events[eidx - 1].y;
+        return topY;
+    }
+
+    // lower_bound for sorted double array
+    private static int lowerBound(double[] arr, double key) {
+        int l = 0, r = arr.length; // [l, r)
+        while (l < r) {
+            int mid = (l + r) >>> 1;
+            if (arr[mid] < key) l = mid + 1;
+            else r = mid;
+        }
+        return l;
+    }
+}
