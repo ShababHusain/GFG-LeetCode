@@ -1,0 +1,32 @@
+import java.util.Arrays;
+
+class Solution {
+    // Driver expects this exact signature returning int
+    public int maximizeSquareHoleArea(int n, int m, int[] hBars, int[] vBars) {
+        int maxHRun = longestConsecutiveRun(hBars);
+        int maxVRun = longestConsecutiveRun(vBars);
+
+        int rows = maxHRun + 1;
+        int cols = maxVRun + 1;
+
+        int side = Math.min(rows, cols);
+        return side * side;
+    }
+
+    // returns the length of the longest run of consecutive integers in arr
+    private int longestConsecutiveRun(int[] arr) {
+        if (arr == null || arr.length == 0) return 0;
+        Arrays.sort(arr);
+        int maxRun = 1;
+        int cur = 1;
+        for (int i = 1; i < arr.length; ++i) {
+            if (arr[i] == arr[i - 1] + 1) {
+                cur++;
+            } else {
+                cur = 1;
+            }
+            if (cur > maxRun) maxRun = cur;
+        }
+        return maxRun;
+    }
+}
