@@ -1,0 +1,28 @@
+import java.util.Arrays;
+
+class Solution {
+    public int minCandy(int arr[]) {
+        if (arr == null || arr.length == 0) return 0;
+        int n = arr.length;
+
+        // left[i] = minimum candies needed to satisfy left neighbor constraint
+        int[] left = new int[n];
+        Arrays.fill(left, 1);
+
+        // left-to-right pass
+        for (int i = 1; i < n; ++i) {
+            if (arr[i] > arr[i - 1]) left[i] = left[i - 1] + 1;
+        }
+
+        // right-to-left pass and sum up max(left[i], rightRequirement)
+        long total = 0L;
+        int rightReq = 1;
+        for (int i = n - 1; i >= 0; --i) {
+            if (i < n - 1 && arr[i] > arr[i + 1]) rightReq = rightReq + 1;
+            else rightReq = 1;
+            total += Math.max(left[i], rightReq);
+        }
+
+        return (int) total;
+    }
+}
