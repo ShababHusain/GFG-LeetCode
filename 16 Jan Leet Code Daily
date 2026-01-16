@@ -1,0 +1,55 @@
+class Solution {
+    private static final long MOD = 1_000_000_007L;
+
+    public int maximizeSquareArea(int m, int n, int[] hFences, int[] vFences) {
+        // build sorted positions including the two fixed boundary fences
+        int[] H = buildPositions(m, hFences);
+        int[] V = buildPositions(n, vFences);
+
+        // compute all positive gaps for H and V
+        HashSet<Integer> gapsH = allGaps(H);
+        HashSet<Integer> gapsV = allGaps(V);
+
+        // find maximum common gap
+        int best = -1;
+        if (gapsH.size() <= gapsV.size()) {
+            for (int g : gapsH) {
+                if (gapsV.contains(g) && g > best) best = g;
+            }
+        } else {
+            for (int g : gapsV) {
+                if (gapsH.contains(g) && g > best) best = g;
+            }
+        }
+
+        if (best == -1) return -1;
+        long side = best;
+        long area = (side * side) % MOD;
+        return (int) area;
+    }
+
+    // returns sorted array of positions: {1} + fences + {limit}
+    private int[] buildPositions(int limit, int[] fences) {
+        int k = (fences == null) ? 0 : fences.length;
+        int[] arr = new int[k + 2];
+        arr[0] = 1;
+        if (k > 0) {
+            System.arraycopy(fences, 0, arr, 1, k);
+        }
+        arr[k + 1] = limit;
+        Arrays.sort(arr);
+        return arr;
+    }
+
+    // compute all positive differences between any two positions in sorted arr
+    private HashSet<Integer> allGaps(int[] arr) {
+        HashSet<Integer> set = new HashSet<>();
+        int m = arr.length;
+        for (int i = 0; i < m; ++i) {
+            for (int j = i + 1; j < m; ++j) {
+                set.add(arr[j] - arr[i]);
+            }
+        }
+        return set;
+    }
+}
