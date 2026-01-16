@@ -1,0 +1,46 @@
+import java.util.*;
+
+class Solution {
+    public int minMen(int arr[]) {
+        int n = arr.length;
+        // collect intervals for available people
+        List<int[]> intervals = new ArrayList<>();
+        for (int i = 0; i < n; ++i) {
+            if (arr[i] == -1) continue;
+            int L = Math.max(0, i - arr[i]);
+            int R = Math.min(n - 1, i + arr[i]);
+            intervals.add(new int[]{L, R});
+        }
+        if (intervals.isEmpty()) return -1;
+
+        // sort by left ascending; if tie, by right descending
+        intervals.sort((a, b) -> {
+            if (a[0] != b[0]) return Integer.compare(a[0], b[0]);
+            return Integer.compare(b[1], a[1]);
+        });
+
+        int ans = 0;
+        int idx = 0;
+        int k = intervals.size();
+        int cur = 0; // next position to cover
+
+        while (cur <= n - 1) {
+            int bestRight = -1;
+            // consider all intervals starting at or before cur
+            while (idx < k && intervals.get(idx)[0] <= cur) {
+                bestRight = Math.max(bestRight, intervals.get(idx)[1]);
+                idx++;
+            }
+            if (bestRight < cur) {
+                // cannot cover position cur
+                return -1;
+            }
+            // choose interval that extends farthest
+            ans++;
+            cur = bestRight + 1; // next uncovered position
+        }
+        return ans;
+    }
+
+    
+}
