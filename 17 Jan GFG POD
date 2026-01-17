@@ -1,0 +1,30 @@
+class Solution {
+    public static boolean checkRedundancy(String s) {
+        Deque<Character> st = new ArrayDeque<>();
+        for (char ch : s.toCharArray()) {
+            if (ch == ')') {
+                // If immediate '(' on top, it's redundant like "()"
+                if (st.isEmpty()) return true; // malformed but treat as redundant
+                if (st.peek() == '(') return true;
+
+                boolean foundOperator = false;
+                // Pop until '(' and check for operators
+                while (!st.isEmpty() && st.peek() != '(') {
+                    char top = st.pop();
+                    if (top == '+' || top == '-' || top == '*' || top == '/') {
+                        foundOperator = true;
+                    }
+                }
+                // pop the '(' if present
+                if (!st.isEmpty() && st.peek() == '(') st.pop();
+                // if no operator inside, parentheses are redundant
+                if (!foundOperator) return true;
+            } else {
+                st.push(ch);
+            }
+        }
+        return false;
+    }
+
+    
+}
