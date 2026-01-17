@@ -1,0 +1,28 @@
+class Solution {
+    public long largestSquareArea(int[][] bottomLeft, int[][] topRight) {
+        int n = bottomLeft.length;
+        long bestArea = 0L;
+        for (int i = 0; i < n; ++i) {
+            int ax1 = bottomLeft[i][0], ay1 = bottomLeft[i][1];
+            int ax2 = topRight[i][0], ay2 = topRight[i][1];
+            for (int j = i + 1; j < n; ++j) {
+                int bx1 = bottomLeft[j][0], by1 = bottomLeft[j][1];
+                int bx2 = topRight[j][0], by2 = topRight[j][1];
+
+                int left = Math.max(ax1, bx1);
+                int right = Math.min(ax2, bx2);
+                int bottom = Math.max(ay1, by1);
+                int top = Math.min(ay2, by2);
+
+                if (right > left && top > bottom) {
+                    int width = right - left;
+                    int height = top - bottom;
+                    int side = Math.min(width, height);
+                    long area = 1L * side * side;
+                    if (area > bestArea) bestArea = area;
+                }
+            }
+        }
+        return bestArea;
+    }
+}
