@@ -1,0 +1,58 @@
+class Solution {
+    public int largestMagicSquare(int[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+        // rowPrefix[r][c] = sum of grid[r][0..c-1]
+        int[][] rowPrefix = new int[m][n + 1];
+        // colPrefix[r][c] = sum of grid[0..r-1][c]
+        int[][] colPrefix = new int[m + 1][n];
+
+        for (int r = 0; r < m; ++r) {
+            for (int c = 0; c < n; ++c) {
+                rowPrefix[r][c + 1] = rowPrefix[r][c] + grid[r][c];
+                colPrefix[r + 1][c] = colPrefix[r][c] + grid[r][c];
+            }
+        }
+
+        int maxK = Math.min(m, n);
+        // try sizes from largest to smallest
+        for (int k = maxK; k >= 1; --k) {
+            // all possible top-left corners
+            for (int r = 0; r + k <= m; ++r) {
+                for (int c = 0; c + k <= n; ++c) {
+                    // target sum = sum of first row of this square
+                    int target = rowPrefix[r][c + k] - rowPrefix[r][c];
+
+                    boolean ok = true;
+                    // check all rows
+                    for (int rr = r + 1; rr < r + k; ++rr) {
+                        int s = rowPrefix[rr][c + k] - rowPrefix[rr][c];
+                        if (s != target) { ok = false; break; }
+                    }
+                    if (!ok) continue;
+
+                    // check all columns
+                    for (int cc = c; cc < c + k; ++cc) {
+                        int s = colPrefix[r + k][cc] - colPrefix[r][cc];
+                        if (s != target) { ok = false; break; }
+                    }
+                    if (!ok) continue;
+
+                    // main diagonal sum
+                    int diag1 = 0;
+                    for (int t = 0; t < k; ++t) diag1 += grid[r + t][c + t];
+                    if (diag1 != target) continue;
+
+                    // anti-diagonal sum
+                    int diag2 = 0;
+                    for (int t = 0; t < k; ++t) diag2 += grid[r + t][c + k - 1 - t];
+                    if (diag2 != target) continue;
+
+                    // all checks passed
+                    return k;
+                }
+            }
+        }
+        return 1; // every 1x1 is a magic square; if you prefer return 0 when none, use 1 per problem statement
+    }
+}
