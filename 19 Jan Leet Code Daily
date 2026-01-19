@@ -1,0 +1,37 @@
+class Solution {
+    public int maxSideLength(int[][] mat, int threshold) {
+        int m = mat.length;
+        int n = mat[0].length;
+        // build prefix sum (m+1) x (n+1)
+        int[][] ps = new int[m + 1][n + 1];
+        for (int i = 1; i <= m; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                ps[i][j] = mat[i-1][j-1] + ps[i-1][j] + ps[i][j-1] - ps[i-1][j-1];
+            }
+        }
+
+        int lo = 0, hi = Math.min(m, n);
+        while (lo < hi) {
+            int mid = (lo + hi + 1) / 2; // try larger mid
+            if (existsSquareWithSide(ps, mid, threshold)) {
+                lo = mid;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        return lo;
+    }
+
+    private boolean existsSquareWithSide(int[][] ps, int side, int threshold) {
+        if (side == 0) return true;
+        int m = ps.length - 1;
+        int n = ps[0].length - 1;
+        for (int i = side; i <= m; ++i) {
+            for (int j = side; j <= n; ++j) {
+                int sum = ps[i][j] - ps[i-side][j] - ps[i][j-side] + ps[i-side][j-side];
+                if (sum <= threshold) return true;
+            }
+        }
+        return false;
+    }
+}
