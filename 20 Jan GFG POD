@@ -1,0 +1,36 @@
+class Solution {
+    private final StringBuilder doc;
+    private final Deque<Character> redoStack;
+
+    public Solution() {
+        doc = new StringBuilder();
+        redoStack = new ArrayDeque<>();
+    }
+
+    // append x into document
+    public void append(char x) {
+        doc.append(x);
+        // new operation invalidates redo history
+        redoStack.clear();
+    }
+
+    // undo last change (only APPEND operations are undoable)
+    public void undo() {
+        if (doc.length() == 0) return;
+        char last = doc.charAt(doc.length() - 1);
+        doc.deleteCharAt(doc.length() - 1);
+        redoStack.push(last);
+    }
+
+    // redo changes (reapply the most recent undone append)
+    public void redo() {
+        if (redoStack.isEmpty()) return;
+        char c = redoStack.pop();
+        doc.append(c);
+    }
+
+    // read the document
+    public String read() {
+        return doc.toString();
+    }
+}
