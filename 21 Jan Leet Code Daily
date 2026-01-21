@@ -1,0 +1,39 @@
+class Solution {
+    public int[] minBitwiseArray(List<Integer> nums) {
+        int n = nums.size();
+        int[] ans = new int[n];
+        for (int i = 0; i < n; ++i) {
+            long p = nums.get(i);
+            if (p == 2) {               // only even prime -> impossible
+                ans[i] = -1;
+                continue;
+            }
+
+            // count trailing ones in p
+            int k = 0;
+            long tmp = p;
+            while ((tmp & 1L) == 1L) {
+                ++k;
+                tmp >>= 1;
+            }
+
+            if (k == 0) {               // no trailing ones -> no solution (covers p==2)
+                ans[i] = -1;
+                continue;
+            }
+
+            // if p is all ones (p + 1 is power of two)
+            if ((p & (p + 1)) == 0L) {
+                ans[i] = (int)((p - 1) / 2);
+                continue;
+            }
+
+            long lowMask = (1L << k) - 1L;               // k ones
+            long base = p & ~lowMask;                    // clear lowest k bits
+            long add  = (1L << (k - 1)) - 1L;            // set lowest k-1 bits
+            long res  = base | add;
+            ans[i] = (int)res;
+        }
+        return ans;
+    }
+}
