@@ -1,0 +1,33 @@
+class Solution {
+    public int minimumPairRemoval(int[] nums) {
+        List<Integer> a = new ArrayList<>();
+        for (int v : nums) a.add(v);
+
+        int ops = 0;
+        while (!isNonDecreasing(a)) {
+            int n = a.size();
+            int minSum = Integer.MAX_VALUE;
+            int idx = -1;
+            for (int i = 0; i + 1 < n; ++i) {
+                int s = a.get(i) + a.get(i + 1);
+                if (s < minSum) {
+                    minSum = s;
+                    idx = i;
+                }
+            }
+            // replace pair at idx with their sum
+            int sum = a.get(idx) + a.get(idx + 1);
+            a.remove(idx + 1);
+            a.set(idx, sum);
+            ops++;
+        }
+        return ops;
+    }
+
+    private boolean isNonDecreasing(List<Integer> a) {
+        for (int i = 1; i < a.size(); ++i) {
+            if (a.get(i) < a.get(i - 1)) return false;
+        }
+        return true;
+    }
+}
