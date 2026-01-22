@@ -1,0 +1,56 @@
+class Solution {
+    public int subarrayRanges(int[] arr) {
+        int n = arr.length;
+        int[] prevGreater = new int[n];
+        int[] nextGreaterEq = new int[n];
+        int[] prevSmaller = new int[n];
+        int[] nextSmallerEq = new int[n];
+
+        Arrays.fill(prevGreater, -1);
+        Arrays.fill(nextGreaterEq, n);
+        Arrays.fill(prevSmaller, -1);
+        Arrays.fill(nextSmallerEq, n);
+
+        Deque<Integer> st = new ArrayDeque<>();
+
+        // prevGreater: previous index with value > arr[i]
+        for (int i = 0; i < n; ++i) {
+            while (!st.isEmpty() && arr[st.peek()] <= arr[i]) st.pop();
+            prevGreater[i] = st.isEmpty() ? -1 : st.peek();
+            st.push(i);
+        }
+
+        st.clear();
+        // nextGreaterEq: next index with value >= arr[i]
+        for (int i = n - 1; i >= 0; --i) {
+            while (!st.isEmpty() && arr[st.peek()] < arr[i]) st.pop();
+            nextGreaterEq[i] = st.isEmpty() ? n : st.peek();
+            st.push(i);
+        }
+
+        st.clear();
+        // prevSmaller: previous index with value < arr[i]
+        for (int i = 0; i < n; ++i) {
+            while (!st.isEmpty() && arr[st.peek()] >= arr[i]) st.pop();
+            prevSmaller[i] = st.isEmpty() ? -1 : st.peek();
+            st.push(i);
+        }
+
+        st.clear();
+        // nextSmallerEq: next index with value <= arr[i]
+        for (int i = n - 1; i >= 0; --i) {
+            while (!st.isEmpty() && arr[st.peek()] > arr[i]) st.pop();
+            nextSmallerEq[i] = st.isEmpty() ? n : st.peek();
+            st.push(i);
+        }
+
+        long total = 0L;
+        for (int i = 0; i < n; ++i) {
+            long maxCount = (long)(i - prevGreater[i]) * (nextGreaterEq[i] - i);
+            long minCount = (long)(i - prevSmaller[i]) * (nextSmallerEq[i] - i);
+            total += (long)arr[i] * (maxCount - minCount);
+        }
+
+        return (int) total;
+    }
+}
