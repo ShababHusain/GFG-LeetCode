@@ -1,0 +1,38 @@
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+class Solution {
+    public int maxPeople(int[] arr) {
+        int n = arr.length;
+        int[] prevGE = new int[n];   // nearest index to left with value >= arr[i]
+        int[] nextGE = new int[n];   // nearest index to right with value >= arr[i]
+
+        Deque<Integer> st = new ArrayDeque<>();
+
+        // prevGE: left to right
+        for (int i = 0; i < n; ++i) {
+            while (!st.isEmpty() && arr[st.peek()] < arr[i]) {
+                st.pop();
+            }
+            prevGE[i] = st.isEmpty() ? -1 : st.peek();
+            st.push(i);
+        }
+
+        // nextGE: right to left
+        st.clear();
+        for (int i = n - 1; i >= 0; --i) {
+            while (!st.isEmpty() && arr[st.peek()] < arr[i]) {
+                st.pop();
+            }
+            nextGE[i] = st.isEmpty() ? n : st.peek();
+            st.push(i);
+        }
+
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            int visible = nextGE[i] - prevGE[i] - 1; // includes self
+            if (visible > ans) ans = visible;
+        }
+        return ans;
+    }
+}
