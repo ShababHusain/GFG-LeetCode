@@ -1,0 +1,115 @@
+import java.util.PriorityQueue;
+
+public class Solution {
+    private static class Pair {
+        long sum;
+        int idx; // Index of the left element
+        Pair(long s, int i) { sum = s; idx = i; }
+    }
+
+    public int minimumPairRemoval(int[] nums) {
+        int n = nums.length;
+        if (n <= 1) return 0;
+
+        // 1. Data Structures for Doubly Linked List Simulation
+        long[] val = new long[n];
+        int[] left = new int[n];
+        int[] right = new int[n];
+        boolean[] alive = new boolean[n];
+        
+        // isInv[i] is true if val[i] > val[right[i]] (an inversion starting at i)
+        boolean[] isInv = new boolean[n];
+        int invCount = 0;
+
+        // 2. Initialization
+        for (int i = 0; i < n; ++i) {
+            val[i] = nums[i];
+            left[i] = i - 1;
+            right[i] = i + 1;
+            alive[i] = true;
+            isInv[i] = false;
+        }
+
+        // Count initial inversions
+        for (int i = 0; i < n - 1; ++i) {
+            if (val[i] > val[i + 1]) {
+                isInv[i] = true;
+                invCount++;
+            }
+        }
+        
+        // If already sorted, return 0
+        if (invCount == 0) return 0;
+
+        // 3. Priority Queue: Orders by Sum (asc), then Index (asc) for leftmost tie-break
+        PriorityQueue<Pair> pq = new PriorityQueue<>((a, b) -> {
+            if (a.sum != b.sum) return Long.compare(a.sum, b.sum);
+            return Integer.compare(a.idx, b.idx);
+        });
+
+        for (int i = 0; i < n - 1; ++i) {
+            pq.offer(new Pair(val[i] + val[i + 1], i));
+        }
+
+        int ops = 0;
+        
+        // 4. Simulation Loop
+        while (invCount > 0 && !pq.isEmpty()) {
+            Pair top = pq.poll();
+            int i = top.idx;
+            
+            // --- VALIDATION CHECKS ---
+            // 1. Check if 'i' is still part of the list
+            if (!alive[i]) continue;
+            
+            // 2. Get current right neighbor
+            int j = right[i];
+            if (j >= n || !alive[j]) continue;
+            
+            // 3. CRITICAL FIX: Check if the sum in PQ matches current reality.
+            // If neighbors changed values (due to other merges), this entry is stale.
+            if (top.sum != val[i] + val[j]) continue;
+
+            // --- PERFORM MERGE ---
+            int L = left[i];
+            int R = right[j];
+
+            // 1. Unset old inversion flags for affected nodes (L, i, j)
+            // We remove their contribution to invCount before changing values
+            if (L >= 0 && isInv[L]) { isInv[L] = false; invCount--; }
+            if (isInv[i]) { isInv[i] = false; invCount--; }
+            if (isInv[j]) { isInv[j] = false; invCount--; } // j is being removed, so its inv is gone
+
+            // 2. Merge j into i
+            val[i] = val[i] + val[j];
+            alive[j] = false;
+
+            // 3. Relink
+            right[i] = R;
+            if (R < n) left[R] = i;
+            // (left[i] remains L)
+
+            // 4. Update Inversion Status for new setup
+            // Check (L, i)
+            if (L >= 0 && val[L] > val[i]) {
+                isInv[L] = true; 
+                invCount++;
+            }
+            // Check (i, R)
+            if (R < n && val[i] > val[R]) {
+                isInv[i] = true; 
+                invCount++;
+            }
+
+            // 5. Push new pairs to PQ
+            // New pair (L, i)
+            if (L >= 0) pq.offer(new Pair(val[L] + val[i], L));
+            // New pair (i, R)
+            if (R < n) pq.offer(new Pair(val[i] + val[R], i));
+
+            ops++;
+        }
+
+        return ops;
+    }
+}
