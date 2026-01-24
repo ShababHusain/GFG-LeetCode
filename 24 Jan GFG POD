@@ -1,0 +1,10 @@
+class Solution {
+    public int josephus(int n, int k) {
+        // code here
+        int res = 0; // 0-based result for i = 1
+        for (int i = 2; i <= n; ++i) {
+            res = (res + k) % i;
+        }
+        return res + 1; // convert to 1-based
+    }
+}
