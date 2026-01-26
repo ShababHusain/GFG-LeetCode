@@ -1,0 +1,29 @@
+class Solution {
+    public static ArrayList<ArrayList<Integer>> permuteDist(int[] arr) {
+        ArrayList<ArrayList<Integer>> res = new ArrayList<>();
+        if (arr == null) return res;
+        backtrack(arr, 0, res);
+        return res;
+    }
+
+    private static void backtrack(int[] arr, int start, ArrayList<ArrayList<Integer>> res) {
+        if (start == arr.length) {
+            ArrayList<Integer> perm = new ArrayList<>(arr.length);
+            for (int v : arr) perm.add(v);
+            res.add(perm);
+            return;
+        }
+        for (int i = start; i < arr.length; ++i) {
+            swap(arr, start, i);
+            backtrack(arr, start + 1, res);
+            swap(arr, start, i); // backtrack
+        }
+    }
+
+    private static void swap(int[] a, int i, int j) {
+        if (i == j) return;
+        int tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+    }
+}
