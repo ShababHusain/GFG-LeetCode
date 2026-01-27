@@ -1,0 +1,41 @@
+class Solution {
+    public boolean isWordExist(char[][] mat, String word) {
+        if (word == null || word.length() == 0) return true;
+        int n = mat.length;
+        if (n == 0) return false;
+        int m = mat[0].length;
+        boolean[][] visited = new boolean[n][m];
+
+        for (int r = 0; r < n; ++r) {
+            for (int c = 0; c < m; ++c) {
+                if (mat[r][c] == word.charAt(0)) {
+                    if (dfs(mat, word, r, c, 0, visited)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean dfs(char[][] mat, String word, int r, int c, int idx, boolean[][] visited) {
+        if (idx == word.length() - 1) return true; // matched all chars
+        visited[r][c] = true;
+
+        int n = mat.length, m = mat[0].length;
+        int[] dr = {-1, 1, 0, 0};
+        int[] dc = {0, 0, -1, 1};
+
+        for (int k = 0; k < 4; ++k) {
+            int nr = r + dr[k], nc = c + dc[k];
+            if (nr >= 0 && nr < n && nc >= 0 && nc < m && !visited[nr][nc]
+                    && mat[nr][nc] == word.charAt(idx + 1)) {
+                if (dfs(mat, word, nr, nc, idx + 1, visited)) {
+                    visited[r][c] = false;
+                    return true;
+                }
+            }
+        }
+
+        visited[r][c] = false; // backtrack
+        return false;
+    }
+}
