@@ -1,0 +1,45 @@
+class Solution {
+    public int countSubset(int[] arr, int k) {
+        int n = arr.length;
+        int mid = n / 2;
+        int[] left = Arrays.copyOfRange(arr, 0, mid);
+        int[] right = Arrays.copyOfRange(arr, mid, n);
+
+        List<Long> leftSums = genSums(left);
+        List<Long> rightSums = genSums(right);
+
+        // Frequency map for right sums
+        HashMap<Long, Integer> freq = new HashMap<>();
+        for (Long s : rightSums) {
+            freq.put(s, freq.getOrDefault(s, 0) + 1);
+        }
+
+        long ans = 0L;
+        long target = k;
+        for (Long s : leftSums) {
+            ans += freq.getOrDefault(target - s, 0);
+        }
+
+        return (int) ans;
+    }
+
+    // Generate all subset sums of the given array
+    private List<Long> genSums(int[] a) {
+        List<Long> sums = new ArrayList<>();
+        int m = a.length;
+        int total = 1 << m; // safe because m <= 20 (n <= 40)
+        for (int mask = 0; mask < total; mask++) {
+            long s = 0L;
+            int idx = 0;
+            int mm = mask;
+            while (mm != 0) {
+                if ((mm & 1) == 1) s += a[idx];
+                idx++;
+                mm >>= 1;
+            }
+            // if mm became 0 but idx < m, remaining bits are zero so no change
+            sums.add(s);
+        }
+        return sums;
+    }
+}
