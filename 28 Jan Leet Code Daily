@@ -1,0 +1,90 @@
+import java.util.*;
+
+class Solution {
+    public int minCost(int[][] grid, int k) {
+        int m = grid.length;
+        int n = grid[0].length;
+        int maxVal = 10000;
+
+        // currentDist[r][c] stores the min cost for the current teleportation level
+        int[] currentDist = new int[m * n];
+        Arrays.fill(currentDist, Integer.MAX_VALUE);
+        
+        // Initial state: Level 0 (no teleports used)
+        currentDist[0] = 0;
+        runDijkstra(currentDist, grid, m, n);
+        
+        int result = currentDist[m * n - 1];
+
+        // Process each subsequent teleportation layer
+        for (int t = 1; t <= k; t++) {
+            // 1. Calculate the 'entrance' cost for teleports.
+            // SuffixMin[v] = min cost of any cell (r,c) such that grid[r][c] >= v.
+            int[] suffixMin = new int[maxVal + 2];
+            Arrays.fill(suffixMin, Integer.MAX_VALUE);
+            for (int i = 0; i < m * n; i++) {
+                if (currentDist[i] != Integer.MAX_VALUE) {
+                    int val = grid[i / n][i % n];
+                    suffixMin[val] = Math.min(suffixMin[val], currentDist[i]);
+                }
+            }
+            for (int v = maxVal - 1; v >= 0; v--) {
+                suffixMin[v] = Math.min(suffixMin[v], suffixMin[v + 1]);
+            }
+
+            // 2. Start building the next layer
+            int[] nextDist = new int[m * n];
+            for (int i = 0; i < m * n; i++) {
+                int r = i / n, c = i % n;
+                // Cost to reach (r,c) in layer 't' is:
+                // min(stay in previous layer, teleport from a cell >= grid[r][c])
+                nextDist[i] = Math.min(currentDist[i], suffixMin[grid[r][c]]);
+            }
+
+            // 3. Run Dijkstra for normal moves within this layer
+            runDijkstra(nextDist, grid, m, n);
+            currentDist = nextDist;
+            result = Math.min(result, currentDist[m * n - 1]);
+        }
+
+        return result;
+    }
+
+    private void runDijkstra(int[] dist, int[][] grid, int m, int n) {
+        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[0]));
+        for (int i = 0; i < m * n; i++) {
+            if (dist[i] != Integer.MAX_VALUE) {
+                pq.offer(new int[]{dist[i], i});
+            }
+        }
+
+        while (!pq.isEmpty()) {
+            int[] curr = pq.poll();
+            int d = curr[0];
+            int idx = curr[1];
+
+            if (d > dist[idx]) continue;
+
+            int r = idx / n, c = idx % n;
+
+            // Down Move
+            if (r + 1 < m) {
+                int nr = r + 1, nc = c;
+                int nIdx = nr * n + nc;
+                if (d + grid[nr][nc] < dist[nIdx]) {
+                    dist[nIdx] = d + grid[nr][nc];
+                    pq.offer(new int[]{dist[nIdx], nIdx});
+                }
+            }
+            // Right Move
+            if (c + 1 < n) {
+                int nr = r, nc = c + 1;
+                int nIdx = nr * n + nc;
+                if (d + grid[nr][nc] < dist[nIdx]) {
+                    dist[nIdx] = d + grid[nr][nc];
+                    pq.offer(new int[]{dist[nIdx], nIdx});
+                }
+            }
+        }
+    }
+}
