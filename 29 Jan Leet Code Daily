@@ -1,0 +1,49 @@
+class Solution {
+    public long minimumCost(String source, String target, char[] original, char[] changed, int[] cost) {
+        final int ALPH = 26;
+        final long INF = (long)1e15;
+
+        // distance matrix: min cost to convert i -> j
+        long[][] dist = new long[ALPH][ALPH];
+        for (int i = 0; i < ALPH; ++i) {
+            for (int j = 0; j < ALPH; ++j) {
+                dist[i][j] = (i == j) ? 0L : INF;
+            }
+        }
+
+        // populate direct transformation costs (take minimum if multiple entries)
+        for (int k = 0; k < original.length; ++k) {
+            int u = original[k] - 'a';
+            int v = changed[k] - 'a';
+            dist[u][v] = Math.min(dist[u][v], (long) cost[k]);
+        }
+
+        // Floyd–Warshall to compute all-pairs minimum transformation costs
+        for (int k = 0; k < ALPH; ++k) {
+            for (int i = 0; i < ALPH; ++i) {
+                if (dist[i][k] == INF) continue;
+                for (int j = 0; j < ALPH; ++j) {
+                    if (dist[k][j] == INF) continue;
+                    long nd = dist[i][k] + dist[k][j];
+                    if (nd < dist[i][j]) dist[i][j] = nd;
+                }
+            }
+        }
+
+        // accumulate cost to convert source -> target
+        if (source.length() != target.length()) return -1;
+        long total = 0L;
+        int n = source.length();
+        for (int i = 0; i < n; ++i) {
+            char cs = source.charAt(i);
+            char ct = target.charAt(i);
+            if (cs == ct) continue;
+            long c = dist[cs - 'a'][ct - 'a'];
+            if (c >= INF) return -1;
+            total += c;
+            // guard against overflow (optional)
+            if (total < 0) return -1;
+        }
+        return total;
+    }
+}
