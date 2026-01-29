@@ -1,0 +1,27 @@
+class Solution {
+    public String firstNonRepeating(String s) {
+        int[] freq = new int[26]; // frequency of each character
+        Queue<Character> q = new LinkedList<>();
+        StringBuilder result = new StringBuilder();
+
+        for (char ch : s.toCharArray()) {
+            // update frequency
+            freq[ch - 'a']++;
+            // add to queue
+            q.add(ch);
+
+            // remove characters from front if they are repeating
+            while (!q.isEmpty() && freq[q.peek() - 'a'] > 1) {
+                q.poll();
+            }
+
+            // append result
+            if (q.isEmpty()) {
+                result.append('#');
+            } else {
+                result.append(q.peek());
+            }
+        }
+        return result.toString();
+    }
+}
