@@ -1,0 +1,103 @@
+class Solution {
+    private static final long INF = Long.MAX_VALUE / 2;
+
+    public long minimumCost(String source, String target, String[] original, String[] changed, int[] cost) {
+        int n = source.length();
+        Map<String, Integer> stringToId = new HashMap<>();
+        int idCounter = 0;
+
+        // 1. Map unique strings to IDs
+        for (String s : original) if (!stringToId.containsKey(s)) stringToId.put(s, idCounter++);
+        for (String s : changed) if (!stringToId.containsKey(s)) stringToId.put(s, idCounter++);
+
+        // 2. Build Distance Matrix
+        long[][] dist = new long[idCounter][idCounter];
+        for (int i = 0; i < idCounter; i++) {
+            Arrays.fill(dist[i], INF);
+            dist[i][i] = 0;
+        }
+
+        for (int i = 0; i < original.length; i++) {
+            int u = stringToId.get(original[i]);
+            int v = stringToId.get(changed[i]);
+            dist[u][v] = Math.min(dist[u][v], (long) cost[i]);
+        }
+
+        // 3. Floyd-Warshall to find min cost for all transformations
+        for (int k = 0; k < idCounter; k++) {
+            for (int i = 0; i < idCounter; i++) {
+                if (dist[i][k] == INF) continue;
+                for (int j = 0; j < idCounter; j++) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
+                }
+            }
+        }
+
+        // 4. Build Trie for fast substring matching
+        Trie trie = new Trie();
+        for (Map.Entry<String, Integer> entry : stringToId.entrySet()) {
+            trie.insert(entry.getKey(), entry.getValue());
+        }
+
+        // 5. DP to find min cost to convert prefix
+        long[] dp = new long[n + 1];
+        Arrays.fill(dp, INF);
+        dp[0] = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (dp[i] == INF) continue;
+
+            // Option 1: Characters match
+            if (source.charAt(i) == target.charAt(i)) {
+                dp[i + 1] = Math.min(dp[i + 1], dp[i]);
+            }
+
+            // Option 2: Substring transformation
+            List<int[]> sourceMatches = trie.getMatches(source, i);
+            List<int[]> targetMatches = trie.getMatches(target, i);
+
+            // Compare matches of the same length
+            for (int[] sMatch : sourceMatches) {
+                for (int[] tMatch : targetMatches) {
+                    if (sMatch[0] == tMatch[0]) { // Same length
+                        long c = dist[sMatch[1]][tMatch[1]];
+                        if (c < INF) {
+                            dp[i + sMatch[0]] = Math.min(dp[i + sMatch[0]], dp[i] + c);
+                        }
+                    }
+                }
+            }
+        }
+
+        return dp[n] >= INF ? -1 : dp[n];
+    }
+
+    class Trie {
+        class Node {
+            Node[] children = new Node[26];
+            int id = -1;
+        }
+        Node root = new Node();
+
+        void insert(String s, int id) {
+            Node curr = root;
+            for (char c : s.toCharArray()) {
+                int idx = c - 'a';
+                if (curr.children[idx] == null) curr.children[idx] = new Node();
+                curr = curr.children[idx];
+            }
+            curr.id = id;
+        }
+
+        List<int[]> getMatches(String s, int start) {
+            List<int[]> matches = new ArrayList<>();
+            Node curr = root;
+            for (int i = start; i < s.length(); i++) {
+                curr = curr.children[s.charAt(i) - 'a'];
+                if (curr == null) break;
+                if (curr.id != -1) matches.add(new int[]{i - start + 1, curr.id});
+            }
+            return matches;
+        }
+    }
+}
