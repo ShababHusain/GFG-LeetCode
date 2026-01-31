@@ -1,0 +1,93 @@
+class kQueues {
+    private final int[] arr;    // storage array
+    private final int[] front;  // front indices for each queue
+    private final int[] rear;   // rear indices for each queue
+    private final int[] next;   // next pointers (for queues and free list)
+    private int free;           // head of free list
+    private final int k;
+    private final int n;
+
+    kQueues(int n, int k) {
+        if (k <= 0 || n <= 0) throw new IllegalArgumentException("n and k must be positive");
+        if (k > n) throw new IllegalArgumentException("k cannot be greater than n");
+
+        this.n = n;
+        this.k = k;
+        arr = new int[n];
+        front = new int[k];
+        rear = new int[k];
+        next = new int[n];
+
+        // initialize all queues as empty
+        for (int i = 0; i < k; i++) {
+            front[i] = -1;
+            rear[i] = -1;
+        }
+
+        // initialize free list: 0 -> 1 -> 2 -> ... -> n-1 -> -1
+        for (int i = 0; i < n - 1; i++) {
+            next[i] = i + 1;
+        }
+        next[n - 1] = -1;
+        free = 0;
+    }
+
+    void enqueue(int x, int i) {
+        if (i < 0 || i >= k) throw new IllegalArgumentException("Queue index out of range");
+        if (isFull()) {
+            // array is full; cannot enqueue
+            return;
+        }
+
+        // take first free index
+        int idx = free;
+        free = next[idx]; // update free to next free slot
+
+        // insert element at index idx
+        arr[idx] = x;
+        next[idx] = -1; // will be the new tail
+
+        if (front[i] == -1) {
+            // queue was empty
+            front[i] = idx;
+            rear[i] = idx;
+        } else {
+            // link new element after current rear
+            next[rear[i]] = idx;
+            rear[i] = idx;
+        }
+    }
+
+    int dequeue(int i) {
+        if (i < 0 || i >= k) throw new IllegalArgumentException("Queue index out of range");
+        if (isEmpty(i)) {
+            return -1;
+        }
+
+        int idx = front[i];
+        int val = arr[idx];
+
+        // move front to next element
+        front[i] = next[idx];
+
+        // if queue becomes empty, update rear
+        if (front[i] == -1) {
+            rear[i] = -1;
+        }
+
+        // add index idx back to free list (push front)
+        next[idx] = free;
+        free = idx;
+
+        return val;
+    }
+
+    boolean isEmpty(int i) {
+        if (i < 0 || i >= k) throw new IllegalArgumentException("Queue index out of range");
+        return front[i] == -1;
+    }
+
+    boolean isFull() {
+        return free == -1;
+    }
+}
