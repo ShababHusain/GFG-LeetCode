@@ -1,0 +1,18 @@
+class Solution {
+    public int minimumCost(int[] nums) {
+        int n = nums.length;
+        // n >= 3 by constraints
+        // minLeftVal will track min value among nums[1..j-1] as we move j from 2..n-1
+        int minLeftVal = nums[1];
+        int best = Integer.MAX_VALUE;
+        // j is start index of third subarray; valid j from 2 to n-1
+        for (int j = 2; j <= n - 1; j++) {
+            // candidate cost using best i in [1..j-1] (minLeftVal) and j
+            int candidate = nums[0] + minLeftVal + nums[j];
+            if (candidate < best) best = candidate;
+            // update minLeftVal to include nums[j] for next iteration (next j will be larger)
+            if (nums[j] < minLeftVal) minLeftVal = nums[j];
+        }
+        return best;
+    }
+}
