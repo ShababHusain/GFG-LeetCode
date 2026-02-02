@@ -1,0 +1,68 @@
+class Solution {
+    private TreeMap<Integer, Integer> left = new TreeMap<>();
+    private TreeMap<Integer, Integer> right = new TreeMap<>();
+    private int leftCount = 0;
+    private long currentSum = 0;
+
+    public long minimumCost(int[] nums, int k, int dist) {
+        int n = nums.length;
+        int m = k - 1; // Number of elements we need to pick from the window
+        
+        // Initial window: indices [1, dist + 1]
+        for (int i = 1; i <= dist + 1; i++) {
+            add(nums[i], m);
+        }
+        
+        long minSum = currentSum;
+
+        // Slide the window through the rest of the array
+        for (int i = dist + 2; i < n; i++) {
+            remove(nums[i - dist - 1], m);
+            add(nums[i], m);
+            minSum = Math.min(minSum, currentSum);
+        }
+
+        return (long) nums[0] + minSum;
+    }
+
+    private void add(int val, int m) {
+        // Add to left initially
+        left.put(val, left.getOrDefault(val, 0) + 1);
+        currentSum += val;
+        leftCount++;
+
+        // If left exceeds size m, move the largest to right
+        if (leftCount > m) {
+            int maxLeft = left.lastKey();
+            removeFromMap(left, maxLeft);
+            currentSum -= maxLeft;
+            leftCount--;
+            right.put(maxLeft, right.getOrDefault(maxLeft, 0) + 1);
+        }
+    }
+
+    private void remove(int val, int m) {
+        if (left.containsKey(val)) {
+            removeFromMap(left, val);
+            currentSum -= val;
+            leftCount--;
+        } else {
+            removeFromMap(right, val);
+        }
+
+        // If left is too small, pull the smallest from right
+        if (leftCount < m && !right.isEmpty()) {
+            int minRight = right.firstKey();
+            removeFromMap(right, minRight);
+            left.put(minRight, left.getOrDefault(minRight, 0) + 1);
+            currentSum += minRight;
+            leftCount++;
+        }
+    }
+
+    private void removeFromMap(TreeMap<Integer, Integer> map, int val) {
+        int count = map.get(val);
+        if (count == 1) map.remove(val);
+        else map.put(val, count - 1);
+    }
+}
