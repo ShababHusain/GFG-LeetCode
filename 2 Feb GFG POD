@@ -1,0 +1,39 @@
+class Solution {
+    public int maxCircularSum(int arr[]) {
+        int n = arr.length;
+        if (n == 0) return 0;
+
+        // Standard Kadane for maximum subarray sum (non-empty)
+        int maxEndingHere = arr[0];
+        int maxSoFar = arr[0];
+
+        // Kadane variant for minimum subarray sum (non-empty)
+        int minEndingHere = arr[0];
+        int minSoFar = arr[0];
+
+        long total = arr[0];
+
+        for (int i = 1; i < n; i++) {
+            int x = arr[i];
+
+            // max subarray ending at i
+            maxEndingHere = Math.max(x, maxEndingHere + x);
+            maxSoFar = Math.max(maxSoFar, maxEndingHere);
+
+            // min subarray ending at i
+            minEndingHere = Math.min(x, minEndingHere + x);
+            minSoFar = Math.min(minSoFar, minEndingHere);
+
+            total += x;
+        }
+
+        // If all numbers are negative, maxSoFar is the maximum element (best non-empty subarray).
+        if (maxSoFar < 0) {
+            return maxSoFar;
+        }
+
+        // Otherwise consider wrap case: total - minSubarray
+        int wrapMax = (int)(total - minSoFar);
+        return Math.max(maxSoFar, wrapMax);
+    }
+}
