@@ -1,0 +1,30 @@
+class Solution {
+    public boolean isTrionic(int[] nums) {
+        int n = nums.length;
+        if (n < 3) return false;
+
+        int i = 0;
+        // left climb: need at least one increase, so move while next > current
+        while (i + 1 < n && nums[i + 1] > nums[i]) {
+            i++;
+        }
+        // p must be > 0 (left segment non-empty and had at least one increase)
+        if (i == 0) return false;
+
+        // middle descent: need at least one decrease
+        int p = i;
+        while (i + 1 < n && nums[i + 1] < nums[i]) {
+            i++;
+        }
+        // q must be > p (middle segment non-empty)
+        if (i == p) return false;
+
+        // right climb: need at least one increase and must reach end
+        int q = i;
+        while (i + 1 < n && nums[i + 1] > nums[i]) {
+            i++;
+        }
+        // q must be < n-1 (right segment non-empty) and we must have consumed to the end
+        return (q < n - 1) && (i == n - 1);
+    }
+}
