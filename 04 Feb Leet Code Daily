@@ -1,0 +1,74 @@
+class Solution {
+    public long maxSumTrionic(int[] nums) {
+        int n = nums.length;
+        long INF = (long) 4e18; 
+        
+        // 1. Prefix Sums
+        long[] S = new long[n];
+        S[0] = nums[0];
+        for (int i = 1; i < n; i++) S[i] = S[i - 1] + nums[i];
+
+        // 2. L_max[i]: Max sum of strictly increasing subarray ending at i
+        long[] L_max = new long[n];
+        for (int i = 0; i < n; i++) {
+            L_max[i] = nums[i];
+            if (i > 0 && nums[i] > nums[i - 1]) {
+                // Kadane: take previous only if it helps the sum
+                L_max[i] = Math.max((long)nums[i], (long)nums[i] + L_max[i - 1]);
+            }
+        }
+
+        // L_valid[p]: Max sum of strictly increasing subarray ending at p (length >= 2)
+        long[] L_valid = new long[n];
+        for (int i = 0; i < n; i++) {
+            if (i > 0 && nums[i] > nums[i - 1]) {
+                L_valid[i] = L_max[i - 1] + nums[i];
+            } else {
+                L_valid[i] = -INF;
+            }
+        }
+
+        // 3. R_max[i]: Max sum of strictly increasing subarray starting at i
+        long[] R_max = new long[n];
+        for (int i = n - 1; i >= 0; i--) {
+            R_max[i] = nums[i];
+            if (i < n - 1 && nums[i] < nums[i + 1]) {
+                R_max[i] = Math.max((long)nums[i], (long)nums[i] + R_max[i + 1]);
+            }
+        }
+
+        // R_valid[q]: Max sum of strictly increasing subarray starting at q (length >= 2)
+        long[] R_valid = new long[n];
+        for (int i = 0; i < n; i++) {
+            if (i < n - 1 && nums[i] < nums[i + 1]) {
+                R_valid[i] = (long)nums[i] + R_max[i + 1];
+            } else {
+                R_valid[i] = -INF;
+            }
+        }
+
+        // 4. Final Pass: Traverse and bridge with the decreasing segment
+        long maxTrionic = -INF;
+        long max_p_bridge = -INF; // Stores max(L_valid[p] - S[p])
+
+        for (int k = 0; k < n; k++) {
+            // Reset the peak-to-valley bridge if strict decrease is broken
+            if (k > 0 && nums[k - 1] <= nums[k]) {
+                max_p_bridge = -INF;
+            }
+
+            // Try treating k as the valley (q)
+            if (R_valid[k] != -INF && max_p_bridge != -INF) {
+                // Total = (L_valid[p] - S[p]) + R_valid[q] + S[q-1]
+                maxTrionic = Math.max(maxTrionic, max_p_bridge + R_valid[k] + S[k - 1]);
+            }
+
+            // Try treating k as the peak (p) for future valley candidates
+            if (L_valid[k] != -INF) {
+                max_p_bridge = Math.max(max_p_bridge, L_valid[k] - S[k]);
+            }
+        }
+
+        return maxTrionic;
+    }
+}
