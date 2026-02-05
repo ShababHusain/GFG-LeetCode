@@ -1,0 +1,18 @@
+class Solution {
+    public int maxOnes(int arr[], int k) {
+        if (arr == null || arr.length == 0) return 0;
+        int n = arr.length;
+        int left = 0;
+        int zeros = 0;
+        int best = 0;
+        for (int right = 0; right < n; right++) {
+            if (arr[right] == 0) zeros++;
+            while (zeros > k) {
+                if (arr[left] == 0) zeros--;
+                left++;
+            }
+            best = Math.max(best, right - left + 1);
+        }
+        return best;
+    }
+}
