@@ -1,0 +1,18 @@
+class Solution {
+    public int minRemoval(int[] nums, int k) {
+        if (nums == null || nums.length == 0) return 0;
+        Arrays.sort(nums);
+        int n = nums.length;
+        int r = 0;
+        int best = 1; // at least one element can remain
+
+        for (int l = 0; l < n; ++l) {
+            if (r < l) r = l;
+            while (r + 1 < n && (long) nums[r + 1] <= (long) k * nums[l]) {
+                r++;
+            }
+            best = Math.max(best, r - l + 1);
+        }
+        return n - best;
+    }
+}
