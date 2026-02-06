@@ -1,0 +1,47 @@
+class Solution {
+    int[] smallestDiff(int a[], int b[], int c[]) {
+        if (a == null || b == null || c == null) return new int[0];
+        if (a.length == 0 || b.length == 0 || c.length == 0) return new int[0];
+
+        Arrays.sort(a);
+        Arrays.sort(b);
+        Arrays.sort(c);
+
+        int i = 0, j = 0, k = 0;
+        int bestDiff = Integer.MAX_VALUE;
+        long bestSum = Long.MAX_VALUE; // use long to avoid overflow for large values
+        int bx = 0, by = 0, bz = 0;
+        boolean found = false;
+
+        while (i < a.length && j < b.length && k < c.length) {
+            int x = a[i], y = b[j], z = c[k];
+            int curMax = Math.max(x, Math.max(y, z));
+            int curMin = Math.min(x, Math.min(y, z));
+            int diff = curMax - curMin;
+            long sum = (long)x + y + z;
+
+            if (diff < bestDiff || (diff == bestDiff && sum < bestSum)) {
+                bestDiff = diff;
+                bestSum = sum;
+                bx = x; by = y; bz = z;
+                found = true;
+            }
+
+            // advance the pointer at the minimum value
+            if (curMin == x) {
+                i++;
+            } else if (curMin == y) {
+                j++;
+            } else {
+                k++;
+            }
+        }
+
+        if (!found) return new int[0];
+
+        // return in decreasing order
+        int[] res = new int[] { bx, by, bz };
+        Arrays.sort(res); // ascending
+        return new int[] { res[2], res[1], res[0] }; // descending
+    }
+}
