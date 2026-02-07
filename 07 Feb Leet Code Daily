@@ -1,0 +1,17 @@
+class Solution {
+    public int minimumDeletions(String s) {
+        int dp = 0;       // minimum deletions so far
+        int countB = 0;   // number of 'b' seen so far
+
+        for (char ch : s.toCharArray()) {
+            if (ch == 'a') {
+                // Either delete this 'a' (dp + 1) or delete all previous 'b's (countB)
+                dp = Math.min(dp + 1, countB);
+            } else {
+                // It's 'b', no conflict, just count it
+                countB++;
+            }
+        }
+        return dp;
+    }
+}
