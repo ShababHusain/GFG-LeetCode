@@ -1,0 +1,26 @@
+class Solution {
+    public int kokoEat(int[] arr, int k) {
+        int max = 0;
+        for (int p : arr) max = Math.max(max, p);
+
+        int low = 1, high = max;
+        while (low < high) {
+            int mid = low + (high - low) / 2;
+            if (canFinish(arr, k, mid)) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return low;
+    }
+
+    private boolean canFinish(int[] arr, int k, int s) {
+        long hours = 0;
+        for (int p : arr) {
+            hours += (p + s - 1) / s; // ceil(p / s)
+            if (hours > k) return false; // early exit
+        }
+        return hours <= k;
+    }
+}
