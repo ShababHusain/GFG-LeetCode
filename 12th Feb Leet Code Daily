@@ -1,0 +1,31 @@
+class Solution {
+    public int longestBalanced(String s) {
+        int n = s.length();
+        if (n == 0) return 0;
+        int ans = 0;
+        char[] cs = s.toCharArray();
+
+        for (int i = 0; i < n; ++i) {
+            int[] counts = new int[26];
+            for (int j = i; j < n; ++j) {
+                counts[cs[j] - 'a']++;
+                if (isBalanced(counts)) {
+                    ans = Math.max(ans, j - i + 1);
+                }
+            }
+        }
+        return ans;
+    }
+
+    private boolean isBalanced(int[] counts) {
+        int freq = 0;
+        for (int c : counts) {
+            if (c != 0) {
+                if (freq == 0) freq = c;
+                else if (c != freq) return false;
+            }
+        }
+        return true;
+    }
+
+}
