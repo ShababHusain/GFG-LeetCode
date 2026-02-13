@@ -1,0 +1,96 @@
+import java.util.*;
+
+class Solution {
+    public int longestBalanced(String s) {
+        int n = s.length();
+        if (n == 0) return 0;
+
+        // 1) longest run of a single character (d = 1)
+        int maxRun = 1;
+        int run = 1;
+        for (int i = 1; i < n; ++i) {
+            if (s.charAt(i) == s.charAt(i - 1)) {
+                run++;
+            } else {
+                maxRun = Math.max(maxRun, run);
+                run = 1;
+            }
+        }
+        maxRun = Math.max(maxRun, run);
+
+        // Prefix counts pa, pb, pc for indices 0..n
+        int pa = 0, pb = 0, pc = 0;
+        int ans = maxRun;
+
+        // Maps for different cases:
+        // d = 3 (all three present and equal): key = (pa-pb, pa-pc)
+        HashMap<Long, Integer> mapAllThree = new HashMap<>();
+        // d = 2 cases (one char absent):
+        // absent 'c': key = (pc, pa-pb)
+        HashMap<Long, Integer> mapNoC = new HashMap<>();
+        // absent 'a': key = (pa, pb-pc)
+        HashMap<Long, Integer> mapNoA = new HashMap<>();
+        // absent 'b': key = (pb, pa-pc)
+        HashMap<Long, Integer> mapNoB = new HashMap<>();
+
+        // helper to pack two ints into a long key
+        final int OFFSET = n + 5; // ensure non-overlap, safe shift
+        // Start with prefix index 0
+        long keyAll = pack(pa - pb, pa - pc);
+        mapAllThree.put(keyAll, 0);
+        long keyNoC = pack(pc, pa - pb);
+        mapNoC.put(keyNoC, 0);
+        long keyNoA = pack(pa, pb - pc);
+        mapNoA.put(keyNoA, 0);
+        long keyNoB = pack(pb, pa - pc);
+        mapNoB.put(keyNoB, 0);
+
+        for (int i = 1; i <= n; ++i) {
+            char ch = s.charAt(i - 1);
+            if (ch == 'a') pa++;
+            else if (ch == 'b') pb++;
+            else pc++;
+
+            // d = 3: all three equal -> (pa-pb, pa-pc) same at two prefix indices
+            keyAll = pack(pa - pb, pa - pc);
+            if (mapAllThree.containsKey(keyAll)) {
+                ans = Math.max(ans, i - mapAllThree.get(keyAll));
+            } else {
+                mapAllThree.put(keyAll, i);
+            }
+
+            // d = 2: absent 'c' -> pc same and pa-pb same
+            keyNoC = pack(pc, pa - pb);
+            if (mapNoC.containsKey(keyNoC)) {
+                ans = Math.max(ans, i - mapNoC.get(keyNoC));
+            } else {
+                mapNoC.put(keyNoC, i);
+            }
+
+            // absent 'a' -> pa same and pb-pc same
+            keyNoA = pack(pa, pb - pc);
+            if (mapNoA.containsKey(keyNoA)) {
+                ans = Math.max(ans, i - mapNoA.get(keyNoA));
+            } else {
+                mapNoA.put(keyNoA, i);
+            }
+
+            // absent 'b' -> pb same and pa-pc same
+            keyNoB = pack(pb, pa - pc);
+            if (mapNoB.containsKey(keyNoB)) {
+                ans = Math.max(ans, i - mapNoB.get(keyNoB));
+            } else {
+                mapNoB.put(keyNoB, i);
+            }
+        }
+
+        return ans;
+    }
+
+    // pack two ints into a long (handles negatives)
+    private long pack(int x, int y) {
+        return (((long)x) << 32) ^ (y & 0xffffffffL);
+    }
+
+   
+}
