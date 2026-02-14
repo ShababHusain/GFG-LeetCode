@@ -1,0 +1,43 @@
+class Solution {
+    // Returns minimum time to paint all boards with k painters
+    public long minTime(int[] arr, int k) {
+        int n = arr.length;
+        long lo = 0;       // at least the longest single board
+        long hi = 0;       // at most sum of all boards
+        for (int v : arr) {
+            lo = Math.max(lo, v);
+            hi += v;
+        }
+
+        long ans = hi;
+        while (lo <= hi) {
+            long mid = lo + ((hi - lo) >> 1);
+            if (canPaintWithin(arr, k, mid)) {
+                ans = mid;
+                hi = mid - 1;
+            } else {
+                lo = mid + 1;
+            }
+        }
+        return ans;
+    }
+
+    // Check if we can paint all boards using at most k painters
+    // when each painter can paint up to 'limit' total length.
+    private boolean canPaintWithin(int[] arr, int k, long limit) {
+        long current = 0;
+        int painters = 1; // start with first painter
+        for (int v : arr) {
+            if (current + v <= limit) {
+                current += v;
+            } else {
+                // need a new painter
+                painters++;
+                current = v;
+                if (painters > k) return false;
+            }
+        }
+        return true;
+    }
+
+}
