@@ -1,0 +1,22 @@
+class Solution {
+    static boolean canAttend(int[][] arr) {
+        if (arr == null || arr.length <= 1) return true;
+
+        // Sort by start time, then by end time
+        Arrays.sort(arr, new Comparator<int[]>() {
+            public int compare(int[] a, int[] b) {
+                if (a[0] != b[0]) return Integer.compare(a[0], b[0]);
+                return Integer.compare(a[1], b[1]);
+            }
+        });
+
+        // Check for any overlap between consecutive meetings
+        for (int i = 1; i < arr.length; i++) {
+            int prevEnd = arr[i - 1][1];
+            int curStart = arr[i][0];
+            if (curStart < prevEnd) return false; // overlap detected
+        }
+        return true;
+    }
+
+}
