@@ -1,0 +1,29 @@
+class Solution {
+    public static int overlapInt(int[][] arr) {
+        if (arr == null || arr.length == 0) return 0;
+        int n = arr.length;
+        int[] starts = new int[n];
+        int[] ends = new int[n];
+        for (int i = 0; i < n; ++i) {
+            starts[i] = arr[i][0];
+            ends[i] = arr[i][1];
+        }
+        Arrays.sort(starts);
+        Arrays.sort(ends);
+
+        int i = 0, j = 0;
+        int current = 0, maxOverlap = 0;
+        while (i < n) {
+            if (starts[i] <= ends[j]) {   // inclusive: start at same time as end counts as overlap
+                current++;
+                if (current > maxOverlap) maxOverlap = current;
+                i++;
+            } else {
+                current--;
+                j++;
+            }
+        }
+        return maxOverlap;
+    }
+
+}
