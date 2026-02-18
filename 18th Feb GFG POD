@@ -1,0 +1,45 @@
+class Solution {
+    static int inversionCount(int arr[]) {
+        if (arr == null || arr.length <= 1) return 0;
+        int n = arr.length;
+        int[] temp = new int[n];
+        long count = mergeSortCount(arr, temp, 0, n - 1);
+        // Note: the method signature returns int. If the true inversion count can exceed Integer.MAX_VALUE,
+        // change the return type to long. Here we cast to int to match the given signature.
+        return (int) count;
+    }
+
+    private static long mergeSortCount(int[] a, int[] temp, int left, int right) {
+        if (left >= right) return 0L;
+        int mid = left + (right - left) / 2;
+        long cnt = 0L;
+        cnt += mergeSortCount(a, temp, left, mid);
+        cnt += mergeSortCount(a, temp, mid + 1, right);
+        cnt += mergeAndCount(a, temp, left, mid, right);
+        return cnt;
+    }
+
+    private static long mergeAndCount(int[] a, int[] temp, int left, int mid, int right) {
+        int i = left;      // pointer for left half
+        int j = mid + 1;   // pointer for right half
+        int k = left;      // pointer for temp
+        long invCount = 0L;
+
+        while (i <= mid && j <= right) {
+            if (a[i] <= a[j]) {
+                temp[k++] = a[i++];
+            } else {
+                // a[i] > a[j] -> all remaining a[i..mid] are > a[j]
+                temp[k++] = a[j++];
+                invCount += (long)(mid - i + 1);
+            }
+        }
+        while (i <= mid) temp[k++] = a[i++];
+        while (j <= right) temp[k++] = a[j++];
+
+        // copy back
+        for (int p = left; p <= right; p++) a[p] = temp[p];
+        return invCount;
+    }
+
+}
