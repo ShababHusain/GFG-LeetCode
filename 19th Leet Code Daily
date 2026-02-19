@@ -1,0 +1,22 @@
+class Solution {
+    public int countBinarySubstrings(String s) {
+        if (s == null || s.length() < 2) return 0;
+        int prevRun = 0;      // length of previous run
+        int curRun = 1;       // length of current run (at least 1)
+        int result = 0;
+        for (int i = 1; i < s.length(); i++) {
+            if (s.charAt(i) == s.charAt(i - 1)) {
+                curRun++;
+            } else {
+                // run ended: add contribution from prevRun and curRun
+                result += Math.min(prevRun, curRun);
+                prevRun = curRun;
+                curRun = 1;
+            }
+        }
+        // final contribution between last two runs
+        result += Math.min(prevRun, curRun);
+        return result;
+    }
+
+}
