@@ -1,0 +1,30 @@
+class Solution {
+    public String makeLargestSpecial(String s) {
+        // Base case: very short strings can't be decomposed further
+        if (s.length() <= 2) return s;
+
+        List<String> components = new ArrayList<>();
+        int balance = 0;
+        int start = 0;
+
+        // Step 1: Split the string into top-level special substrings
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '1') balance++;
+            else balance--;
+
+            if (balance == 0) {
+                // This is an atomic special string: 1 + {inner} + 0
+                // We recursively solve for the {inner} part
+                String inner = s.substring(start + 1, i);
+                components.add("1" + makeLargestSpecial(inner) + "0");
+                start = i + 1;
+            }
+        }
+
+        // Step 2: Sort components in descending order to get the largest lexicographical result
+        Collections.sort(components, Collections.reverseOrder());
+
+        // Step 3: Join and return
+        return String.join("", components);
+    }
+}
