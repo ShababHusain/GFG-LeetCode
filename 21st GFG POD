@@ -1,0 +1,20 @@
+class Solution {
+    public int hIndex(int[] citations) {
+        if (citations == null || citations.length == 0) return 0;
+        int n = citations.length;
+        int[] buckets = new int[n + 1]; // buckets[i] = #papers with exactly i citations; buckets[n] = #papers with >= n citations
+
+        for (int c : citations) {
+            if (c >= n) buckets[n]++;
+            else buckets[c]++;
+        }
+
+        int count = 0; // number of papers with citations >= current i
+        for (int i = n; i >= 0; i--) {
+            count += buckets[i];
+            if (count >= i) return i;
+        }
+        return 0;
+    }
+
+}
