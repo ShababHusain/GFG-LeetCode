@@ -1,0 +1,19 @@
+class Solution {
+    public long subarrayXor(int arr[], int k) {
+        if (arr == null || arr.length == 0) return 0L;
+
+        HashMap<Integer, Integer> freq = new HashMap<>();
+        freq.put(0, 1); // empty prefix xor
+
+        int px = 0;
+        long count = 0L;
+
+        for (int v : arr) {
+            px ^= v;
+            int need = px ^ k; // previous prefix y such that px ^ y == k
+            count += freq.getOrDefault(need, 0);
+            freq.put(px, freq.getOrDefault(px, 0) + 1);
+        }
+        return count;
+    }
+}
