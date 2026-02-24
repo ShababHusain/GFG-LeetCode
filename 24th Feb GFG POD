@@ -1,0 +1,24 @@
+class Solution {
+    public int equalSumSpan(int[] a1, int[] a2) {
+        int n = a1.length;
+        HashMap<Integer, Integer> firstIndex = new HashMap<>();
+        int diff = 0;
+        int maxLen = 0;
+
+        for (int i = 0; i < n; i++) {
+            diff += (a1[i] - a2[i]);
+
+            if (diff == 0) {
+                // span from 0..i
+                maxLen = Math.max(maxLen, i + 1);
+            } else if (firstIndex.containsKey(diff)) {
+                int prev = firstIndex.get(diff);
+                maxLen = Math.max(maxLen, i - prev);
+            } else {
+                // store first occurrence of this diff
+                firstIndex.put(diff, i);
+            }
+        }
+        return maxLen;
+    }
+}
