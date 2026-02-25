@@ -1,0 +1,33 @@
+class Solution {
+    public int longestSubarray(int[] arr, int k) {
+        int n = arr.length;
+        // prefix sums of transformed array (+1 if >k, else -1)
+        int[] P = new int[n + 1];
+        P[0] = 0;
+        for (int i = 1; i <= n; ++i) {
+            int val = (arr[i - 1] > k) ? 1 : -1;
+            P[i] = P[i - 1] + val;
+        }
+
+        // stack of indices with strictly decreasing prefix values
+        Deque<Integer> stack = new ArrayDeque<>();
+        for (int i = 0; i <= n; ++i) {
+            if (stack.isEmpty() || P[i] < P[stack.peekLast()]) {
+                stack.addLast(i);
+            }
+        }
+
+        int maxLen = 0;
+        // traverse from right to left to maximize j - i where P[j] > P[i]
+        for (int j = n; j >= 0; --j) {
+            while (!stack.isEmpty() && P[j] > P[stack.peekLast()]) {
+                int i = stack.removeLast();
+                maxLen = Math.max(maxLen, j - i);
+            }
+            if (stack.isEmpty()) break;
+        }
+
+        return maxLen;
+    }
+
+}
