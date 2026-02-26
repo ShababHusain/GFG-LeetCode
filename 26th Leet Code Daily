@@ -1,0 +1,38 @@
+class Solution {
+    public int numSteps(String s) {
+        int n = s.length();
+        if (n == 1) return 0; // already "1"
+
+        int steps = 0;
+        int carry = 0; // 0 or 1
+
+        // process from least significant bit to the second-most-significant (index 1)
+        for (int i = n - 1; i >= 1; --i) {
+            char bit = s.charAt(i);
+            if (bit == '0') {
+                if (carry == 0) {
+                    // even, just divide by 2
+                    steps += 1;
+                } else {
+                    // effectively 1 due to carry: add then divide
+                    steps += 2;
+                }
+            } else { // bit == '1'
+                if (carry == 0) {
+                    // odd: add (creates carry) then divide
+                    steps += 2;
+                    carry = 1;
+                } else {
+                    // 1 + carry = 0 (with carry still 1), then divide
+                    steps += 1;
+                    // carry remains 1
+                }
+            }
+        }
+
+        // if there's a leftover carry, it turns leading 1 into "10" -> one more divide
+        if (carry == 1) steps += 1;
+
+        return steps;
+    }
+}
