@@ -1,0 +1,24 @@
+class Solution {
+    public boolean areIsomorphic(String s1, String s2) {
+        if (s1.length() != s2.length()) return false;
+
+        // only lowercase letters per problem statement
+        int[] mapS = new int[26]; // s1 char -> s2 char (store index+1)
+        int[] mapT = new int[26]; // s2 char -> s1 char (store index+1)
+
+        for (int i = 0; i < s1.length(); i++) {
+            int c1 = s1.charAt(i) - 'a';
+            int c2 = s2.charAt(i) - 'a';
+
+            if (mapS[c1] == 0 && mapT[c2] == 0) {
+                mapS[c1] = c2 + 1;
+                mapT[c2] = c1 + 1;
+            } else {
+                if (mapS[c1] != c2 + 1 || mapT[c2] != c1 + 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
