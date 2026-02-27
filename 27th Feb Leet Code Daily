@@ -1,0 +1,67 @@
+import java.util.*;
+
+class Solution {
+    public int minOperations(String s, int k) {
+        int n = s.length();
+        int zeros = 0;
+        for (char c : s.toCharArray()) if (c == '0') zeros++;
+
+        if (zeros == 0) return 0;
+
+        // BFS on states 0..n (number of zeros)
+        // Precompute feasible t range function:
+        // t_min = max(0, k - ones) where ones = n - z
+        // t_max = min(k, z)
+        // reachable z' in [z + k - 2*t_max, z + k - 2*t_min] with step 2
+
+        // Two TreeSets for unvisited states by parity
+        TreeSet<Integer> even = new TreeSet<>();
+        TreeSet<Integer> odd = new TreeSet<>();
+        for (int i = 0; i <= n; ++i) {
+            if (i == zeros) continue; // start state will be visited first
+            if ((i & 1) == 0) even.add(i);
+            else odd.add(i);
+        }
+
+        Queue<Integer> q = new ArrayDeque<>();
+        boolean[] visited = new boolean[n + 1];
+        q.add(zeros);
+        visited[zeros] = true;
+        int steps = 0;
+
+        while (!q.isEmpty()) {
+            int sz = q.size();
+            for (int qi = 0; qi < sz; ++qi) {
+                int z = q.poll();
+                if (z == 0) return steps;
+
+                int ones = n - z;
+                int tMin = Math.max(0, k - ones);
+                int tMax = Math.min(k, z);
+                if (tMin > tMax) continue; // no valid t, no moves
+
+                int low = z + k - 2 * tMax;
+                int high = z + k - 2 * tMin;
+                if (low > high) continue;
+
+                // parity of reachable states equals parity of (z + k)
+                int parity = (z + k) & 1;
+                TreeSet<Integer> set = (parity == 0) ? even : odd;
+
+                Integer cur = set.ceiling(low);
+                while (cur != null && cur <= high) {
+                    // visit cur
+                    visited[cur] = true;
+                    q.add(cur);
+                    // remove from set so we don't revisit
+                    set.remove(cur);
+                    cur = set.ceiling(low);
+                }
+            }
+            steps++;
+        }
+
+        return -1; // unreachable
+    }
+
+}
