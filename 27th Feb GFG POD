@@ -1,0 +1,31 @@
+class Solution {
+    public int countSquare(int[][] mat, int x) {
+        int n = mat.length;
+        if (n == 0) return 0;
+        int m = mat[0].length;
+        int maxLen = Math.min(n, m);
+
+        // 1-based prefix sums, use long to avoid overflow
+        long[][] P = new long[n + 1][m + 1];
+        for (int i = 1; i <= n; ++i) {
+            long rowSum = 0;
+            for (int j = 1; j <= m; ++j) {
+                rowSum += mat[i - 1][j - 1];
+                P[i][j] = P[i - 1][j] + rowSum;
+            }
+        }
+
+        int count = 0;
+        for (int len = 1; len <= maxLen; ++len) {
+            for (int i = 1; i + len - 1 <= n; ++i) {
+                int r2 = i + len - 1;
+                for (int j = 1; j + len - 1 <= m; ++j) {
+                    int c2 = j + len - 1;
+                    long sum = P[r2][c2] - P[i - 1][c2] - P[r2][j - 1] + P[i - 1][j - 1];
+                    if (sum == x) count++;
+                }
+            }
+        }
+        return count;
+    }
+}
