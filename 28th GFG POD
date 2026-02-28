@@ -1,0 +1,36 @@
+class Solution {
+    public static ArrayList<Integer> findClosestPair(int arr1[], int arr2[], int x) {
+        int n = arr1.length;
+        int m = arr2.length;
+        int i = 0;
+        int j = m - 1;
+
+        long bestDiff = Long.MAX_VALUE;
+        int bestA = arr1[0];
+        int bestB = arr2[0];
+
+        while (i < n && j >= 0) {
+            long sum = (long) arr1[i] + (long) arr2[j];
+            long diff = Math.abs(sum - x);
+
+            if (diff < bestDiff) {
+                bestDiff = diff;
+                bestA = arr1[i];
+                bestB = arr2[j];
+                if (bestDiff == 0) break; // exact match
+            }
+
+            if (sum > x) {
+                j--;
+            } else {
+                i++;
+            }
+        }
+
+        ArrayList<Integer> result = new ArrayList<>();
+        result.add(bestA);
+        result.add(bestB);
+        return result;
+    }
+
+}
