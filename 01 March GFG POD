@@ -1,0 +1,18 @@
+class Solution {
+    void pushZerosToEnd(int[] arr) {
+        if (arr == null || arr.length <= 1) return;
+
+        int write = 0; // next position to place a non-zero element
+        for (int read = 0; read < arr.length; ++read) {
+            if (arr[read] != 0) {
+                // swap only when read and write are different to avoid unnecessary writes
+                if (read != write) {
+                    int tmp = arr[write];
+                    arr[write] = arr[read];
+                    arr[read] = tmp;
+                }
+                write++;
+            }
+        }
+    }
+}
