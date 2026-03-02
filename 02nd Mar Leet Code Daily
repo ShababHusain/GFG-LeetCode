@@ -1,0 +1,34 @@
+class Solution {
+    public int minSwaps(int[][] grid) {
+        int n = grid.length;
+        int[] rightmost = new int[n];
+
+        // compute rightmost 1 index for each row (-1 if none)
+        for (int r = 0; r < n; ++r) {
+            int idx = -1;
+            for (int c = 0; c < n; ++c) {
+                if (grid[r][c] == 1) idx = c;
+            }
+            rightmost[r] = idx;
+        }
+
+        int swaps = 0;
+        // for each target row i, find a row j >= i with rightmost[j] <= i
+        for (int i = 0; i < n; ++i) {
+            int j = i;
+            while (j < n && rightmost[j] > i) j++;
+            if (j == n) return -1; // no suitable row found
+
+            // bring row j up to i by swapping adjacent rows
+            while (j > i) {
+                // swap rightmost[j] and rightmost[j-1]
+                int tmp = rightmost[j];
+                rightmost[j] = rightmost[j - 1];
+                rightmost[j - 1] = tmp;
+                j--;
+                swaps++;
+            }
+        }
+        return swaps;
+    }
+}
