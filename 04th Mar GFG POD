@@ -1,0 +1,20 @@
+class Solution {
+    public int maxSubarrayXOR(int[] arr, int k) {
+        if (arr == null || arr.length == 0) return 0;
+        int n = arr.length;
+        if (k <= 0 || k > n) throw new IllegalArgumentException("k must be in range 1..n");
+
+        // XOR of first k elements
+        int cur = 0;
+        for (int i = 0; i < k; ++i) cur ^= arr[i];
+
+        int maxXor = cur;
+        // Slide the window: for i = k .. n-1, window becomes arr[i-k+1 .. i]
+        for (int i = k; i < n; ++i) {
+            cur ^= arr[i - k]; // remove outgoing element
+            cur ^= arr[i];     // add incoming element
+            if (cur > maxXor) maxXor = cur;
+        }
+        return maxXor;
+    }
+}
