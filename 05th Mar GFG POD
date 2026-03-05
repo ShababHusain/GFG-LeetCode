@@ -1,0 +1,33 @@
+class Solution {
+    public int longestKSubstr(String s, int k) {
+        if (s == null || s.length() == 0 || k <= 0) return -1;
+        int n = s.length();
+        if (k > 26 || k > n) return -1;
+
+        int[] freq = new int[26];
+        int distinct = 0;
+        int left = 0;
+        int maxLen = -1;
+
+        for (int right = 0; right < n; right++) {
+            int r = s.charAt(right) - 'a';
+            if (freq[r] == 0) distinct++;
+            freq[r]++;
+
+            while (distinct > k) {
+                int l = s.charAt(left) - 'a';
+                freq[l]--;
+                if (freq[l] == 0) distinct--;
+                left++;
+            }
+
+            if (distinct == k) {
+                maxLen = Math.max(maxLen, right - left + 1);
+            }
+        }
+
+        return maxLen;
+    }
+
+
+}
