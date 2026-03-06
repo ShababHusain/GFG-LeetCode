@@ -1,0 +1,44 @@
+class Solution {
+    public static String minWindow(String s, String p) {
+        if (s == null || p == null || s.length() < p.length()) return "";
+
+        int[] need = new int[128];
+        for (char c : p.toCharArray()) need[c]++;
+
+        int required = p.length(); // total characters still needed (counts include duplicates)
+        int left = 0;
+        int minLen = Integer.MAX_VALUE;
+        int minStart = 0;
+        int[] window = new int[128];
+
+        for (int right = 0; right < s.length(); right++) {
+            char rc = s.charAt(right);
+            window[rc]++;
+            if (window[rc] <= need[rc]) {
+                // this occurrence contributes toward fulfilling p
+                required--;
+            }
+
+            // when all required characters are covered, try to shrink from left
+            while (required == 0) {
+                int curLen = right - left + 1;
+                if (curLen < minLen) {
+                    minLen = curLen;
+                    minStart = left;
+                }
+
+                char lc = s.charAt(left);
+                window[lc]--;
+                // if removing this char makes the window miss a needed char, increase required
+                if (window[lc] < need[lc]) {
+                    required++;
+                }
+                left++;
+            }
+        }
+
+        return (minLen == Integer.MAX_VALUE) ? "" : s.substring(minStart, minStart + minLen);
+    }
+
+ 
+}
