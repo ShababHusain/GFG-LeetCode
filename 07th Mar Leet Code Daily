@@ -1,0 +1,31 @@
+class Solution {
+    static int noOfWays(int m, int n, int x) {
+        // code here
+         if (x < n || x > n * m) return 0; // impossible sums
+
+        long[] dpPrev = new long[x + 1];
+        long[] dpCurr = new long[x + 1];
+        dpPrev[0] = 1; // 0 dice -> sum 0
+
+        for (int d = 1; d <= n; d++) {
+            java.util.Arrays.fill(dpCurr, 0);
+            int minS = d;
+            int maxS = Math.min(x, d * m);
+            for (int s = minS; s <= maxS; s++) {
+                long ways = 0;
+                for (int face = 1; face <= m; face++) {
+                    int prev = s - face;
+                    if (prev < 0) break;
+                    ways += dpPrev[prev];
+                }
+                dpCurr[s] = ways;
+            }
+            // swap references
+            long[] tmp = dpPrev;
+            dpPrev = dpCurr;
+            dpCurr = tmp;
+        }
+
+        return (int) dpPrev[x];
+    }
+};
