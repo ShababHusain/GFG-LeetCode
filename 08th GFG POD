@@ -1,0 +1,36 @@
+class Solution {
+    boolean pythagoreanTriplet(int[] arr) {
+        if (arr == null || arr.length < 3) return false;
+
+        final int MAXV = 1000; // given constraint
+        int[] freq = new int[MAXV + 1];
+        int maxVal = 0;
+        for (int v : arr) {
+            if (v >= 1 && v <= MAXV) {
+                freq[v]++;
+                if (v > maxVal) maxVal = v;
+            }
+        }
+
+        for (int a = 1; a <= maxVal; a++) {
+            if (freq[a] == 0) continue;
+            for (int b = a; b <= maxVal; b++) {
+                if (freq[b] == 0) continue;
+
+                int sum = a * a + b * b;
+                int c = (int) Math.sqrt(sum);
+                if (c > maxVal) continue;
+                if (c * c != sum) continue;
+                if (freq[c] == 0) continue;
+
+                // ensure distinct indices: if a == b need at least two occurrences
+                if (a == b && freq[a] < 2) continue;
+
+                // a, b, c exist at different indices (values >=1 guarantee c != a and c != b)
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
