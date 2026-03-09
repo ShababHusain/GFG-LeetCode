@@ -1,0 +1,55 @@
+class Solution {
+    private static final int MOD = 1_000_000_007;
+
+    public int numberOfStableArrays(int zero, int one, int limit) {
+        int Z = zero, O = one, L = limit;
+        // dp0[z][o][len] : ways ending with 0, trailing run length = len
+        // dp1[z][o][len] : ways ending with 1, trailing run length = len
+        int[][][] dp0 = new int[Z + 1][O + 1][L + 1];
+        int[][][] dp1 = new int[Z + 1][O + 1][L + 1];
+
+        // initial placements
+        if (Z >= 1) dp0[1][0][1] = 1;
+        if (O >= 1) dp1[0][1][1] = 1;
+
+        for (int z = 0; z <= Z; z++) {
+            for (int o = 0; o <= O; o++) {
+                // extend/switch from states ending with 0
+                for (int len = 1; len <= L; len++) {
+                    int ways = dp0[z][o][len];
+                    if (ways == 0) continue;
+                    // extend zeros
+                    if (z + 1 <= Z && len + 1 <= L) {
+                        dp0[z + 1][o][len + 1] = (int)((dp0[z + 1][o][len + 1] + ways) % MOD);
+                    }
+                    // switch to one
+                    if (o + 1 <= O) {
+                        dp1[z][o + 1][1] = (int)((dp1[z][o + 1][1] + ways) % MOD);
+                    }
+                }
+
+                // extend/switch from states ending with 1
+                for (int len = 1; len <= L; len++) {
+                    int ways = dp1[z][o][len];
+                    if (ways == 0) continue;
+                    // extend ones
+                    if (o + 1 <= O && len + 1 <= L) {
+                        dp1[z][o + 1][len + 1] = (int)((dp1[z][o + 1][len + 1] + ways) % MOD);
+                    }
+                    // switch to zero
+                    if (z + 1 <= Z) {
+                        dp0[z + 1][o][1] = (int)((dp0[z + 1][o][1] + ways) % MOD);
+                    }
+                }
+            }
+        }
+
+        long ans = 0;
+        for (int len = 1; len <= L; len++) {
+            ans += dp0[Z][O][len];
+            ans += dp1[Z][O][len];
+        }
+        ans %= MOD;
+        return (int) ans;
+    }
+}
