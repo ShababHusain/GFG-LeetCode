@@ -1,0 +1,89 @@
+class Solution {
+    private static final int MOD = 1_000_000_007;
+
+    public int numberOfStableArrays(int zero, int one, int limit) {
+        int maxN = zero + one;
+        long[] fact = new long[maxN + 1];
+        long[] invFact = new long[maxN + 1];
+        fact[0] = 1;
+        for (int i = 1; i <= maxN; i++) fact[i] = fact[i - 1] * i % MOD;
+        invFact[maxN] = modInverse(fact[maxN]);
+        for (int i = maxN - 1; i >= 0; i--) invFact[i] = invFact[i + 1] * (i + 1) % MOD;
+
+        java.util.function.BiFunction<Integer, Integer, Long> nCk = (n, k) -> {
+            if (k < 0 || k > n || n < 0) return 0L;
+            return fact[n] * invFact[k] % MOD * invFact[n - k] % MOD;
+        };
+
+        // compositions: number of ways to write N as k positive integers each <= U
+        java.util.function.Function<int[], Long> comp = params -> {
+            int N = params[0], k = params[1], U = params[2];
+            if (k <= 0) return 0L;
+            if (N < k) return 0L;
+            int S = N - k; // transform to nonnegative y_i summing to S with y_i <= U-1
+            int maxJ = S / U;
+            long res = 0;
+            for (int j = 0; j <= maxJ; j++) {
+                long chooseJ = nCk.apply(k, j);
+                int top = S - j * U + k - 1; // = N - j*U - 1
+                int bottom = k - 1;
+                long waysSplit = 0;
+                if (top >= bottom && bottom >= 0) waysSplit = nCk.apply(top, bottom);
+                long term = chooseJ * waysSplit % MOD;
+                if ((j & 1) == 1) res = (res - term + MOD) % MOD;
+                else res = (res + term) % MOD;
+            }
+            return res;
+        };
+
+        long ans = 0;
+
+        // Start with 0: zero-runs k0 = k1 or k1 + 1
+        for (int k1 = 1; k1 <= one; k1++) {
+            int k0 = k1;
+            if (k0 <= zero) {
+                long c0 = comp.apply(new int[]{zero, k0, limit});
+                long c1 = comp.apply(new int[]{one, k1, limit});
+                ans = (ans + c0 * c1) % MOD;
+            }
+            k0 = k1 + 1;
+            if (k0 <= zero) {
+                long c0 = comp.apply(new int[]{zero, k0, limit});
+                long c1 = comp.apply(new int[]{one, k1, limit});
+                ans = (ans + c0 * c1) % MOD;
+            }
+        }
+
+        // Start with 1: one-runs k1 = k0 or k0 + 1
+        for (int k0 = 1; k0 <= zero; k0++) {
+            int k1 = k0;
+            if (k1 <= one) {
+                long c0 = comp.apply(new int[]{zero, k0, limit});
+                long c1 = comp.apply(new int[]{one, k1, limit});
+                ans = (ans + c0 * c1) % MOD;
+            }
+            k1 = k0 + 1;
+            if (k1 <= one) {
+                long c0 = comp.apply(new int[]{zero, k0, limit});
+                long c1 = comp.apply(new int[]{one, k1, limit});
+                ans = (ans + c0 * c1) % MOD;
+            }
+        }
+
+        return (int) ans;
+    }
+
+    private long modPow(long a, long e) {
+        long r = 1;
+        while (e > 0) {
+            if ((e & 1) == 1) r = r * a % MOD;
+            a = a * a % MOD;
+            e >>= 1;
+        }
+        return r;
+    }
+
+    private long modInverse(long x) {
+        return modPow(x, MOD - 2);
+    }
+}
