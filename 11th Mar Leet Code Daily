@@ -1,0 +1,11 @@
+class Solution {
+    public int bitwiseComplement(int n) {
+        if (n == 0) return 1;
+
+        // highestOneBit gives 2^(floor(log2(n)))
+        int highest = Integer.highestOneBit(n);
+        // mask = (highest << 1) - 1 gives bits all 1 up to the MSB of n
+        int mask = (highest << 1) - 1;
+        return (~n) & mask;
+    }
+}
