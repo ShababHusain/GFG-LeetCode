@@ -1,0 +1,104 @@
+class Solution {
+    static class DSU {
+        int[] parent, rank;
+        DSU(int n) {
+            parent = new int[n];
+            rank = new int[n];
+            for (int i = 0; i < n; i++) parent[i] = i;
+        }
+        int find(int x) {
+            if (parent[x] != x) parent[x] = find(parent[x]);
+            return parent[x];
+        }
+        boolean union(int x, int y) {
+            int xr = find(x), yr = find(y);
+            if (xr == yr) return false;
+            if (rank[xr] < rank[yr]) parent[xr] = yr;
+            else if (rank[xr] > rank[yr]) parent[yr] = xr;
+            else {
+                parent[yr] = xr;
+                rank[xr]++;
+            }
+            return true;
+        }
+    }
+
+    public int maxStability(int n, int[][] edges, int k) {
+        // Step 0: Pre-check mandatory edges for cycles and compute minMandatory
+        DSU dsu0 = new DSU(n);
+        int minMandatory = Integer.MAX_VALUE;
+        boolean hasMandatory = false;
+        for (int[] e : edges) {
+            if (e[3] == 1) {
+                hasMandatory = true;
+                minMandatory = Math.min(minMandatory, e[2]);
+                if (!dsu0.union(e[0], e[1])) {
+                    // mandatory edges form a cycle -> impossible
+                    return -1;
+                }
+            }
+        }
+
+        int maxStrength = 0;
+        for (int[] e : edges) maxStrength = Math.max(maxStrength, e[2]);
+
+        int lo = 1;
+        int hi = hasMandatory ? minMandatory : maxStrength * 2;
+        int ans = -1;
+
+        // Binary search for maximum feasible stability
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (canBuild(n, edges, k, mid)) {
+                ans = mid;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        return ans;
+    }
+
+    private boolean canBuild(int n, int[][] edges, int k, int stability) {
+        DSU dsu = new DSU(n);
+        // Add mandatory edges first (they cannot be upgraded)
+        for (int[] e : edges) {
+            if (e[3] == 1) dsu.union(e[0], e[1]);
+        }
+
+        // Sort optional edges by strength descending to prefer stronger edges first
+        int[][] copy = new int[edges.length][4];
+        for (int i = 0; i < edges.length; i++) {
+            System.arraycopy(edges[i], 0, copy[i], 0, 4);
+        }
+        java.util.Arrays.sort(copy, (a, b) -> b[2] - a[2]);
+
+        int upgrades = 0;
+        // Use edges only if they connect different components
+        for (int[] e : copy) {
+            int u = e[0], v = e[1], s = e[2], must = e[3];
+            if (dsu.find(u) == dsu.find(v)) continue; // already connected, skip
+
+            if (must == 1) {
+                // mandatory edge connecting two components (should already be unioned above,
+                // but keep safe)
+                dsu.union(u, v);
+            } else {
+                if (s >= stability) {
+                    dsu.union(u, v);
+                } else if ((long)s * 2 >= stability && upgrades < k) {
+                    // eligible for upgrade and helps reach stability
+                    dsu.union(u, v);
+                    upgrades++;
+                }
+            }
+        }
+
+        // Check if all nodes are connected
+        int root = dsu.find(0);
+        for (int i = 1; i < n; i++) {
+            if (dsu.find(i) != root) return false;
+        }
+        return true;
+    }
+}
