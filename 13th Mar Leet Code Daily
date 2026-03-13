@@ -1,0 +1,41 @@
+class Solution {
+    public long minNumberOfSeconds(int mountainHeight, int[] workerTimes) {
+        long H = mountainHeight;
+        if (H == 0) return 0L;
+
+        int n = workerTimes.length;
+        long maxT = 0;
+        for (int t : workerTimes) maxT = Math.max(maxT, t);
+
+        // Upper bound: slowest worker does all H units
+        long sumUnitsIfOneWorker = H * (H + 1) / 2; // safe in long
+        long high = maxT * sumUnitsIfOneWorker;
+        long low = 0;
+
+        while (low < high) {
+            long mid = low + (high - low) / 2;
+            if (canDo(H, workerTimes, mid)) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return low;
+    }
+
+    private boolean canDo(long H, int[] workerTimes, long T) {
+        long total = 0;
+        for (int t : workerTimes) {
+            if (T < t) continue; // cannot complete even 1 unit
+            // Solve x such that t * x * (x + 1) / 2 <= T
+            // => x(x+1) <= 2 * (T / t)
+            double ratio = (double) T / (double) t;
+            double disc = 1.0 + 8.0 * ratio;
+            long x = (long) ((-1.0 + Math.sqrt(disc)) / 2.0);
+            if (x < 0) x = 0;
+            total += x;
+            if (total >= H) return true; // early exit
+        }
+        return total >= H;
+    }
+}
