@@ -1,0 +1,45 @@
+class Solution {
+    public String getHappyString(int n, int k) {
+        // total = 3 * 2^(n-1)
+        long total = 3L << Math.max(0, n - 1); // 3 * 2^(n-1)
+        if (k > total) return "";
+
+        StringBuilder sb = new StringBuilder();
+        long k0 = k - 1; // zero-based index
+
+        // block size for first character = 2^(n-1)
+        long block = 1L << Math.max(0, n - 1);
+
+        // first character choices: 'a','b','c'
+        char[] firstChoices = new char[]{'a', 'b', 'c'};
+        int idx = (int)(k0 / block);
+        sb.append(firstChoices[idx]);
+        k0 -= idx * block;
+
+        char prev = sb.charAt(0);
+        // for remaining positions, block halves each time
+        for (int pos = 1; pos < n; pos++) {
+            block >>= 1; // next block size = 2^(n-pos-1)
+            // two lexicographic choices excluding prev
+            char c1 = (prev == 'a') ? 'b' : 'a';
+            char c2;
+            // pick the other of the three letters that's not prev and not c1
+            if (prev == 'a') c2 = 'c';
+            else if (prev == 'b') c2 = 'c';
+            else c2 = 'b';
+
+            // ensure c1 < c2 lexicographically
+            if (c1 > c2) {
+                char tmp = c1; c1 = c2; c2 = tmp;
+            }
+
+            int pick = (block == 0) ? 0 : (int)(k0 / block);
+            char chosen = (pick == 0) ? c1 : c2;
+            sb.append(chosen);
+            k0 -= pick * Math.max(1L, block);
+            prev = chosen;
+        }
+
+        return sb.toString();
+    }
+}
