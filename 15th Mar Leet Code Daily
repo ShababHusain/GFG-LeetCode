@@ -1,0 +1,60 @@
+class Fancy {
+    private static final long MOD = 1_000_000_007L;
+    private final ArrayList<Long> seq; // stores normalized values
+    private long mult; // global multiplier
+    private long add;  // global adder
+
+    public Fancy() {
+        seq = new ArrayList<>();
+        mult = 1L;
+        add = 0L;
+    }
+    
+    public void append(int val) {
+        long v = ((long) val) % MOD;
+        // normalized = (v - add) * inv(mult) mod MOD
+        long normalized = (v - add) % MOD;
+        if (normalized < 0) normalized += MOD;
+        long inv = modPow(mult, MOD - 2); // modular inverse of mult
+        normalized = (normalized * inv) % MOD;
+        seq.add(normalized);
+    }
+    
+    public void addAll(int inc) {
+        add = (add + inc) % MOD;
+    }
+    
+    public void multAll(int m) {
+        long mm = m % MOD;
+        mult = (mult * mm) % MOD;
+        add = (add * mm) % MOD;
+    }
+    
+    public int getIndex(int idx) {
+        if (idx < 0 || idx >= seq.size()) return -1;
+        long x = seq.get(idx);
+        long val = (x * mult + add) % MOD;
+        return (int) val;
+    }
+
+    // fast exponentiation modulo MOD
+    private long modPow(long base, long exp) {
+        long res = 1L;
+        base %= MOD;
+        while (exp > 0) {
+            if ((exp & 1L) == 1L) res = (res * base) % MOD;
+            base = (base * base) % MOD;
+            exp >>= 1;
+        }
+        return res;
+    }
+}
+
+/**
+ * Your Fancy object will be instantiated and called as such:
+ * Fancy obj = new Fancy();
+ * obj.append(val);
+ * obj.addAll(inc);
+ * obj.multAll(m);
+ * int param_4 = obj.getIndex(idx);
+ */
