@@ -1,0 +1,40 @@
+/*
+class Node {
+    int data;
+    Node left;
+    Node right;
+
+    Node(int data) {
+        this.data = data;
+        left = null;
+        right = null;
+    }
+}
+*/
+
+class Solution {
+    public int countAllPaths(Node root, int k) {
+        HashMap<Long, Integer> freq = new HashMap<>();
+        freq.put(0L, 1); // empty prefix
+        return (int) dfs(root, 0L, k, freq);
+    }
+
+    private long dfs(Node node, long prefix, int k, HashMap<Long, Integer> freq) {
+        if (node == null) return 0L;
+
+        prefix += node.data;
+        long pathsHere = freq.getOrDefault(prefix - k, 0);
+
+        freq.put(prefix, freq.getOrDefault(prefix, 0) + 1);
+
+        pathsHere += dfs(node.left, prefix, k, freq);
+        pathsHere += dfs(node.right, prefix, k, freq);
+
+        // backtrack
+        int cnt = freq.get(prefix);
+        if (cnt == 1) freq.remove(prefix);
+        else freq.put(prefix, cnt - 1);
+
+        return pathsHere;
+    }
+}
