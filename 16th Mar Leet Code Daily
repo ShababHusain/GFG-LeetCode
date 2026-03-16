@@ -1,0 +1,70 @@
+import java.util.*;
+
+class Solution {
+    public int[] getBiggestThree(int[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+
+        long[][] dr = new long[m][n]; // down-right diagonal prefix sums
+        long[][] dl = new long[m][n]; // down-left diagonal prefix sums
+
+        // build diagonal prefix sums
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                dr[i][j] = grid[i][j] + ((i > 0 && j > 0) ? dr[i - 1][j - 1] : 0L);
+                dl[i][j] = grid[i][j] + ((i > 0 && j + 1 < n) ? dl[i - 1][j + 1] : 0L);
+            }
+        }
+
+        Set<Integer> distinct = new HashSet<>();
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                // try all sizes s where rhombus fits
+                for (int s = 0; i + 2 * s < m && j - s >= 0 && j + s < n; s++) {
+                    if (s == 0) {
+                        distinct.add(grid[i][j]);
+                        continue;
+                    }
+
+                    int topR = i, topC = j;
+                    int rightR = i + s, rightC = j + s;
+                    int bottomR = i + 2 * s, bottomC = j;
+                    int leftR = i + s, leftC = j - s;
+
+                    long sumTopToRight = getDRSegment(dr, topR, topC, rightR, rightC);
+                    long sumRightToBottom = getDLSegment(dl, rightR, rightC, bottomR, bottomC);
+                    long sumLeftToBottom = getDRSegment(dr, leftR, leftC, bottomR, bottomC);
+                    long sumTopToLeft = getDLSegment(dl, topR, topC, leftR, leftC);
+
+                    long border = sumTopToRight + sumRightToBottom + sumLeftToBottom + sumTopToLeft
+                                  - grid[topR][topC] - grid[rightR][rightC] - grid[bottomR][bottomC] - grid[leftR][leftC];
+
+                    distinct.add((int) border);
+                }
+            }
+        }
+
+        List<Integer> vals = new ArrayList<>(distinct);
+        vals.sort(Collections.reverseOrder());
+
+        int take = Math.min(3, vals.size());
+        int[] ans = new int[take];
+        for (int k = 0; k < take; k++) ans[k] = vals.get(k);
+        return ans;
+    }
+
+    // sum along down-right diagonal from (r1,c1) to (r2,c2) inclusive
+    private long getDRSegment(long[][] dr, int r1, int c1, int r2, int c2) {
+        long res = dr[r2][c2];
+        if (r1 > 0 && c1 > 0) res -= dr[r1 - 1][c1 - 1];
+        return res;
+    }
+
+    // sum along down-left diagonal from (r1,c1) to (r2,c2) inclusive
+    private long getDLSegment(long[][] dl, int r1, int c1, int r2, int c2) {
+        long res = dl[r2][c2];
+        if (r1 > 0 && c1 + 1 < dl[0].length) res -= dl[r1 - 1][c1 + 1];
+        return res;
+    }
+}
