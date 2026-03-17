@@ -1,0 +1,32 @@
+import java.util.Arrays;
+
+class Solution {
+    public int largestSubmatrix(int[][] matrix) {
+        int m = matrix.length;
+        if (m == 0) return 0;
+        int n = matrix[0].length;
+        int[] heights = new int[n];
+        int maxArea = 0;
+
+        for (int i = 0; i < m; i++) {
+            // update heights for row i
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == 1) heights[j] += 1;
+                else heights[j] = 0;
+            }
+
+            // sort a copy of heights in descending order
+            int[] sorted = Arrays.copyOf(heights, n);
+            Arrays.sort(sorted);
+            // sorted is ascending; iterate from largest to smallest
+            for (int k = 0; k < n; k++) {
+                int h = sorted[n - 1 - k]; // k-th largest
+                if (h == 0) break; // no larger area possible beyond this
+                int area = h * (k + 1);
+                if (area > maxArea) maxArea = area;
+            }
+        }
+
+        return maxArea;
+    }
+}
