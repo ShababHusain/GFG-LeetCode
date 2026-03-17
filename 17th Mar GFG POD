@@ -1,0 +1,75 @@
+import java.util.*;
+
+/*
+class Node {
+    int data;
+    Node left;
+    Node right;
+
+    Node(int data) {
+        this.data = data;
+        left = null;
+        right = null;
+    }
+}
+*/
+
+class Solution {
+    public int minTime(Node root, int target) {
+        if (root == null) return 0;
+
+        // Build parent map and find target node reference
+        Map<Node, Node> parent = new HashMap<>();
+        Node targetNode = buildParentMap(root, null, parent, target);
+        if (targetNode == null) return 0; // target not found
+
+        // BFS from target node
+        Queue<Node> q = new LinkedList<>();
+        Set<Node> visited = new HashSet<>();
+        q.add(targetNode);
+        visited.add(targetNode);
+
+        int time = 0;
+        while (!q.isEmpty()) {
+            int sz = q.size();
+            boolean spread = false;
+            for (int i = 0; i < sz; i++) {
+                Node cur = q.poll();
+
+                // left child
+                if (cur.left != null && !visited.contains(cur.left)) {
+                    visited.add(cur.left);
+                    q.add(cur.left);
+                    spread = true;
+                }
+                // right child
+                if (cur.right != null && !visited.contains(cur.right)) {
+                    visited.add(cur.right);
+                    q.add(cur.right);
+                    spread = true;
+                }
+                // parent
+                Node par = parent.get(cur);
+                if (par != null && !visited.contains(par)) {
+                    visited.add(par);
+                    q.add(par);
+                    spread = true;
+                }
+            }
+            if (spread) time++;
+        }
+
+        return time;
+    }
+
+    // Builds parent map and returns reference to node with value == target (or null)
+    private Node buildParentMap(Node node, Node par, Map<Node, Node> parent, int target) {
+        if (node == null) return null;
+        parent.put(node, par);
+        if (node.data == target) return node;
+
+        Node leftRes = buildParentMap(node.left, node, parent, target);
+        if (leftRes != null) return leftRes;
+        return buildParentMap(node.right, node, parent, target);
+    }
+}
