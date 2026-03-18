@@ -1,0 +1,28 @@
+class Solution {
+    public int countSubmatrices(int[][] grid, int k) {
+        int m = grid.length;
+        int n = grid[0].length;
+        long[][] P = new long[m + 1][n + 1]; // prefix sums (use long to avoid overflow)
+
+        // build prefix sums: P[i+1][j+1] = sum of grid[0..i][0..j]
+        for (int i = 0; i < m; i++) {
+            long rowSum = 0;
+            for (int j = 0; j < n; j++) {
+                rowSum += grid[i][j];
+                P[i + 1][j + 1] = P[i][j + 1] + rowSum;
+            }
+        }
+
+        int c = n - 1;
+        long ans = 0L;
+        for (int r = 0; r < m; r++) {
+            while (c >= 0 && P[r + 1][c + 1] > (long) k) {
+                c--;
+            }
+            if (c < 0) break; // no valid columns for this row or any later row
+            ans += (c + 1);
+        }
+
+        return (int) ans;
+    }
+}
