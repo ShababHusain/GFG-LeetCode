@@ -1,0 +1,37 @@
+/*
+class Node {
+    int data;
+    Node left;
+    Node right;
+    Node(int data) {
+        this.data = data;
+        left = null;
+        right = null;
+    }
+}
+*/
+
+class Solution {
+    private int moves;
+
+    public int distCandy(Node root) {
+        moves = 0;
+        dfs(root);
+        return moves;
+    }
+
+    // returns excess candies that this subtree will pass to its parent
+    private int dfs(Node node) {
+        if (node == null) return 0;
+
+        int leftExcess = dfs(node.left);
+        int rightExcess = dfs(node.right);
+
+        // moves needed to balance children with this node
+        moves += Math.abs(leftExcess) + Math.abs(rightExcess);
+
+        // current node's excess after keeping 1 candy for itself
+        int total = node.data + leftExcess + rightExcess;
+        return total - 1;
+    }
+}
