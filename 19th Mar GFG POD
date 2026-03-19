@@ -1,0 +1,62 @@
+// class Node
+// {
+//     int data;
+//     Node left, right;
+
+//     public Node(int d)
+//     {
+//         data = d;
+//         left = right = null;
+//     }
+// }
+
+class Solution {
+
+    // helper info for each subtree
+    private static class Info {
+        boolean isBST;
+        int size;       // size of subtree if it's a BST
+        long minVal;    // minimum value in subtree
+        long maxVal;    // maximum value in subtree
+
+        Info(boolean isBST, int size, long minVal, long maxVal) {
+            this.isBST = isBST;
+            this.size = size;
+            this.minVal = minVal;
+            this.maxVal = maxVal;
+        }
+    }
+
+    // global best size found
+    private static int best;
+
+    // Return the size of the largest sub-tree which is also a BST
+    static int largestBst(Node root) {
+        best = 0;
+        post(root);
+        return best;
+    }
+
+    // postorder traversal returning Info for subtree rooted at node
+    private static Info post(Node node) {
+        if (node == null) {
+            // empty subtree is a BST of size 0
+            return new Info(true, 0, Long.MAX_VALUE, Long.MIN_VALUE);
+        }
+
+        Info left = post(node.left);
+        Info right = post(node.right);
+
+        // check BST property for current subtree
+        if (left.isBST && right.isBST && node.data > left.maxVal && node.data < right.minVal) {
+            int sz = left.size + right.size + 1;
+            long minV = (left.size == 0) ? node.data : left.minVal;
+            long maxV = (right.size == 0) ? node.data : right.maxVal;
+            best = Math.max(best, sz);
+            return new Info(true, sz, minV, maxV);
+        } else {
+            // not a BST: return isBST=false; size field not used for parent BST checks
+            return new Info(false, 0, Long.MIN_VALUE, Long.MAX_VALUE);
+        }
+    }
+}
