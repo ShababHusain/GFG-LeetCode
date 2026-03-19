@@ -1,0 +1,31 @@
+class Solution {
+    public int numberOfSubmatrices(char[][] grid) {
+        int m = grid.length;
+        if (m == 0) return 0;
+        int n = grid[0].length;
+
+        // prefix counts: (m+1) x (n+1)
+        int[][] PX = new int[m + 1][n + 1];
+        int[][] PY = new int[m + 1][n + 1];
+
+        for (int i = 0; i < m; i++) {
+            int rowX = 0, rowY = 0;
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 'X') rowX++;
+                else if (grid[i][j] == 'Y') rowY++;
+                PX[i + 1][j + 1] = PX[i][j + 1] + rowX;
+                PY[i + 1][j + 1] = PY[i][j + 1] + rowY;
+            }
+        }
+
+        int ans = 0;
+        for (int r = 0; r < m; r++) {
+            for (int c = 0; c < n; c++) {
+                int x = PX[r + 1][c + 1];
+                int y = PY[r + 1][c + 1];
+                if (x == y && x >= 1) ans++;
+            }
+        }
+        return ans;
+    }
+}
