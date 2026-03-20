@@ -1,0 +1,54 @@
+import java.util.Arrays;
+
+class Solution {
+    public int[][] minAbsDiff(int[][] grid, int k) {
+        int m = grid.length;
+        int n = grid[0].length;
+        int outR = m - k + 1;
+        int outC = n - k + 1;
+        int[][] ans = new int[outR][outC];
+
+        int size = k * k;
+        int[] vals = new int[size];
+
+        for (int i = 0; i < outR; ++i) {
+            for (int j = 0; j < outC; ++j) {
+                int idx = 0;
+                for (int r = i; r < i + k; ++r) {
+                    for (int c = j; c < j + k; ++c) {
+                        vals[idx++] = grid[r][c];
+                    }
+                }
+
+                if (size == 1) {           // single element -> min diff = 0
+                    ans[i][j] = 0;
+                    continue;
+                }
+
+                Arrays.sort(vals);
+
+                // compute min difference between distinct values only
+                int prev = vals[0];
+                int minDiff = Integer.MAX_VALUE;
+                boolean foundPair = false;
+
+                for (int t = 1; t < size; ++t) {
+                    if (vals[t] == prev) {
+                        // duplicate value: skip, do not treat as a valid pair
+                        continue;
+                    }
+                    // distinct value found: compute diff with last distinct
+                    int diff = vals[t] - prev;
+                    if (diff < minDiff) minDiff = diff;
+                    foundPair = true;
+                    prev = vals[t];
+                    // early exit if minDiff becomes 1 (can't get smaller except 0 which is only for identical distinct values)
+                    if (minDiff == 1) break;
+                }
+
+                ans[i][j] = foundPair ? minDiff : 0; // if no distinct pair, all values equal -> 0
+            }
+        }
+        return ans;
+    }
+}
