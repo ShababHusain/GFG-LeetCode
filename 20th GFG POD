@@ -1,0 +1,51 @@
+/*
+class Node {
+    int data;
+    Node left, right;
+    Node(int x) {
+        data = x;
+        left = right = null;
+    }
+}
+*/
+
+import java.util.ArrayList;
+
+class Solution {
+    public ArrayList<Node> findPreSuc(Node root, int key) {
+        Node pred = null;
+        Node succ = null;
+        Node node = root;
+
+        // Walk down the tree to find candidates or the node itself
+        while (node != null) {
+            if (key < node.data) {
+                succ = node;         // node is a candidate successor
+                node = node.left;
+            } else if (key > node.data) {
+                pred = node;         // node is a candidate predecessor
+                node = node.right;
+            } else {
+                // Found node with value == key
+                // predecessor: maximum in left subtree
+                if (node.left != null) {
+                    Node t = node.left;
+                    while (t.right != null) t = t.right;
+                    pred = t;
+                }
+                // successor: minimum in right subtree
+                if (node.right != null) {
+                    Node t = node.right;
+                    while (t.left != null) t = t.left;
+                    succ = t;
+                }
+                break;
+            }
+        }
+
+        ArrayList<Node> ans = new ArrayList<>();
+        ans.add(pred);
+        ans.add(succ);
+        return ans;
+    }
+}
