@@ -1,0 +1,28 @@
+class Solution {
+    public ArrayList<Integer> countBSTs(int[] arr) {
+        int n = arr.length;
+        ArrayList<Integer> ans = new ArrayList<>();
+        if (n == 0) return ans;
+
+        // Precompute Catalan numbers up to n (n <= 6 per constraints)
+        long[] catalan = new long[n + 1];
+        catalan[0] = 1;
+        for (int t = 1; t <= n; ++t) {
+            long sum = 0;
+            for (int i = 0; i < t; ++i) {
+                sum += catalan[i] * catalan[t - 1 - i];
+            }
+            catalan[t] = sum;
+        }
+
+        for (int i = 0; i < n; ++i) {
+            int L = 0, R = 0;
+            for (int j = 0; j < n; ++j) {
+                if (arr[j] < arr[i]) ++L;
+                else if (arr[j] > arr[i]) ++R;
+            }
+            ans.add((int)(catalan[L] * catalan[R]));
+        }
+        return ans;
+    }
+}
