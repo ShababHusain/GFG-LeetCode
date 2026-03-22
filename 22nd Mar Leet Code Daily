@@ -1,0 +1,28 @@
+class Solution {
+    public boolean findRotation(int[][] mat, int[][] target) {
+        int n = mat.length;
+        for (int r = 0; r < 4; r++) {
+            boolean ok = true;
+            for (int i = 0; i < n && ok; i++) {
+                for (int j = 0; j < n; j++) {
+                    int val;
+                    if (r == 0) { // 0 degrees
+                        val = mat[i][j];
+                    } else if (r == 1) { // 90 degrees clockwise
+                        val = mat[n - 1 - j][i];
+                    } else if (r == 2) { // 180 degrees
+                        val = mat[n - 1 - i][n - 1 - j];
+                    } else { // r == 3, 270 degrees
+                        val = mat[j][n - 1 - i];
+                    }
+                    if (val != target[i][j]) {
+                        ok = false;
+                        break;
+                    }
+                }
+            }
+            if (ok) return true;
+        }
+        return false;
+    }
+}
