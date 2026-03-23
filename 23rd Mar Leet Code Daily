@@ -1,0 +1,47 @@
+class Solution {
+    public int maxProductPath(int[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+        final long MOD = 1_000_000_007L;
+
+        long[][] maxP = new long[m][n];
+        long[][] minP = new long[m][n];
+
+        // initialize with sentinel values
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                maxP[i][j] = Long.MIN_VALUE;
+                minP[i][j] = Long.MAX_VALUE;
+            }
+        }
+
+        maxP[0][0] = minP[0][0] = grid[0][0];
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (i == 0 && j == 0) continue;
+                int val = grid[i][j];
+
+                // from top
+                if (i > 0 && maxP[i-1][j] != Long.MIN_VALUE) {
+                    long a = maxP[i-1][j] * val;
+                    long b = minP[i-1][j] * val;
+                    maxP[i][j] = Math.max(maxP[i][j], Math.max(a, b));
+                    minP[i][j] = Math.min(minP[i][j], Math.min(a, b));
+                }
+
+                // from left
+                if (j > 0 && maxP[i][j-1] != Long.MIN_VALUE) {
+                    long a = maxP[i][j-1] * val;
+                    long b = minP[i][j-1] * val;
+                    maxP[i][j] = Math.max(maxP[i][j], Math.max(a, b));
+                    minP[i][j] = Math.min(minP[i][j], Math.min(a, b));
+                }
+            }
+        }
+
+        long ans = maxP[m-1][n-1];
+        if (ans < 0) return -1;
+        return (int)(ans % MOD);
+    }
+}
