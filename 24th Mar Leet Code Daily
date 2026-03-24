@@ -1,0 +1,42 @@
+class Solution {
+    public int[][] constructProductMatrix(int[][] grid) {
+        final int MOD = 12345;
+        int n = grid.length;
+        int m = grid[0].length;
+        int L = n * m;
+
+        // Flatten grid into arr with values reduced modulo MOD
+        int[] arr = new int[L];
+        int idx = 0;
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < m; ++j) {
+                arr[idx++] = (int)((grid[i][j] % MOD + MOD) % MOD);
+            }
+        }
+
+        // Prefix and suffix products modulo MOD
+        long[] prefix = new long[L + 1]; // prefix[0] = 1
+        prefix[0] = 1;
+        for (int i = 0; i < L; ++i) {
+            prefix[i + 1] = (prefix[i] * arr[i]) % MOD;
+        }
+
+        long[] suffix = new long[L + 1]; // suffix[L] = 1
+        suffix[L] = 1;
+        for (int i = L - 1; i >= 0; --i) {
+            suffix[i] = (suffix[i + 1] * arr[i]) % MOD;
+        }
+
+        // Build result matrix: product of all elements except arr[k] is prefix[k] * suffix[k+1] % MOD
+        int[][] res = new int[n][m];
+        idx = 0;
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < m; ++j) {
+                long prodExcluding = (prefix[idx] * suffix[idx + 1]) % MOD;
+                res[i][j] = (int) prodExcluding;
+                idx++;
+            }
+        }
+        return res;
+    }
+}
