@@ -1,0 +1,44 @@
+class Solution {
+    public ArrayList<Integer> minHeightRoot(int V, int[][] edges) {
+        ArrayList<Integer> result = new ArrayList<>();
+        if (V == 0) return result;
+        if (V == 1) {
+            result.add(0);
+            return result;
+        }
+
+        List<List<Integer>> graph = new ArrayList<>(V);
+        for (int i = 0; i < V; i++) graph.add(new ArrayList<>());
+
+        int[] degree = new int[V];
+        if (edges != null) {
+            for (int[] e : edges) {
+                int u = e[0], v = e[1];
+                graph.get(u).add(v);
+                graph.get(v).add(u);
+                degree[u]++; degree[v]++;
+            }
+        }
+
+        Queue<Integer> leaves = new ArrayDeque<>();
+        for (int i = 0; i < V; i++) {
+            if (degree[i] <= 1) leaves.add(i);
+        }
+
+        int remaining = V;
+        while (remaining > 2) {
+            int sz = leaves.size();
+            remaining -= sz;
+            for (int i = 0; i < sz; i++) {
+                int leaf = leaves.poll();
+                for (int nei : graph.get(leaf)) {
+                    degree[nei]--;
+                    if (degree[nei] == 1) leaves.add(nei);
+                }
+            }
+        }
+
+        while (!leaves.isEmpty()) result.add(leaves.poll());
+        return result;
+    }
+}
