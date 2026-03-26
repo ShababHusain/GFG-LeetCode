@@ -1,0 +1,135 @@
+public class Solution {
+    public boolean canPartitionGrid(int[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+
+        // row sums and prefix
+        long[] rowSum = new long[m];
+        for (int i = 0; i < m; ++i) {
+            long s = 0;
+            for (int j = 0; j < n; ++j) s += grid[i][j];
+            rowSum[i] = s;
+        }
+        long[] prefRow = new long[m + 1];
+        for (int i = 0; i < m; ++i) prefRow[i + 1] = prefRow[i] + rowSum[i];
+
+        // col sums and prefix
+        long[] colSum = new long[n];
+        for (int j = 0; j < n; ++j) {
+            long s = 0;
+            for (int i = 0; i < m; ++i) s += grid[i][j];
+            colSum[j] = s;
+        }
+        long[] prefCol = new long[n + 1];
+        for (int j = 0; j < n; ++j) prefCol[j + 1] = prefCol[j] + colSum[j];
+
+        // maps: value -> sorted list of rows where it appears; value -> sorted list of cols where it appears
+        HashMap<Integer, ArrayList<Integer>> valRows = new HashMap<>();
+        HashMap<Integer, ArrayList<Integer>> valCols = new HashMap<>();
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                int v = grid[i][j];
+                valRows.computeIfAbsent(v, k -> new ArrayList<>()).add(i);
+                valCols.computeIfAbsent(v, k -> new ArrayList<>()).add(j);
+            }
+        }
+        for (ArrayList<Integer> list : valRows.values()) Collections.sort(list);
+        for (ArrayList<Integer> list : valCols.values()) Collections.sort(list);
+
+        // helper: check if value v appears in any row in [r1, r2] inclusive
+        java.util.function.BiPredicate<Integer, int[]> appearsInRowRange = (val, range) -> {
+            ArrayList<Integer> list = valRows.get(val);
+            if (list == null) return false;
+            int lo = range[0], hi = range[1];
+            int idx = Collections.binarySearch(list, lo);
+            if (idx < 0) idx = -idx - 1;
+            return idx < list.size() && list.get(idx) <= hi;
+        };
+
+        // helper: check if value v appears in any col in [c1, c2] inclusive
+        java.util.function.BiPredicate<Integer, int[]> appearsInColRange = (val, range) -> {
+            ArrayList<Integer> list = valCols.get(val);
+            if (list == null) return false;
+            int lo = range[0], hi = range[1];
+            int idx = Collections.binarySearch(list, lo);
+            if (idx < 0) idx = -idx - 1;
+            return idx < list.size() && list.get(idx) <= hi;
+        };
+
+        // check horizontal cuts
+        for (int r = 1; r <= m - 1; ++r) {
+            long top = prefRow[r];
+            long bottom = prefRow[m] - top;
+            if (top == bottom) return true;
+            long dLong = Math.abs(top - bottom);
+            if (dLong > Integer.MAX_VALUE) continue;
+            int d = (int) dLong;
+
+            if (top > bottom) {
+                // top rectangle: rows [0, r-1], size r x n
+                int rows = r, cols = n;
+                if (rows == 1 && cols == 1) continue; // cannot remove only cell
+                if (rows >= 2 && cols >= 2) {
+                    if (appearsInRowRange.test(d, new int[]{0, r - 1})) return true;
+                } else if (rows == 1) {
+                    int rowIdx = 0; // top section always starts at row 0
+                    if (grid[rowIdx][0] == d || grid[rowIdx][n - 1] == d) return true;
+                } else { // cols == 1 (single column)
+                    if (grid[0][0] == d || grid[r - 1][0] == d) return true;
+                }
+            } else {
+                // bottom heavier: rows [r, m-1], size (m-r) x n
+                int rows = m - r, cols = n;
+                if (rows == 1 && cols == 1) continue;
+                if (rows >= 2 && cols >= 2) {
+                    if (appearsInRowRange.test(d, new int[]{r, m - 1})) return true;
+                } else if (rows == 1) {
+                    int rowIdx = r; // single bottom row
+                    if (grid[rowIdx][0] == d || grid[rowIdx][n - 1] == d) return true;
+                } else { // cols == 1
+                    if (grid[r][0] == d || grid[m - 1][0] == d) return true;
+                }
+            }
+        }
+
+        // check vertical cuts
+        for (int c = 1; c <= n - 1; ++c) {
+            long left = prefCol[c];
+            long right = prefCol[n] - left;
+            if (left == right) return true;
+            long dLong = Math.abs(left - right);
+            if (dLong > Integer.MAX_VALUE) continue;
+            int d = (int) dLong;
+
+            if (left > right) {
+                // left heavier: cols [0, c-1], size m x c
+                int rows = m, cols = c;
+                if (rows == 1 && cols == 1) continue;
+                if (rows >= 2 && cols >= 2) {
+                    if (appearsInColRange.test(d, new int[]{0, c - 1})) return true;
+                } else if (cols == 1) {
+                    int colIdx = 0; // left section starts at col 0 when c==1
+                    if (grid[0][colIdx] == d || grid[m - 1][colIdx] == d) return true;
+                } else { // rows == 1 (single row)
+                    int rowIdx = 0;
+                    if (grid[rowIdx][0] == d || grid[rowIdx][c - 1] == d) return true;
+                }
+            } else {
+                // right heavier: cols [c, n-1], size m x (n-c)
+                int rows = m, cols = n - c;
+                if (rows == 1 && cols == 1) continue;
+                if (rows >= 2 && cols >= 2) {
+                    if (appearsInColRange.test(d, new int[]{c, n - 1})) return true;
+                } else if (cols == 1) {
+                    int colIdx = c;
+                    if (grid[0][colIdx] == d || grid[m - 1][colIdx] == d) return true;
+                } else { // rows == 1
+                    int rowIdx = 0;
+                    if (grid[rowIdx][c] == d || grid[rowIdx][n - 1] == d) return true;
+                }
+            }
+        }
+
+        return false;
+    }
+}
