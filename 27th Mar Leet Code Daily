@@ -1,0 +1,26 @@
+class Solution {
+    public boolean areSimilar(int[][] mat, int k) {
+        int n = mat.length;
+        int m = mat[0].length;
+        int s = k % m;
+        if (s == 0) return true;
+
+        for (int i = 0; i < n; ++i) {
+            if ((i & 1) == 0) {
+                // even-indexed row -> left shift by s
+                for (int j = 0; j < m; ++j) {
+                    int src = (j + s) % m;
+                    if (mat[i][j] != mat[i][src]) return false;
+                }
+            } else {
+                // odd-indexed row -> right shift by s
+                for (int j = 0; j < m; ++j) {
+                    int src = j - s;
+                    if (src < 0) src += m;
+                    if (mat[i][j] != mat[i][src]) return false;
+                }
+            }
+        }
+        return true;
+    }
+}
