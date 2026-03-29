@@ -1,0 +1,25 @@
+class Solution {
+    public boolean canBeEqual(String s1, String s2) {
+        if (s1.length() != 4 || s2.length() != 4) return false;
+        int[] even = new int[26];
+        int[] odd  = new int[26];
+
+        // count s1
+        even[s1.charAt(0) - 'a']++;
+        even[s1.charAt(2) - 'a']++;
+        odd[s1.charAt(1) - 'a']++;
+        odd[s1.charAt(3) - 'a']++;
+
+        // subtract counts using s2
+        even[s2.charAt(0) - 'a']--;
+        even[s2.charAt(2) - 'a']--;
+        odd[s2.charAt(1) - 'a']--;
+        odd[s2.charAt(3) - 'a']--;
+
+        // verify all zero
+        for (int i = 0; i < 26; i++) {
+            if (even[i] != 0 || odd[i] != 0) return false;
+        }
+        return true;
+    }
+}
