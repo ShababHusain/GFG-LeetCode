@@ -1,0 +1,245 @@
+import java.util.*;
+
+/*
+ Generate the lexicographically smallest string 'word' of length L = n + m - 1
+ that satisfies:
+  - For each i with str1[i] == 'T': word[i..i+m-1] == str2
+  - For each i with str1[i] == 'F': word[i..i+m-1] != str2
+ Returns "" if impossible.
+*/
+public class Solution {
+    public String generateString(String str1, String str2) {
+        int n = str1.length();
+        int m = str2.length();
+        int L = n + m - 1;
+
+        // fixedChar[pos] = -1 if not fixed by T, otherwise 0..25 for fixed letter
+        int[] fixedChar = new int[L];
+        Arrays.fill(fixedChar, -1);
+
+        // 1) Apply T constraints and detect immediate conflicts
+        for (int i = 0; i < n; i++) {
+            if (str1.charAt(i) == 'T') {
+                for (int j = 0; j < m; j++) {
+                    int pos = i + j;
+                    int ch = str2.charAt(j) - 'a';
+                    if (fixedChar[pos] == -1) fixedChar[pos] = ch;
+                    else if (fixedChar[pos] != ch) return ""; // conflict
+                }
+            }
+        }
+
+        // For each F-window we maintain:
+        // availableCount[w] = number of positions in window that are not fixed (can be used to create mismatch)
+        // diffCount[w] = number of positions already assigned and different from str2 at that offset
+        int W = n; // number of windows (one per i in 0..n-1)
+        int[] availableCount = new int[W];
+        int[] diffCount = new int[W];
+
+        // For each position, store list of windows it belongs to and the offset j in that window
+        // posWindows[pos] -> list of (windowIndex, offset)
+        @SuppressWarnings("unchecked")
+        ArrayList<int[]>[] posWindows = new ArrayList[L];
+        for (int p = 0; p < L; p++) posWindows[p] = new ArrayList<>();
+
+        // Build window membership and initial available counts
+        for (int i = 0; i < n; i++) {
+            // window i covers positions i..i+m-1
+            int avail = 0;
+            for (int j = 0; j < m; j++) {
+                int pos = i + j;
+                posWindows[pos].add(new int[]{i, j});
+                if (fixedChar[pos] == -1) avail++;
+                else {
+                    // fixed char exists; check if it already differs from str2[j]
+                    if (fixedChar[pos] != (str2.charAt(j) - 'a')) {
+                        diffCount[i]++;
+                    }
+                }
+            }
+            availableCount[i] = avail;
+            // If window is T, we don't care; only F windows need coverage
+        }
+
+        // If any F window has availableCount==0 and diffCount==0 -> impossible
+        for (int i = 0; i < n; i++) {
+            if (str1.charAt(i) == 'F' && availableCount[i] == 0 && diffCount[i] == 0) {
+                return "";
+            }
+        }
+
+        // assigned[pos] = -2 means unassigned, -1 means assigned to match str2 at that offset (we'll store actual char later),
+        // or 0..25 for assigned letter.
+        int[] assigned = new int[L];
+        Arrays.fill(assigned, -2);
+        for (int p = 0; p < L; p++) {
+            if (fixedChar[p] != -1) assigned[p] = fixedChar[p];
+        }
+
+        // Queue for windows that force a unique available position to be a mismatch:
+        ArrayDeque<Integer> q = new ArrayDeque<>();
+        boolean[] inQueue = new boolean[W];
+        for (int i = 0; i < n; i++) {
+            if (str1.charAt(i) == 'F' && diffCount[i] == 0 && availableCount[i] == 1) {
+                q.add(i);
+                inQueue[i] = true;
+            }
+        }
+
+        // Helper to force a position to be a mismatch (assign a letter != str2[offset]).
+        // We choose the smallest letter != str2[offset] that is consistent with any existing assignment.
+        // Returns false if conflict (already assigned to a different letter that equals str2[offset]).
+        while (!q.isEmpty()) {
+            int w = q.remove();
+            inQueue[w] = false;
+            if (diffCount[w] > 0) continue; // already satisfied
+            // find the unique available position in window w
+            int chosenPos = -1;
+            int chosenOffset = -1;
+            for (int j = 0; j < m; j++) {
+                int pos = w + j;
+                if (assigned[pos] == -2) { // unassigned and not fixed
+                    chosenPos = pos;
+                    chosenOffset = j;
+                    break;
+                }
+            }
+            if (chosenPos == -1) {
+                // no available position but diffCount==0 -> impossible
+                return "";
+            }
+
+            // pick smallest letter != str2[chosenOffset]
+            char forbid = str2.charAt(chosenOffset);
+            int pick = 0; // 'a'
+            if ((char)('a' + pick) == forbid) pick = 1; // 'b'
+            // assign
+            assigned[chosenPos] = pick;
+
+            // update all windows that include chosenPos
+            for (int[] winOff : posWindows[chosenPos]) {
+                int win = winOff[0];
+                int off = winOff[1];
+                // If this window previously counted chosenPos as available, decrement availableCount
+                // We consider available if fixedChar[pos]==-1 and previously assigned[pos]==-2
+                // We already had assigned[pos]==-2 before setting; so decrement now
+                if (str1.charAt(win) == 'F') {
+                    // chosenPos was available for this window (since assigned was -2)
+                    availableCount[win]--;
+                    // check if this assignment makes the window have a difference
+                    if ((char)('a' + pick) != str2.charAt(off)) {
+                        diffCount[win]++;
+                    }
+                    // If window becomes impossible
+                    if (diffCount[win] == 0 && availableCount[win] == 0) return "";
+                    // If window now forces another unique available position
+                    if (diffCount[win] == 0 && availableCount[win] == 1 && !inQueue[win]) {
+                        q.add(win);
+                        inQueue[win] = true;
+                    }
+                } else {
+                    // For T windows we don't need to track; they were already enforced
+                    // but still update availableCount for correctness if we used it earlier
+                    availableCount[win] = Math.max(0, availableCount[win] - 1);
+                }
+            }
+        }
+
+        // After propagation, assign remaining unassigned positions left-to-right with smallest possible letter
+        // that does not make any F-window impossible.
+        for (int pos = 0; pos < L; pos++) {
+            if (assigned[pos] != -2) continue; // already assigned (fixed or forced)
+            // try letters 'a'..'z' in order
+            boolean placed = false;
+            for (int c = 0; c < 26; c++) {
+                char ch = (char)('a' + c);
+                // simulate effect on windows containing pos
+                boolean ok = true;
+                ArrayList<int[]> touched = posWindows[pos];
+                // We'll track windows that would lose an available slot and those that would gain a diff
+                // but we only need to check feasibility: for any F-window with diffCount==0,
+                // if we set pos to equal str2[offset], then availableCount-- for that window.
+                // If that causes availableCount==0 and diffCount==0 -> infeasible.
+                for (int[] winOff : touched) {
+                    int win = winOff[0];
+                    int off = winOff[1];
+                    if (str1.charAt(win) != 'F') continue; // only F windows matter for feasibility
+                    // if this pos is currently unassigned, it's counted in availableCount[win]
+                    // If we set it to ch:
+                    if (ch == str2.charAt(off)) {
+                        // this window loses one available (we are matching str2 here)
+                        if (diffCount[win] == 0 && availableCount[win] == 1) {
+                            // if we match here, availableCount would become 0 and diffCount==0 -> impossible
+                            ok = false;
+                            break;
+                        }
+                    } else {
+                        // if we set it to differ, this window would gain a diff (so safe)
+                        // no infeasibility can arise by making a mismatch
+                    }
+                }
+                if (!ok) continue;
+
+                // Accept c: apply changes to counts
+                assigned[pos] = c;
+                for (int[] winOff : touched) {
+                    int win = winOff[0];
+                    int off = winOff[1];
+                    if (str1.charAt(win) != 'F') continue;
+                    // pos was previously unassigned -> availableCount[win]--
+                    availableCount[win]--;
+                    if (c != (str2.charAt(off) - 'a')) diffCount[win]++;
+                    // After update, if window becomes impossible, revert and mark ok=false
+                    if (diffCount[win] == 0 && availableCount[win] == 0) {
+                        ok = false;
+                    }
+                }
+                if (!ok) {
+                    // revert the local updates
+                    for (int[] winOff : touched) {
+                        int win = winOff[0];
+                        int off = winOff[1];
+                        if (str1.charAt(win) != 'F') continue;
+                        // revert
+                        if (c != (str2.charAt(off) - 'a')) diffCount[win]--;
+                        availableCount[win]++;
+                    }
+                    assigned[pos] = -2;
+                    continue;
+                } else {
+                    // successful placement
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) {
+                // no letter could be placed without breaking feasibility -> impossible
+                return "";
+            }
+        }
+
+        // Build final string
+        char[] result = new char[L];
+        for (int i = 0; i < L; i++) {
+            if (assigned[i] >= 0) result[i] = (char)('a' + assigned[i]);
+            else {
+                // Should not happen; but fill with 'a' as fallback
+                result[i] = 'a';
+            }
+        }
+
+        // Final verification (safety): ensure all constraints satisfied
+        // (This is optional but helps catch bugs during development; can be removed for speed)
+        for (int i = 0; i < n; i++) {
+            String sub = new String(result, i, m);
+            if (str1.charAt(i) == 'T') {
+                if (!sub.equals(str2)) return "";
+            } else {
+                if (sub.equals(str2)) return "";
+            }
+        }
+
+        return new String(result);
+    }
+
+}
