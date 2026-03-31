@@ -1,0 +1,18 @@
+class Solution {
+    // arr: prices array, k: transaction fee
+    public int maxProfit(int[] arr, int k) {
+        if (arr == null || arr.length == 0) return 0;
+        int n = arr.length;
+        long hold = -arr[0]; // max profit when holding a stock
+        long cash = 0;       // max profit when not holding
+
+        for (int i = 1; i < n; i++) {
+            long price = arr[i];
+            long newCash = Math.max(cash, hold + price - k);
+            long newHold = Math.max(hold, cash - price);
+            cash = newCash;
+            hold = newHold;
+        }
+        return (int) cash;
+    }
+}
