@@ -1,0 +1,49 @@
+class Solution {
+    public List<Integer> survivedRobotsHealths(int[] positions, int[] healths, String directions) {
+        int n = positions.length;
+        // order indices by increasing position
+        Integer[] order = new Integer[n];
+        for (int i = 0; i < n; i++) order[i] = i;
+        Arrays.sort(order, Comparator.comparingInt(i -> positions[i]));
+
+        int[] h = Arrays.copyOf(healths, n);
+        Deque<Integer> stackR = new ArrayDeque<>(); // stores original indices of 'R' robots
+
+        for (int k = 0; k < n; k++) {
+            int i = order[k];
+            char dir = directions.charAt(i);
+            if (dir == 'R') {
+                stackR.push(i);
+            } else { // dir == 'L'
+                while (!stackR.isEmpty() && h[i] > 0) {
+                    int j = stackR.peek();
+                    if (h[j] < h[i]) {
+                        // right-moving robot j dies
+                        stackR.pop();
+                        h[j] = 0;
+                        h[i] -= 1;
+                        // continue colliding with next right-moving robot
+                    } else if (h[j] == h[i]) {
+                        // both die
+                        stackR.pop();
+                        h[j] = 0;
+                        h[i] = 0;
+                        break;
+                    } else { // h[j] > h[i]
+                        // left-moving robot i dies, right-moving robot j loses 1 health
+                        h[j] -= 1;
+                        h[i] = 0;
+                        break;
+                    }
+                }
+                // if stack empty or h[i] == 0, nothing more to do
+            }
+        }
+
+        List<Integer> res = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            if (h[i] > 0) res.add(h[i]);
+        }
+        return res;
+    }
+}
