@@ -1,0 +1,62 @@
+class Solution {
+    public int maximumAmount(int[][] coins) {
+        int m = coins.length;
+        int n = coins[0].length;
+        final long NEG = Long.MIN_VALUE / 4;
+
+        // dpPrev[j][t] = best value for previous row at column j with t neutralizations used
+        long[][] dpPrev = new long[n][3];
+        for (int j = 0; j < n; j++) Arrays.fill(dpPrev[j], NEG);
+
+        for (int i = 0; i < m; i++) {
+            long[][] dpCurr = new long[n][3];
+            for (int j = 0; j < n; j++) Arrays.fill(dpCurr[j], NEG);
+
+            for (int j = 0; j < n; j++) {
+                int val = coins[i][j];
+
+                // Start cell (0,0)
+                if (i == 0 && j == 0) {
+                    if (val >= 0) {
+                        dpCurr[0][0] = val;
+                    } else {
+                        // not neutralize
+                        dpCurr[0][0] = val;
+                        // neutralize using 1 neutralization -> add 0 instead of val
+                        dpCurr[0][1] = Math.max(dpCurr[0][1], 0L);
+                    }
+                    continue;
+                }
+
+                for (int t = 0; t <= 2; t++) {
+                    long bestPrev = NEG;
+                    if (i > 0) bestPrev = Math.max(bestPrev, dpPrev[j][t]);
+                    if (j > 0) bestPrev = Math.max(bestPrev, dpCurr[j - 1][t]);
+
+                    if (bestPrev > NEG / 2) {
+                        // move here without neutralizing
+                        dpCurr[j][t] = Math.max(dpCurr[j][t], bestPrev + val);
+                    }
+
+                    // if val < 0, we can neutralize this cell (consume one neutralization)
+                    if (val < 0 && t > 0) {
+                        long bestPrevTminus = NEG;
+                        if (i > 0) bestPrevTminus = Math.max(bestPrevTminus, dpPrev[j][t - 1]);
+                        if (j > 0) bestPrevTminus = Math.max(bestPrevTminus, dpCurr[j - 1][t - 1]);
+                        if (bestPrevTminus > NEG / 2) {
+                            // neutralize: add 0 instead of val
+                            dpCurr[j][t] = Math.max(dpCurr[j][t], bestPrevTminus);
+                        }
+                    }
+                }
+            }
+
+            dpPrev = dpCurr;
+        }
+
+        long ans = NEG;
+        for (int t = 0; t <= 2; t++) ans = Math.max(ans, dpPrev[n - 1][t]);
+        // ans may be negative; cast to int (values fit within 32-bit per problem constraints)
+        return (int) ans;
+    }
+}
