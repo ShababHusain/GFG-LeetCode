@@ -1,0 +1,22 @@
+class Solution {
+    public int countWays(int n, int k) {
+        if (n == 0) return 0;
+        if (n == 1) return k;
+
+        // For n == 2
+        long same = k;               // last two posts same
+        long diff = (long) k * (k - 1); // last two posts different
+
+        if (n == 2) return (int) (same + diff);
+
+        for (int i = 3; i <= n; i++) {
+            long newSame = diff;
+            long newDiff = (same + diff) * (k - 1L);
+            same = newSame;
+            diff = newDiff;
+        }
+
+        long total = same + diff;
+        return (int) total; // problem guarantees result fits in 32-bit int
+    }
+}
