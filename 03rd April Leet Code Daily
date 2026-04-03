@@ -1,0 +1,100 @@
+class Solution {
+    public int maxWalls(int[] robots, int[] distance, int[] walls) {
+        int n = robots.length;
+        
+        // Pair robots with their distances and sort by position
+        int[][] r = new int[n][2];
+        for (int i = 0; i < n; i++) {
+            r[i][0] = robots[i];
+            r[i][1] = distance[i];
+        }
+        Arrays.sort(r, (a, b) -> Integer.compare(a[0], b[0]));
+        Arrays.sort(walls);
+        
+        // Filter out walls that are exactly at robot positions
+        int[] W = new int[walls.length];
+        int wLen = 0;
+        int baseCount = 0;
+        int rIdx = 0;
+        
+        for (int wallPos : walls) {
+            while (rIdx < n && r[rIdx][0] < wallPos) {
+                rIdx++;
+            }
+            if (rIdx < n && r[rIdx][0] == wallPos) {
+                baseCount++;
+            } else {
+                W[wLen++] = wallPos;
+            }
+        }
+        
+        // dp[i][0] -> Max walls destroyed up to robot i, if robot i shoots LEFT
+        // dp[i][1] -> Max walls destroyed up to robot i, if robot i shoots RIGHT
+        int[][] dp = new int[n][2];
+        
+        // Base case for Robot 0 shooting Left
+        dp[0][0] = countWalls(W, wLen, r[0][0] - r[0][1], r[0][0] - 1);
+        dp[0][1] = 0;
+        
+        for (int i = 0; i < n - 1; i++) {
+            int R_i = r[i][0], D_i = r[i][1];
+            int R_next = r[i+1][0], D_next = r[i+1][1];
+            
+            // Robot i shooting Right
+            int AR = R_i + 1;
+            int BR = Math.min(R_next - 1, R_i + D_i);
+            int cR = countWalls(W, wLen, AR, BR);
+            
+            // Robot i+1 shooting Left
+            int AL = Math.max(R_i + 1, R_next - D_next);
+            int BL = R_next - 1;
+            int cL = countWalls(W, wLen, AL, BL);
+            
+            // Both firing into the segment
+            int cB;
+            if (BR >= AL) { // Intervals overlap or touch
+                cB = countWalls(W, wLen, R_i + 1, R_next - 1);
+            } else {        // Disjoint intervals
+                cB = cR + cL;
+            }
+            
+            dp[i+1][0] = Math.max(dp[i][0] + cL, dp[i][1] + cB);
+            dp[i+1][1] = Math.max(dp[i][0], dp[i][1] + cR);
+        }
+        
+        // Check extra walls destroyed if the last robot shoots Right
+        int lastRightCount = countWalls(W, wLen, r[n-1][0] + 1, r[n-1][0] + r[n-1][1]);
+        
+        return baseCount + Math.max(dp[n-1][0], dp[n-1][1] + lastRightCount);
+    }
+    
+    // Returns the number of walls in the inclusive range [left, right]
+    private int countWalls(int[] W, int len, int left, int right) {
+        if (left > right) return 0;
+        int l = lowerBound(W, len, left);
+        int r = upperBound(W, len, right);
+        return r - l;
+    }
+    
+    // First index with value >= target
+    private int lowerBound(int[] W, int len, int target) {
+        int l = 0, r = len;
+        while (l < r) {
+            int mid = l + (r - l) / 2;
+            if (W[mid] >= target) r = mid;
+            else l = mid + 1;
+        }
+        return l;
+    }
+    
+    // First index with value > target
+    private int upperBound(int[] W, int len, int target) {
+        int l = 0, r = len;
+        while (l < r) {
+            int mid = l + (r - l) / 2;
+            if (W[mid] > target) r = mid;
+            else l = mid + 1;
+        }
+        return l;
+    }
+}
