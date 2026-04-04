@@ -1,0 +1,16 @@
+class Solution {
+    public ArrayList<String> graycode(int n) {
+        ArrayList<String> res = new ArrayList<>();
+        int total = 1 << n;                       // 2^n entries
+        for (int i = 0; i < total; i++) {
+            int gray = i ^ (i >> 1);              // binary-to-Gray formula
+            String bits = Integer.toBinaryString(gray);
+            // left-pad with zeros to length n
+            if (bits.length() < n) {
+                bits = "0".repeat(n - bits.length()) + bits;
+            }
+            res.add(bits);
+        }
+        return res;
+    }
+}
