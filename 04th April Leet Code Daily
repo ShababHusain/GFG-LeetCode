@@ -1,0 +1,33 @@
+class Solution {
+    public String decodeCiphertext(String encodedText, int rows) {
+        if (encodedText == null || encodedText.length() == 0) return "";
+        if (rows == 1) return encodedText;
+
+        int len = encodedText.length();
+        int cols = len / rows;
+        char[][] mat = new char[rows][cols];
+
+        int idx = 0;
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                mat[r][c] = encodedText.charAt(idx++);
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int start = 0; start < cols; start++) {
+            int r = 0, c = start;
+            while (r < rows && c < cols) {
+                sb.append(mat[r][c]);   // append spaces too
+                r++; c++;
+            }
+        }
+
+        // remove only trailing padding spaces
+        while (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
+            sb.setLength(sb.length() - 1);
+        }
+
+        return sb.toString();
+    }
+}
