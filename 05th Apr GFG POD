@@ -1,0 +1,34 @@
+class Solution {
+    public int totalWays(int[] arr, int target) {
+        if (arr == null) return 0;
+        int n = arr.length;
+        long sum = 0;
+        for (int v : arr) sum += v;
+        // If target absolute greater than sum or parity mismatch, impossible
+        if (Math.abs(target) > sum) return 0;
+        long t = sum + target;
+        if (t % 2 != 0) return 0;
+        int subsetSum = (int)(t / 2);
+
+        long[] dp = new long[subsetSum + 1];
+        dp[0] = 1; // one way to make sum 0: choose nothing
+
+        for (int num : arr) {
+            // iterate backwards to avoid reuse within same iteration
+            if (num <= subsetSum) {
+                for (int s = subsetSum; s >= num; s--) {
+                    dp[s] += dp[s - num];
+                }
+            } else {
+                // if num > subsetSum, it only affects dp[0] when num==0 (handled above)
+                // otherwise it contributes nothing to sums <= subsetSum
+                if (num == 0) {
+                    // doubling all counts when num == 0
+                    for (int s = subsetSum; s >= 0; s--) dp[s] += dp[s];
+                }
+            }
+        }
+
+        return (int) dp[subsetSum];
+    }
+}
