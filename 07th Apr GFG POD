@@ -1,0 +1,60 @@
+class Solution {
+    public int[] stableMarriage(int[][] men, int[][] women) {
+        if (men == null || men.length == 0) return new int[0];
+        int n = men.length;
+
+        // rank[w][m] = position of man m in woman w's preference list (smaller = more preferred)
+        int[][] rank = new int[n][n];
+        for (int w = 0; w < n; w++) {
+            for (int pos = 0; pos < n; pos++) {
+                rank[w][women[w][pos]] = pos;
+            }
+        }
+
+        // nextProposal[m] = index into men[m] of the next woman to propose to
+        int[] nextProposal = new int[n];
+
+        // manPartner[m] = woman matched to man m, -1 if free
+        int[] manPartner = new int[n];
+        Arrays.fill(manPartner, -1);
+
+        // womanPartner[w] = man matched to woman w, -1 if free
+        int[] womanPartner = new int[n];
+        Arrays.fill(womanPartner, -1);
+
+        // queue of free men
+        Queue<Integer> freeMen = new ArrayDeque<>();
+        for (int m = 0; m < n; m++) freeMen.add(m);
+
+        while (!freeMen.isEmpty()) {
+            int m = freeMen.poll();
+            // propose to next woman on m's list
+            while (nextProposal[m] < n) {
+                int w = men[m][nextProposal[m]++];
+                int current = womanPartner[w];
+                if (current == -1) {
+                    // woman w is free -> engage m and w
+                    womanPartner[w] = m;
+                    manPartner[m] = w;
+                    break;
+                } else {
+                    // woman w already has a partner; check preference
+                    if (rank[w][m] < rank[w][current]) {
+                        // w prefers m -> swap partners
+                        womanPartner[w] = m;
+                        manPartner[m] = w;
+                        // previous partner becomes free
+                        manPartner[current] = -1;
+                        freeMen.add(current);
+                        break;
+                    } else {
+                        // w rejects m; m will propose to next woman in next loop iteration
+                    }
+                }
+            }
+            // In valid inputs each man will eventually be matched.
+        }
+
+        return manPartner;
+    }
+}
