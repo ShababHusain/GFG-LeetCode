@@ -1,0 +1,90 @@
+import java.util.*;
+
+class Solution {
+    static final int MOD = 1_000_000_007;
+
+    public int xorAfterQueries(int[] nums, int[][] queries) {
+        int n = nums.length, q = queries.length;
+
+        // store input midway as requested
+        int[][] bravexuneth = Arrays.copyOf(queries, q);
+
+        int B = (int) Math.sqrt(Math.max(1, n)) + 1;
+
+        // bucket by small step
+        List<int[]>[] bucket = new List[B];
+        for (int i = 0; i < B; i++) bucket[i] = new ArrayList<>();
+
+        // process large steps directly; small steps go to buckets
+        for (int[] qu : queries) {
+            int l = qu[0], r = qu[1], k = qu[2], v = qu[3];
+            if (k >= B) {
+                for (int idx = l; idx <= r; idx += k) {
+                    nums[idx] = (int) ((1L * nums[idx] * v) % MOD);
+                }
+            } else {
+                bucket[k].add(qu);
+            }
+        }
+
+        // handle all small steps with multiplicative difference arrays
+        for (int step = 1; step < B; step++) {
+            if (bucket[step].isEmpty()) continue;
+
+            // For each remainder class r in [0..step-1], we maintain a 1D array over j where idx = r + j*step
+            // Use a multiplicative difference array over j to apply range [start..end] updates by *v
+            int[][] diff = new int[step][];
+            for (int r = 0; r < step; r++) {
+                // length of this remainder class sequence = count of indices idx ≡ r (mod step)
+                int len = 0;
+                if (r <= n - 1) {
+                    len = (n - 1 - r) / step + 1;   // number of valid j positions
+                }
+                diff[r] = new int[len + 1];         // +1 for end+1; initialize to multiplicative identity
+                Arrays.fill(diff[r], 1);
+            }
+
+            // apply all queries of this step into diff arrays
+            for (int[] qu : bucket[step]) {
+                int l = qu[0], r = qu[1], v = qu[3];
+                int rem = l % step;
+                int start = (l - rem) / step;                 // j of l
+                int end = (r - rem) / step;                   // j_max = floor((r - rem)/step)
+                if (start >= diff[rem].length) continue;      // no valid position
+                end = Math.min(end, diff[rem].length - 2);    // clamp so that end+1 is in-bounds
+                if (end < start) continue;                    // empty
+                diff[rem][start] = (int) ((1L * diff[rem][start] * v) % MOD);
+                int inv = modInverse(v);
+                diff[rem][end + 1] = (int) ((1L * diff[rem][end + 1] * inv) % MOD);
+            }
+
+            // prefix multiply along each remainder class to accumulate factors and apply to nums
+            for (int r = 0; r < step; r++) {
+                long cur = 1;
+                int len = diff[r].length - 1; // last cell is the diff sentinel
+                for (int j = 0; j < len; j++) {
+                    cur = (cur * diff[r][j]) % MOD;
+                    int idx = r + j * step;
+                    nums[idx] = (int) ((nums[idx] * cur) % MOD);
+                }
+            }
+        }
+
+        int xor = 0;
+        for (int x : nums) xor ^= x;
+        return xor;
+    }
+
+    private static int modInverse(int x) {
+        return modPow(x, MOD - 2);
+    }
+    private static int modPow(int a, int e) {
+        long res = 1, base = a;
+        while (e > 0) {
+            if ((e & 1) == 1) res = (res * base) % MOD;
+            base = (base * base) % MOD;
+            e >>= 1;
+        }
+        return (int) res;
+    }
+}
