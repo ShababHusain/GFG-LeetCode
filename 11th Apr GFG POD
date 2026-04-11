@@ -1,0 +1,23 @@
+class Solution {
+    public int countIncreasing(int[] arr) {
+        if (arr == null || arr.length < 2) return 0;
+        long ans = 0; // use long to avoid overflow for large n, then cast to int if safe
+        int n = arr.length;
+        int runLen = 1; // current run length (number of elements in current strictly increasing run)
+
+        for (int i = 1; i < n; i++) {
+            if (arr[i] > arr[i - 1]) {
+                runLen++;
+            } else {
+                // add contribution of the finished run
+                if (runLen >= 2) ans += (long) runLen * (runLen - 1) / 2;
+                runLen = 1;
+            }
+        }
+        // final run
+        if (runLen >= 2) ans += (long) runLen * (runLen - 1) / 2;
+
+        // problem constraints ensure result fits in int for n <= 1e5, but return int
+        return (int) ans;
+    }
+}
