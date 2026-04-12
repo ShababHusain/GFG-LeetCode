@@ -1,0 +1,41 @@
+class Solution {
+    private int[][][] memo;
+    private char[] w;
+    private int n;
+
+    public int minimumDistance(String word) {
+        w = word.toCharArray();
+        n = w.length;
+        // 26 letters + 1 for "not placed" state
+        memo = new int[n][27][27];
+        for (int p = 0; p < n; p++) {
+            for (int a = 0; a < 27; a++) {
+                for (int b = 0; b < 27; b++) {
+                    memo[p][a][b] = -1;
+                }
+            }
+        }
+        return dfs(0, 26, 26);
+    }
+
+    private int dfs(int pos, int i, int j) {
+        if (pos == n) return 0;
+        if (memo[pos][i][j] != -1) return memo[pos][i][j];
+
+        int c = w[pos] - 'A';
+        // move finger i to c
+        int costMoveI = (i == 26 ? 0 : dist(i, c)) + dfs(pos + 1, c, j);
+        // move finger j to c
+        int costMoveJ = (j == 26 ? 0 : dist(j, c)) + dfs(pos + 1, i, c);
+
+        int ans = Math.min(costMoveI, costMoveJ);
+        memo[pos][i][j] = ans;
+        return ans;
+    }
+
+    private int dist(int a, int b) {
+        int ra = a / 6, ca = a % 6;
+        int rb = b / 6, cb = b % 6;
+        return Math.abs(ra - rb) + Math.abs(ca - cb);
+    }
+}
