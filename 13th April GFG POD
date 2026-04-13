@@ -1,0 +1,64 @@
+class Solution {
+    static int[] nextPalindrome(int[] num) {
+        int n = num.length;
+        // check if all 9s
+        boolean all9 = true;
+        for (int d : num) {
+            if (d != 9) { all9 = false; break; }
+        }
+        if (all9) {
+            int[] res = new int[n + 1];
+            res[0] = 1;
+            res[n] = 1;
+            return res;
+        }
+
+        int[] res = Arrays.copyOf(num, n);
+        // mirror left to right
+        for (int i = 0; i < n / 2; i++) {
+            res[n - 1 - i] = res[i];
+        }
+
+        // if mirrored result is already greater than original, return it
+        int cmp = 0; // 0 equal, 1 greater, -1 smaller
+        for (int i = 0; i < n; i++) {
+            if (res[i] != num[i]) {
+                cmp = res[i] > num[i] ? 1 : -1;
+                break;
+            }
+        }
+        if (cmp == 1) return res;
+
+        // need to increment the middle and propagate carry, then mirror again
+        int carry = 1;
+        int left = (n - 1) / 2;
+        int right = (n % 2 == 0) ? left + 1 : left;
+
+        // add carry to the middle (or left-middle for even length)
+        while (left >= 0 && carry > 0) {
+            int val = res[left] + carry;
+            carry = val / 10;
+            res[left] = val % 10;
+            res[right] = res[left]; // mirror
+            left--;
+            right++;
+        }
+
+        // mirror remaining (if any left side unchanged)
+        while (left >= 0) {
+            res[right] = res[left];
+            left--;
+            right++;
+        }
+
+        // if carry still remains (shouldn't happen because all9 handled), handle it
+        if (carry > 0) {
+            int[] ans = new int[n + 1];
+            ans[0] = 1;
+            ans[n] = 1;
+            return ans;
+        }
+
+        return res;
+    }
+}
