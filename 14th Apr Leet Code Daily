@@ -1,0 +1,47 @@
+class Solution {
+    public long minimumTotalDistance(List<Integer> robot, int[][] factory) {
+        int R = robot.size();
+        int F = factory.length;
+        // convert and sort robots
+        int[] robots = new int[R];
+        for (int i = 0; i < R; i++) robots[i] = robot.get(i);
+        Arrays.sort(robots);
+
+        // sort factories by position
+        Arrays.sort(factory, (a, b) -> Integer.compare(a[0], b[0]));
+
+        final long INF = Long.MAX_VALUE / 4;
+        // dp[i] = min cost to fix first i robots using processed factories so far
+        long[] dp = new long[R + 1];
+        Arrays.fill(dp, INF);
+        dp[0] = 0;
+
+        // process factories one by one
+        for (int j = 0; j < F; j++) {
+            int pos = factory[j][0];
+            int limit = factory[j][1];
+
+            long[] next = new long[R + 1];
+            Arrays.fill(next, INF);
+
+            for (int i = 0; i <= R; i++) {
+                if (dp[i] == INF) continue;
+                // try assigning k robots (0..limit) to this factory
+                long cost = 0;
+                for (int k = 0; k <= limit && i + k <= R; k++) {
+                    // when k == 0, cost is 0 and we just carry dp[i] forward
+                    if (k == 0) {
+                        next[i] = Math.min(next[i], dp[i]);
+                    } else {
+                        // add cost of robot at index i + k - 1
+                        cost += Math.abs((long)robots[i + k - 1] - pos);
+                        next[i + k] = Math.min(next[i + k], dp[i] + cost);
+                    }
+                }
+            }
+            dp = next;
+        }
+
+        return dp[R];
+    }
+}
