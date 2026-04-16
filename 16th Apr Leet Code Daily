@@ -1,0 +1,46 @@
+class Solution {
+    public List<Integer> solveQueries(int[] nums, int[] queries) {
+        int n = nums.length;
+        // build map value -> sorted list of indices
+        Map<Integer, List<Integer>> pos = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            pos.computeIfAbsent(nums[i], k -> new ArrayList<>()).add(i);
+        }
+        for (List<Integer> list : pos.values()) Collections.sort(list);
+
+        List<Integer> ans = new ArrayList<>(queries.length);
+        for (int q : queries) {
+            int idx = q;
+            int val = nums[idx];
+            List<Integer> list = pos.get(val);
+            if (list == null || list.size() == 1) {
+                ans.add(-1);
+                continue;
+            }
+            int m = list.size();
+            int k = Collections.binarySearch(list, idx);
+            int best = Integer.MAX_VALUE;
+            if (k >= 0) {
+                // exact match found; consider neighbors (wrap-around)
+                int leftIdx = list.get((k - 1 + m) % m);
+                int rightIdx = list.get((k + 1) % m);
+                best = Math.min(best, circularDist(idx, leftIdx, n));
+                best = Math.min(best, circularDist(idx, rightIdx, n));
+            } else {
+                int ins = -k - 1;
+                int cand1 = list.get(ins % m);                 // next greater or wrap
+                int cand2 = list.get((ins - 1 + m) % m);       // previous or wrap
+                best = Math.min(best, circularDist(idx, cand1, n));
+                best = Math.min(best, circularDist(idx, cand2, n));
+            }
+            ans.add(best);
+        }
+        return ans;
+    }
+
+    private int circularDist(int a, int b, int n) {
+        int d = Math.abs(a - b);
+        return Math.min(d, n - d);
+    }
+
+}
