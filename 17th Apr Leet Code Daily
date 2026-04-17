@@ -1,0 +1,25 @@
+class Solution {
+    public int minMirrorPairDistance(int[] nums) {
+        Map<Integer, Integer> lastIndexOfReversed = new HashMap<>(); // key = reverse(nums[i]) -> i
+        int ans = Integer.MAX_VALUE;
+        for (int j = 0; j < nums.length; j++) {
+            // If some earlier i had reverse(nums[i]) == nums[j], we have a mirror pair (i, j)
+            if (lastIndexOfReversed.containsKey(nums[j])) {
+                int i = lastIndexOfReversed.get(nums[j]);
+                ans = Math.min(ans, j - i);
+            }
+            // store reverse of current value for future indices
+            lastIndexOfReversed.put(reverseInt(nums[j]), j);
+        }
+        return ans == Integer.MAX_VALUE ? -1 : ans;
+    }
+
+    private int reverseInt(int x) {
+        int r = 0;
+        while (x > 0) {
+            r = r * 10 + (x % 10);
+            x /= 10;
+        }
+        return r;
+    }
+}
