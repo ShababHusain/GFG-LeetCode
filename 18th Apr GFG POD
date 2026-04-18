@@ -1,0 +1,21 @@
+class Solution {
+    int maxOnes(int[] arr) {
+        // code here
+        int n = arr.length;
+        int baseOnes = 0;
+        int current = 0;
+        int best = Integer.MIN_VALUE; // track best subarray sum of gains
+
+        for (int x : arr) {
+            if (x == 1) baseOnes++;
+            int val = (x == 0) ? 1 : -1; // gain if we flip this element
+            if (current > 0) current += val;
+            else current = val;
+            best = Math.max(best, current);
+        }
+
+        // If best is negative, flipping hurts, so don't flip (gain 0)
+        int bestGain = Math.max(0, best);
+        return baseOnes + bestGain;
+    }
+};
