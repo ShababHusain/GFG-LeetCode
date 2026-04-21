@@ -1,0 +1,47 @@
+class Solution {
+    public int minSteps(int m, int n, int d) {
+        if (d == 0) return 0;
+        if (d > Math.max(m, n)) return -1;
+        int g = gcd(m, n);
+        if (d % g != 0) return -1;
+        if (d == m || d == n) return 1;
+
+        return Math.min(pour(m, n, d), pour(n, m, d));
+    }
+
+    // Simulate pouring from 'fromCap' into 'toCap' until one jug has 'target' litres.
+    private int pour(int fromCap, int toCap, int target) {
+        int from = fromCap; // fill source
+        int to = 0;
+        int steps = 1; // initial fill counts as one step
+
+        while (from != target && to != target) {
+            // pour from -> to
+            int transfer = Math.min(from, toCap - to);
+            to += transfer;
+            from -= transfer;
+            steps++; // pour
+
+            if (from == target || to == target) break;
+
+            if (from == 0) { // refill source
+                from = fromCap;
+                steps++; // fill
+            }
+            if (to == toCap) { // empty destination
+                to = 0;
+                steps++; // empty
+            }
+        }
+        return steps;
+    }
+
+    private int gcd(int a, int b) {
+        while (b != 0) {
+            int t = a % b;
+            a = b;
+            b = t;
+        }
+        return a;
+    }
+}
