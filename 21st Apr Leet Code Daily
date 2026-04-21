@@ -1,0 +1,65 @@
+class Solution {
+    // Union-Find (Disjoint Set Union)
+    static class DSU {
+        int[] parent, rank;
+        DSU(int n) {
+            parent = new int[n];
+            rank = new int[n];
+            for (int i = 0; i < n; i++) parent[i] = i;
+        }
+        int find(int x) {
+            if (parent[x] != x) parent[x] = find(parent[x]);
+            return parent[x];
+        }
+        void union(int a, int b) {
+            int ra = find(a), rb = find(b);
+            if (ra == rb) return;
+            if (rank[ra] < rank[rb]) parent[ra] = rb;
+            else if (rank[rb] < rank[ra]) parent[rb] = ra;
+            else { parent[rb] = ra; rank[ra]++; }
+        }
+    }
+
+    public int minimumHammingDistance(int[] source, int[] target, int[][] allowedSwaps) {
+        int n = source.length;
+        DSU dsu = new DSU(n);
+        for (int[] e : allowedSwaps) dsu.union(e[0], e[1]);
+
+        // Group indices by root
+        Map<Integer, List<Integer>> groups = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            int r = dsu.find(i);
+            groups.computeIfAbsent(r, k -> new ArrayList<>()).add(i);
+        }
+
+        int ans = 0;
+        // For each group, count frequencies and compute unmatched positions
+        for (List<Integer> idxs : groups.values()) {
+            Map<Integer, Integer> cntSource = new HashMap<>();
+            Map<Integer, Integer> cntTarget = new HashMap<>();
+            for (int idx : idxs) {
+                cntSource.put(source[idx], cntSource.getOrDefault(source[idx], 0) + 1);
+                cntTarget.put(target[idx], cntTarget.getOrDefault(target[idx], 0) + 1);
+            }
+            int matches = 0;
+            // iterate over smaller map for efficiency
+            if (cntSource.size() <= cntTarget.size()) {
+                for (Map.Entry<Integer,Integer> e : cntSource.entrySet()) {
+                    int v = e.getKey();
+                    int a = e.getValue();
+                    int b = cntTarget.getOrDefault(v, 0);
+                    matches += Math.min(a, b);
+                }
+            } else {
+                for (Map.Entry<Integer,Integer> e : cntTarget.entrySet()) {
+                    int v = e.getKey();
+                    int b = e.getValue();
+                    int a = cntSource.getOrDefault(v, 0);
+                    matches += Math.min(a, b);
+                }
+            }
+            ans += idxs.size() - matches;
+        }
+        return ans;
+    }
+}
