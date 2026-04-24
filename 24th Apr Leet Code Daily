@@ -1,0 +1,15 @@
+class Solution {
+    public int furthestDistanceFromOrigin(String moves) {
+        int cntL=0, cntR=0, cntU=0;
+        for(char c: moves.toCharArray()){
+            if(c=='L') cntL++;
+            else if (c =='R') cntR++;
+            else cntU++;
+
+        }
+        int rightMost=cntR+cntU-cntL;
+        int leftMost= cntR-(cntL+cntU);
+        return Math.max(Math.abs(rightMost),Math.abs(leftMost));
+        
+    }
+}
