@@ -1,0 +1,29 @@
+class Solution {
+    public ArrayList<Integer> reducePairs(int[] arr) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        for (int x : arr) {
+            int cur = x;
+            while (cur != 0 && !stack.isEmpty() && haveOppositeSign(stack.peekLast(), cur)) {
+                int top = stack.peekLast();
+                int absTop = Math.abs(top);
+                int absCur = Math.abs(cur);
+                if (absTop < absCur) {
+                    stack.removeLast(); // top destroyed, continue comparing cur
+                } else if (absTop == absCur) {
+                    stack.removeLast(); // both destroyed
+                    cur = 0;
+                    break;
+                } else { // absTop > absCur
+                    cur = 0; // cur destroyed
+                    break;
+                }
+            }
+            if (cur != 0) stack.addLast(cur);
+        }
+        return new ArrayList<>(stack); // preserves left-to-right order
+    }
+
+    private boolean haveOppositeSign(int a, int b) {
+        return (a > 0 && b < 0) || (a < 0 && b > 0);
+    }
+}
