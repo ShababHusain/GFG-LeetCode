@@ -1,0 +1,89 @@
+class Solution {
+    public int maxDistance(int side, int[][] points, int k) {
+        int n = points.length;
+        long P = 4L * side;
+        long[] pos = new long[n];
+        for (int i = 0; i < n; i++) pos[i] = toPerimeterCoord(points[i][0], points[i][1], side);
+
+        Arrays.sort(pos);
+        long[] dup = new long[2 * n];
+        for (int i = 0; i < n; i++) {
+            dup[i] = pos[i];
+            dup[i + n] = pos[i] + P;
+        }
+
+        long lo = 0, hi = P;
+        while (lo < hi) {
+            long mid = (lo + hi + 1) >>> 1;
+            if (canPlace(dup, n, k, mid, P)) lo = mid;
+            else hi = mid - 1;
+        }
+        return (int) lo;
+    }
+
+    private long toPerimeterCoord(int x, int y, int side) {
+        long s = side;
+        if (x == 0) return y;                     // left edge (0,0) -> (0,side)
+        if (y == side) return s + x;              // top edge (0,side) -> (side,side)
+        if (x == side) return 2 * s + (s - y);    // right edge (side,side) -> (side,0)
+        return 3 * s + (s - x);                   // bottom edge (side,0) -> (0,0)
+    }
+
+    // Check feasibility for distance d using binary lifting
+    private boolean canPlace(long[] dup, int n, int k, long d, long P) {
+        int m = dup.length; // 2n
+        // compute next[i] = first index j with dup[j] >= dup[i] + d
+        int[] next = new int[m];
+        for (int i = 0; i < m; i++) {
+            int j = lowerBound(dup, i + 1, m, dup[i] + d);
+            next[i] = (j == m) ? -1 : j;
+        }
+
+        // build jump table up to maxPow where 2^maxPow >= k
+        int maxPow = 0;
+        while ((1 << maxPow) <= (k - 1)) maxPow++;
+        // jump[p][i] = index after 2^p jumps starting from i (or -1)
+        int[][] jump = new int[maxPow + 1][m];
+        for (int i = 0; i < m; i++) jump[0][i] = next[i];
+
+        for (int p = 1; p <= maxPow; p++) {
+            for (int i = 0; i < m; i++) {
+                int mid = jump[p - 1][i];
+                jump[p][i] = (mid == -1) ? -1 : jump[p - 1][mid];
+            }
+        }
+
+        // For each start in [0, n-1], try to jump k-1 times using binary lifting
+        for (int start = 0; start < n; start++) {
+            int cur = start;
+            int remain = k - 1;
+            int bit = 0;
+            while (remain > 0 && cur != -1) {
+                if ((remain & 1) == 1) {
+                    cur = jump[bit][cur];
+                }
+                remain >>= 1;
+                bit++;
+            }
+            if (cur == -1) continue; // couldn't pick k points starting here
+            // cur is index of the last chosen point (in dup)
+            // ensure last is within the same lap: cur < start + n
+            if (cur >= start + n) continue;
+            // ensure wrap-around gap (first->last across perimeter) >= d:
+            // wrapGap = (first + P) - last  >= d  <=> last <= first + P - d
+            if (dup[cur] <= dup[start] + P - d) return true;
+        }
+        return false;
+    }
+
+    // lowerBound on sorted array arr from [lo, hi) for target
+    private int lowerBound(long[] arr, int lo, int hi, long target) {
+        int l = lo, r = hi; // search in [lo, hi)
+        while (l < r) {
+            int mid = (l + r) >>> 1;
+            if (arr[mid] >= target) r = mid;
+            else l = mid + 1;
+        }
+        return l;
+    }
+}
