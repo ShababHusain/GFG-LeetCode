@@ -1,0 +1,54 @@
+class Solution {
+    private int m, n;
+    private char[][] grid;
+    private int[][] depth; // -1 means unvisited
+    private final int[] dr = {1, -1, 0, 0};
+    private final int[] dc = {0, 0, 1, -1};
+
+    public boolean containsCycle(char[][] grid) {
+        this.grid = grid;
+        m = grid.length;
+        n = grid[0].length;
+        depth = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) depth[i][j] = -1;
+        }
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (depth[i][j] == -1) {
+                    if (dfs(i, j, -1, -1, 0)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // r,c : current cell; pr,pc : parent cell coordinates (or -1,-1 if none); d : current depth
+    private boolean dfs(int r, int c, int pr, int pc, int d) {
+        depth[r][c] = d;
+        char ch = grid[r][c];
+
+        for (int k = 0; k < 4; k++) {
+            int nr = r + dr[k];
+            int nc = c + dc[k];
+            if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
+            if (grid[nr][nc] != ch) continue;
+
+            if (nr == pr && nc == pc) {
+                // don't go back to immediate parent
+                continue;
+            }
+
+            if (depth[nr][nc] == -1) {
+                // not visited
+                if (dfs(nr, nc, r, c, d + 1)) return true;
+            } else {
+                // visited and not parent -> check cycle length
+                int cycleLen = d - depth[nr][nc] + 1;
+                if (cycleLen >= 4) return true;
+            }
+        }
+        return false;
+    }
+}
