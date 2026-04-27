@@ -1,0 +1,62 @@
+class Solution {
+    public boolean hasValidPath(int[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+
+        // Directions: 0 = up, 1 = right, 2 = down, 3 = left
+        int[] dr = {-1, 0, 1, 0};
+        int[] dc = {0, 1, 0, -1};
+
+        // For each street type (1..6) list which directions are allowed
+        // index 0 unused to keep mapping by type
+        boolean[][] allows = new boolean[7][4];
+        // type 1: left <-> right
+        allows[1][1] = true; // right
+        allows[1][3] = true; // left
+        // type 2: up <-> down
+        allows[2][0] = true; // up
+        allows[2][2] = true; // down
+        // type 3: left <-> down
+        allows[3][3] = true; // left
+        allows[3][2] = true; // down
+        // type 4: right <-> down
+        allows[4][1] = true; // right
+        allows[4][2] = true; // down
+        // type 5: left <-> up
+        allows[5][3] = true; // left
+        allows[5][0] = true; // up
+        // type 6: right <-> up
+        allows[6][1] = true; // right
+        allows[6][0] = true; // up
+
+        boolean[][] seen = new boolean[m][n];
+        Deque<int[]> q = new ArrayDeque<>();
+        q.addLast(new int[]{0, 0});
+        seen[0][0] = true;
+
+        while (!q.isEmpty()) {
+            int[] cur = q.removeFirst();
+            int r = cur[0], c = cur[1];
+            if (r == m - 1 && c == n - 1) return true;
+
+            int type = grid[r][c];
+            for (int d = 0; d < 4; d++) {
+                if (!allows[type][d]) continue; // current cell doesn't allow going in direction d
+                int nr = r + dr[d];
+                int nc = c + dc[d];
+                if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
+
+                int neighType = grid[nr][nc];
+                int opposite = (d + 2) % 4;
+                if (!allows[neighType][opposite]) continue; // neighbor doesn't accept from this side
+
+                if (!seen[nr][nc]) {
+                    seen[nr][nc] = true;
+                    q.addLast(new int[]{nr, nc});
+                }
+            }
+        }
+
+        return false;
+    }
+}
