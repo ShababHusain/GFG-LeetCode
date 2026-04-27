@@ -1,0 +1,32 @@
+class Solution {
+    public int smallestSubstring(String s) {
+        if (s == null || s.length() < 3) return -1;
+        int n = s.length();
+        int[] cnt = new int[3]; // counts for '0','1','2'
+        int have = 0; // how many of the three characters we currently have (count>0)
+        int left = 0;
+        int minLen = Integer.MAX_VALUE;
+
+        for (int right = 0; right < n; right++) {
+            char c = s.charAt(right);
+            if (c >= '0' && c <= '2') {
+                int idx = c - '0';
+                if (cnt[idx] == 0) have++;
+                cnt[idx]++;
+            }
+            // try to shrink window while it still contains all three
+            while (have == 3 && left <= right) {
+                minLen = Math.min(minLen, right - left + 1);
+                char lc = s.charAt(left);
+                if (lc >= '0' && lc <= '2') {
+                    int idx = lc - '0';
+                    cnt[idx]--;
+                    if (cnt[idx] == 0) have--;
+                }
+                left++;
+            }
+        }
+
+        return (minLen == Integer.MAX_VALUE) ? -1 : minLen;
+    }
+}
