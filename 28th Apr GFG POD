@@ -1,0 +1,28 @@
+class Solution {
+    public int longestSubstr(String s, int k) {
+        if (s == null || s.length() == 0) return 0;
+        int n = s.length();
+        int[] freq = new int[26];
+        int left = 0;
+        int maxCount = 0; // max frequency of any char in current window
+        int result = 0;
+
+        for (int right = 0; right < n; right++) {
+            int rIdx = s.charAt(right) - 'A';
+            freq[rIdx]++;
+            if (freq[rIdx] > maxCount) maxCount = freq[rIdx];
+
+            // If replacements needed exceed k, shrink window
+            while ((right - left + 1) - maxCount > k) {
+                int lIdx = s.charAt(left) - 'A';
+                freq[lIdx]--;
+                left++;
+                // we intentionally do not recompute maxCount here for efficiency;
+                // using a slightly stale maxCount is safe for correctness.
+            }
+
+            result = Math.max(result, right - left + 1);
+        }
+        return result;
+    }
+}
