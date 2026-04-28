@@ -1,0 +1,39 @@
+class Solution {
+    public int minOperations(int[][] grid, int x) {
+        List<Integer> list = new ArrayList<>();
+        int m = grid.length, n = grid[0].length;
+
+        // Flatten grid
+        for (int[] row : grid) {
+            for (int val : row) {
+                list.add(val);
+            }
+        }
+
+        // Check mod condition
+        int mod = list.get(0) % x;
+        for (int val : list) {
+            if (val % x != mod) return -1;
+        }
+
+        // Normalize
+        List<Integer> normalized = new ArrayList<>();
+        for (int val : list) {
+            normalized.add(val / x);
+        }
+
+        // Find median
+        Collections.sort(normalized);
+        int size = normalized.size();
+        int median = normalized.get(size / 2);
+
+        // Compute operations
+        long ops = 0;
+        for (int val : normalized) {
+            ops += Math.abs(val - median);
+        }
+
+        return (int) (ops);
+        
+    }
+}
