@@ -1,0 +1,24 @@
+class Solution {
+    public int minSwaps(int[] arr) {
+        int n = arr.length;
+        int totalOnes = 0;
+        for (int v : arr) if (v == 1) totalOnes++;
+        if (totalOnes == 0) return -1; // no 1s present
+
+        // count zeros in the first window of size totalOnes
+        int zeros = 0;
+        for (int i = 0; i < totalOnes; i++) {
+            if (arr[i] == 0) zeros++;
+        }
+        int minZeros = zeros;
+
+        // slide the window
+        for (int i = totalOnes; i < n; i++) {
+            if (arr[i - totalOnes] == 0) zeros--; // leaving element
+            if (arr[i] == 0) zeros++;             // entering element
+            if (zeros < minZeros) minZeros = zeros;
+        }
+
+        return minZeros;
+    }
+}
