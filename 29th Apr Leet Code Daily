@@ -1,0 +1,102 @@
+class Solution {
+    public long maximumScore(int[][] grid) {
+        int n = grid.length;
+        if (n == 0) return 0L;
+        int H = n + 1; // heights -1..n-1 mapped to 0..n
+
+        // prefix[col][r] = sum of grid[0..r][col]
+        long[][] prefix = new long[n][n];
+        for (int col = 0; col < n; col++) {
+            long s = 0L;
+            for (int r = 0; r < n; r++) {
+                s += grid[r][col];
+                prefix[col][r] = s;
+            }
+        }
+
+        // Precompute add[col][hCurIndex][mIndex] where:
+        // hCurIndex = hCur + 1 (0..n), mIndex = m + 1 (0..n), m = max(hPrev,hNext)
+        // add = sum rows (hCur+1 .. m) in column col (0 if m <= hCur)
+        long[][][] add = new long[n][H][H];
+        for (int col = 0; col < n; col++) {
+            for (int hCurIdx = 0; hCurIdx < H; hCurIdx++) {
+                int hCur = hCurIdx - 1;
+                long sumCur = (hCur >= 0) ? prefix[col][hCur] : 0L;
+                for (int mIdx = 0; mIdx < H; mIdx++) {
+                    int m = mIdx - 1;
+                    if (m > hCur) {
+                        long sumM = (m >= 0) ? prefix[col][m] : 0L;
+                        add[col][hCurIdx][mIdx] = sumM - sumCur;
+                    } else {
+                        add[col][hCurIdx][mIdx] = 0L;
+                    }
+                }
+            }
+        }
+
+        final long NEG = Long.MIN_VALUE / 4;
+        long[][] dp = new long[H][H];
+        for (long[] row : dp) Arrays.fill(row, NEG);
+        dp[0][0] = 0L; // both previous heights = -1
+
+        // iterate columns
+        for (int c = 0; c < n; c++) {
+            long[][] dpNext = new long[H][H];
+            for (long[] row : dpNext) Arrays.fill(row, NEG);
+
+            // We will update dpNext[bi][ci] from dp[ai][bi]
+            // ai,bi,ci are indices 0..n mapping heights -1..n-1
+            int colToUse = c - 1; // contribution uses column c-1 (except c==0)
+            boolean useCol = (c > 0);
+
+            for (int ai = 0; ai < H; ai++) {
+                // hPrev = ai - 1
+                for (int bi = 0; bi < H; bi++) {
+                    long curVal = dp[ai][bi];
+                    if (curVal == NEG) continue;
+                    // hCur index = bi
+                    if (!useCol) {
+                        // c == 0: no contribution added yet; just shift states
+                        // dpNext[bi][ci] = max(dpNext[bi][ci], curVal) for all ci
+                        // we can set all ci to curVal if larger
+                        for (int ci = 0; ci < H; ci++) {
+                            if (curVal > dpNext[bi][ci]) dpNext[bi][ci] = curVal;
+                        }
+                    } else {
+                        // c > 0: contribution depends on m = max(hPrev, hNext)
+                        // For each possible hNext (ci), mIndex = max(ai-1, ci-1) + 1
+                        int hPrev = ai - 1;
+                        for (int ci = 0; ci < H; ci++) {
+                            int hNext = ci - 1;
+                            int m = (hPrev >= hNext) ? hPrev : hNext;
+                            int mIdx = m + 1;
+                            long addVal = add[colToUse][bi][mIdx];
+                            long cand = curVal + addVal;
+                            if (cand > dpNext[bi][ci]) dpNext[bi][ci] = cand;
+                        }
+                    }
+                }
+            }
+            dp = dpNext;
+        }
+
+        // finalize: add contribution for last column (n-1) with h_next = -1 (index 0)
+        long ans = 0L;
+        int lastCol = n - 1;
+        for (int ai = 0; ai < H; ai++) {
+            int hPrev = ai - 1;
+            for (int bi = 0; bi < H; bi++) {
+                long val = dp[ai][bi];
+                if (val == NEG) continue;
+                int hCur = bi - 1;
+                int hNext = -1;
+                int m = Math.max(hPrev, hNext);
+                int mIdx = m + 1;
+                long addVal = add[lastCol][bi][mIdx];
+                long total = val + addVal;
+                if (total > ans) ans = total;
+            }
+        }
+        return ans;
+    }
+}
