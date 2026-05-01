@@ -1,0 +1,21 @@
+class Solution {
+    static ArrayList<Integer> kthLargest(int[] arr, int k) {
+        ArrayList<Integer> result = new ArrayList<>();
+        if (k <= 0) {
+            // If k is invalid, return -1 for every element (defensive)
+            for (int i = 0; i < arr.length; i++) result.add(-1);
+            return result;
+        }
+
+        PriorityQueue<Integer> minHeap = new PriorityQueue<>(); // size at most k
+
+        for (int num : arr) {
+            minHeap.add(num);
+            if (minHeap.size() > k) minHeap.poll();
+
+            if (minHeap.size() < k) result.add(-1);
+            else result.add(minHeap.peek());
+        }
+        return result;
+    }
+}
