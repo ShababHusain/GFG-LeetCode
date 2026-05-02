@@ -1,0 +1,14 @@
+class Solution {
+    // Returns 1-based position of the only set bit, or -1 if none or more than one.
+    public int findPosition(int n) {
+        if (n <= 0) return -1;               // zero or negative -> invalid
+        if ((n & (n - 1)) != 0) return -1;   // more than one set bit
+
+        int pos = 1;
+        while (n > 1) {
+            n >>= 1;
+            pos++;
+        }
+        return pos;
+    }
+}
