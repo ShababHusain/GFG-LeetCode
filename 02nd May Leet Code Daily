@@ -1,0 +1,25 @@
+class Solution {
+    public int rotatedDigits(int n) {
+        int count = 0;
+        for (int x = 1; x <= n; x++) {
+            if (isGood(x)) count++;
+        }
+        return count;
+    }
+
+    // returns true if x is a "good" rotated number
+    private boolean isGood(int x) {
+        boolean hasChangingDigit = false;
+        int num = x;
+        while (num > 0) {
+            int d = num % 10;
+            num /= 10;
+            // invalid digits
+            if (d == 3 || d == 4 || d == 7) return false;
+            // digits that change after rotation
+            if (d == 2 || d == 5 || d == 6 || d == 9) hasChangingDigit = true;
+            // digits 0,1,8 are valid but do not change
+        }
+        return hasChangingDigit;
+    }
+}
