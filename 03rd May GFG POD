@@ -1,0 +1,19 @@
+class Solution {
+    static ArrayList<Integer> sortBySetBitCount(int[] arr) {
+        int n = arr.length;
+        Integer[] idx = new Integer[n];
+        for (int i = 0; i < n; i++) idx[i] = i;
+
+        Arrays.sort(idx, (a, b) -> {
+            int ca = Integer.bitCount(arr[a]);
+            int cb = Integer.bitCount(arr[b]);
+            if (ca != cb) return Integer.compare(cb, ca); // higher bit-count first
+            return Integer.compare(a, b);                 // preserve original order
+        });
+
+        ArrayList<Integer> res = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) res.add(arr[idx[i]]);
+        return res;
+    
+    }
+}
