@@ -1,0 +1,14 @@
+class Solution {
+    // Return 1 if binary representation of N is a palindrome, otherwise 0
+    public int isPallindrome(long N) {
+        if (N <= 0) return 0; // problem constraints usually N >= 1; treat non-positive as not palindrome
+
+        int len = 64 - Long.numberOfLeadingZeros(N); // number of bits in N
+        for (int i = 0; i < len / 2; i++) {
+            int lowBit = (int)((N >> i) & 1L);
+            int highBit = (int)((N >> (len - 1 - i)) & 1L);
+            if (lowBit != highBit) return 0;
+        }
+        return 1;
+    }
+}
