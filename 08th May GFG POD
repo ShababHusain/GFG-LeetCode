@@ -1,0 +1,78 @@
+import java.util.*;
+
+class Solution {
+    public List<String> validParenthesis(String s) {
+        List<String> result = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
+        
+        // Count minimum number of '(' and ')' to remove
+        int leftToRemove = 0;
+        int rightToRemove = 0;
+        for (char ch : s.toCharArray()) {
+            if (ch == '(') {
+                leftToRemove++;
+            } else if (ch == ')') {
+                if (leftToRemove > 0) {
+                    leftToRemove--; // Match found
+                } else {
+                    rightToRemove++; // Extra ')'
+                }
+            }
+        }
+        
+        dfs(s, 0, leftToRemove, rightToRemove, 0, 0, new StringBuilder(), result, visited);
+        
+        // Sort lexicographically
+        Collections.sort(result);
+        return result;
+    }
+    
+    private void dfs(String s, int index, int leftRem, int rightRem, 
+                     int leftCount, int rightCount, StringBuilder current,
+                     List<String> result, Set<String> visited) {
+        int n = s.length();
+        
+        // Base case: reached end of string
+        if (index == n) {
+            if (leftRem == 0 && rightRem == 0 && leftCount == rightCount) {
+                String valid = current.toString();
+                if (!visited.contains(valid)) {
+                    result.add(valid);
+                    visited.add(valid);
+                }
+            }
+            return;
+        }
+        
+        // Pruning: not enough characters left to remove required parentheses
+        if (n - index < leftRem + rightRem) {
+            return;
+        }
+        
+        // Pruning: more ')' than '(' so far (invalid state)
+        if (rightCount > leftCount) {
+            return;
+        }
+        
+        char ch = s.charAt(index);
+        
+        // Option 1: Remove current '(' if we still need to remove left parentheses
+        if (ch == '(' && leftRem > 0) {
+            dfs(s, index + 1, leftRem - 1, rightRem, leftCount, rightCount, current, result, visited);
+        }
+        
+        // Option 2: Remove current ')' if we still need to remove right parentheses
+        if (ch == ')' && rightRem > 0) {
+            dfs(s, index + 1, leftRem, rightRem - 1, leftCount, rightCount, current, result, visited);
+        }
+        
+        // Option 3: Keep current character
+        int addLeft = (ch == '(') ? 1 : 0;
+        int addRight = (ch == ')') ? 1 : 0;
+        
+        current.append(ch);
+        dfs(s, index + 1, leftRem, rightRem, leftCount + addLeft, rightCount + addRight, 
+            current, result, visited);
+        current.deleteCharAt(current.length() - 1); // backtrack
+    }
+}
