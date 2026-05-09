@@ -1,0 +1,76 @@
+import java.util.*;
+
+class Solution {
+    public int countSpanTree(int n, int[][] edges) {
+        if (n <= 1) return 1;
+
+        // Build Laplacian matrix L (n x n) as long
+        long[][] L = new long[n][n];
+        for (int[] e : edges) {
+            int u = e[0], v = e[1];
+            L[u][u] += 1;
+            L[v][v] += 1;
+            L[u][v] -= 1;
+            L[v][u] -= 1;
+        }
+
+        // Remove last row and last column to get (n-1)x(n-1) matrix M
+        int m = n - 1;
+        long[][] M = new long[m][m];
+        for (int i = 0; i < m; ++i)
+            for (int j = 0; j < m; ++j)
+                M[i][j] = L[i][j];
+
+        long det = bareissDeterminant(M);
+        det = Math.abs(det);
+        return (int) det;
+    }
+
+    // Bareiss algorithm (fraction-free) using long arithmetic.
+    // Assumes matrix entries and determinant fit in long (n <= 10 here).
+    private long bareissDeterminant(long[][] A) {
+        int n = A.length;
+        if (n == 0) return 1L; // determinant of 0x0 matrix = 1 by convention
+
+        // copy matrix to avoid mutating input
+        long[][] a = new long[n][n];
+        for (int i = 0; i < n; ++i)
+            System.arraycopy(A[i], 0, a[i], 0, n);
+
+        long prevPivot = 1L;
+        int sign = 1;
+
+        for (int k = 0; k < n - 1; ++k) {
+            // ensure pivot a[k][k] != 0 by swapping with a lower row if needed
+            if (a[k][k] == 0L) {
+                int swapRow = -1;
+                for (int r = k + 1; r < n; ++r) {
+                    if (a[r][k] != 0L) { swapRow = r; break; }
+                }
+                if (swapRow == -1) return 0L; // singular
+                long[] tmp = a[k];
+                a[k] = a[swapRow];
+                a[swapRow] = tmp;
+                sign = -sign;
+            }
+
+            long pivot = a[k][k];
+            for (int i = k + 1; i < n; ++i) {
+                for (int j = k + 1; j < n; ++j) {
+                    // compute (a[i][j]*pivot - a[i][k]*a[k][j]) / prevPivot
+                    long num = a[i][j] * pivot - a[i][k] * a[k][j];
+                    // exact division guaranteed by Bareiss algorithm
+                    long val = num / prevPivot;
+                    a[i][j] = val;
+                }
+            }
+            // zero out column k below diagonal
+            for (int i = k + 1; i < n; ++i) a[i][k] = 0L;
+            prevPivot = pivot;
+        }
+
+        long det = a[n - 1][n - 1];
+        if (sign < 0) det = -det;
+        return det;
+    }
+}
