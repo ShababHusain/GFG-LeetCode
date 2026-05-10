@@ -1,0 +1,22 @@
+class Solution {
+    public int maximumJumps(int[] nums, int target) {
+        int n = nums.length;
+        // dp[i] = max jumps to reach i, -INF means unreachable
+        final int NEG = Integer.MIN_VALUE / 4;
+        int[] dp = new int[n];
+        Arrays.fill(dp, NEG);
+        dp[0] = 0;
+
+        for (int i = 0; i < n; ++i) {
+            if (dp[i] == NEG) continue; // not reachable
+            for (int j = i + 1; j < n; ++j) {
+                long diff = (long)nums[j] - (long)nums[i];
+                if (diff >= - (long)target && diff <= (long)target) {
+                    dp[j] = Math.max(dp[j], dp[i] + 1);
+                }
+            }
+        }
+
+        return dp[n - 1] == NEG ? -1 : dp[n - 1];
+    }
+}
