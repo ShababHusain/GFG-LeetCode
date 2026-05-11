@@ -1,0 +1,50 @@
+class Solution {
+    public boolean palindromePair(String[] arr) {
+        if (arr == null || arr.length < 2) return false;
+
+        // map word -> index
+        Map<String, Integer> map = new HashMap<>();
+        for (int i = 0; i < arr.length; ++i) {
+            map.put(arr[i], i);
+        }
+
+        for (int i = 0; i < arr.length; ++i) {
+            String w = arr[i];
+            int len = w.length();
+
+            for (int j = 0; j <= len; ++j) {
+                String prefix = w.substring(0, j);
+                String suffix = w.substring(j);
+
+                // If prefix is palindrome, need reverse(suffix) on the left
+                if (isPalindrome(prefix)) {
+                    String revSuffix = reverse(suffix);
+                    Integer idx = map.get(revSuffix);
+                    if (idx != null && idx != i) return true;
+                }
+
+                // If suffix is palindrome, need reverse(prefix) on the right
+                // avoid duplicate check when suffix is empty (j == len) handled by condition
+                if (j != len && isPalindrome(suffix)) {
+                    String revPrefix = reverse(prefix);
+                    Integer idx = map.get(revPrefix);
+                    if (idx != null && idx != i) return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isPalindrome(String s) {
+        int l = 0, r = s.length() - 1;
+        while (l < r) {
+            if (s.charAt(l++) != s.charAt(r--)) return false;
+        }
+        return true;
+    }
+
+    private String reverse(String s) {
+        return new StringBuilder(s).reverse().toString();
+    }
+}
