@@ -1,0 +1,76 @@
+import java.math.BigInteger;
+import java.util.ArrayList;
+
+class Solution {
+    public ArrayList<Long> RangeLCMQuery(int[] arr, int[][] queries) {
+        int n = arr.length;
+        ArrayList<Long> ans = new ArrayList<>();
+        if (n == 0) return ans;
+
+        BigInteger[] seg = new BigInteger[4 * n];
+        build(seg, 1, 0, n - 1, arr);
+
+        BigInteger LONG_MAX_BI = BigInteger.valueOf(Long.MAX_VALUE);
+
+        for (int[] q : queries) {
+            if (q == null || q.length < 3) continue;
+            int type = q[0];
+            if (type == 1) {
+                int idx = q[1];
+                int val = q[2];
+                if (idx >= 0 && idx < n) update(seg, 1, 0, n - 1, idx, BigInteger.valueOf(val));
+            } else if (type == 2) {
+                int L = q[1];
+                int R = q[2];
+                if (L < 0) L = 0;
+                if (R >= n) R = n - 1;
+                if (L > R) {
+                    ans.add(1L);
+                } else {
+                    BigInteger res = query(seg, 1, 0, n - 1, L, R);
+                    if (res.compareTo(LONG_MAX_BI) > 0) ans.add(Long.MAX_VALUE);
+                    else ans.add(res.longValue());
+                }
+            }
+        }
+        return ans;
+    }
+
+    private void build(BigInteger[] seg, int node, int l, int r, int[] arr) {
+        if (l == r) {
+            seg[node] = BigInteger.valueOf(arr[l]);
+            return;
+        }
+        int mid = (l + r) >>> 1;
+        build(seg, node << 1, l, mid, arr);
+        build(seg, node << 1 | 1, mid + 1, r, arr);
+        seg[node] = lcm(seg[node << 1], seg[node << 1 | 1]);
+    }
+
+    private void update(BigInteger[] seg, int node, int l, int r, int idx, BigInteger val) {
+        if (l == r) {
+            seg[node] = val;
+            return;
+        }
+        int mid = (l + r) >>> 1;
+        if (idx <= mid) update(seg, node << 1, l, mid, idx, val);
+        else update(seg, node << 1 | 1, mid + 1, r, idx, val);
+        seg[node] = lcm(seg[node << 1], seg[node << 1 | 1]);
+    }
+
+    private BigInteger query(BigInteger[] seg, int node, int l, int r, int ql, int qr) {
+        if (ql > r || qr < l) return BigInteger.ONE;
+        if (ql <= l && r <= qr) return seg[node];
+        int mid = (l + r) >>> 1;
+        BigInteger left = query(seg, node << 1, l, mid, ql, qr);
+        BigInteger right = query(seg, node << 1 | 1, mid + 1, r, ql, qr);
+        return lcm(left, right);
+    }
+
+    private BigInteger lcm(BigInteger a, BigInteger b) {
+        if (a.equals(BigInteger.ONE)) return b;
+        if (b.equals(BigInteger.ONE)) return a;
+        BigInteger gcd = a.gcd(b);
+        return a.divide(gcd).multiply(b);
+    }
+}
