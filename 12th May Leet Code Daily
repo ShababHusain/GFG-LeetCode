@@ -1,0 +1,27 @@
+class Solution {
+    public int minimumEffort(int[][] tasks) {
+        if (tasks == null || tasks.length == 0) return 0;
+
+        // Sort by slack = (minimum - actual) in descending order
+        Arrays.sort(tasks, (t1, t2) -> {
+            int slack1 = t1[1] - t1[0];
+            int slack2 = t2[1] - t2[0];
+            return Integer.compare(slack2, slack1); // descending
+        });
+
+        long initial = 0L; // total extra energy we had to add
+        long current = 0L; // current energy after doing tasks so far
+
+        for (int[] t : tasks) {
+            int a = t[0];
+            int m = t[1];
+            if (current < m) {
+                initial += (m - current);
+                current = m;
+            }
+            current -= a;
+        }
+
+        return (int) initial;
+    }
+}
