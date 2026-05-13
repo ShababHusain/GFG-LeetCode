@@ -1,0 +1,101 @@
+public class Solution {
+    public int findMotherVertex(int V, int[][] edges) {
+        if (V <= 0) return -1;
+
+        // Build adjacency lists using List<List<Integer>> to avoid generic-array warnings
+        List<List<Integer>> g = new ArrayList<>(V);
+        List<List<Integer>> gt = new ArrayList<>(V);
+        for (int i = 0; i < V; ++i) {
+            g.add(new ArrayList<>());
+            gt.add(new ArrayList<>());
+        }
+        for (int[] e : edges) {
+            int u = e[0], v = e[1];
+            if (u >= 0 && u < V && v >= 0 && v < V) {
+                g.get(u).add(v);
+                gt.get(v).add(u);
+            }
+        }
+
+        // 1) Iterative DFS to produce finish order (postorder)
+        boolean[] vis = new boolean[V];
+        List<Integer> finishOrder = new ArrayList<>();
+        Deque<Integer> stack = new ArrayDeque<>();
+
+        for (int i = 0; i < V; ++i) {
+            if (vis[i]) continue;
+            stack.push(i);
+            while (!stack.isEmpty()) {
+                int node = stack.pop();
+                if (node >= 0) {
+                    if (vis[node]) continue;
+                    vis[node] = true;
+                    // push marker for postorder
+                    stack.push(~node);
+                    // push neighbors
+                    for (int nei : g.get(node)) {
+                        if (!vis[nei]) stack.push(nei);
+                    }
+                } else {
+                    // postorder marker encountered
+                    finishOrder.add(~node);
+                }
+            }
+        }
+
+        // 2) Process nodes in reverse finish order on transpose to get SCCs
+        int[] comp = new int[V];
+        Arrays.fill(comp, -1);
+        boolean[] vis2 = new boolean[V];
+        int compId = 0;
+
+        for (int idx = finishOrder.size() - 1; idx >= 0; --idx) {
+            int node = finishOrder.get(idx);
+            if (vis2[node]) continue;
+            Deque<Integer> s2 = new ArrayDeque<>();
+            s2.push(node);
+            vis2[node] = true;
+            List<Integer> members = new ArrayList<>();
+            while (!s2.isEmpty()) {
+                int u = s2.pop();
+                members.add(u);
+                for (int v : gt.get(u)) {
+                    if (!vis2[v]) {
+                        vis2[v] = true;
+                        s2.push(v);
+                    }
+                }
+            }
+            for (int u : members) comp[u] = compId;
+            compId++;
+        }
+
+        if (compId == 0) return -1;
+
+        // 3) Compute indegree of each component in condensation graph
+        int[] indeg = new int[compId];
+        for (int u = 0; u < V; ++u) {
+            for (int v : g.get(u)) {
+                if (comp[u] != comp[v]) indeg[comp[v]]++;
+            }
+        }
+
+        // 4) Find source components (indegree == 0)
+        int zeroCount = 0;
+        int sourceComp = -1;
+        for (int i = 0; i < compId; ++i) {
+            if (indeg[i] == 0) {
+                zeroCount++;
+                sourceComp = i;
+            }
+        }
+        if (zeroCount != 1) return -1;
+
+        // 5) Return smallest vertex index in the source component
+        int ans = Integer.MAX_VALUE;
+        for (int i = 0; i < V; ++i) {
+            if (comp[i] == sourceComp && i < ans) ans = i;
+        }
+        return ans == Integer.MAX_VALUE ? -1 : ans;
+    }
+}
