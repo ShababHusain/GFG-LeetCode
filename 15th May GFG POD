@@ -1,0 +1,16 @@
+// Save as Solution.java
+public class Solution {
+    public int optimalKeys(int n) {
+        if (n <= 6) return n;
+        long[] dp = new long[n + 1];
+        for (int i = 0; i <= 6 && i <= n; i++) dp[i] = i;
+        for (int i = 7; i <= n; i++) {
+            dp[i] = i;
+            for (int b = i - 3; b >= 1; b--) {
+                long curr = dp[b] * (i - b - 1);
+                if (curr > dp[i]) dp[i] = curr;
+            }
+        }
+        return (int) dp[n];
+    }
+}
