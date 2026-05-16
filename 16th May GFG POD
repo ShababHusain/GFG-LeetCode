@@ -1,0 +1,12 @@
+class Solution {
+    public int findSmallest(int[] arr) {
+        // code here
+        Arrays.sort(arr);
+        long res = 1; // smallest positive integer that cannot be formed so far
+        for (int x : arr) {
+            if (x > res) break;
+            res += x;
+        }
+        return (int) res;
+    }
+}
