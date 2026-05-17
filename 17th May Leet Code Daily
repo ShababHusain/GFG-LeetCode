@@ -1,0 +1,29 @@
+class Solution {
+    public boolean canReach(int[] arr, int start) {
+        int n = arr.length;
+        if (start < 0 || start >= n) return false;
+
+        boolean[] visited = new boolean[n];
+        java.util.ArrayDeque<Integer> q = new java.util.ArrayDeque<>();
+        q.add(start);
+        visited[start] = true;
+
+        while (!q.isEmpty()) {
+            int i = q.poll();
+            if (arr[i] == 0) return true;
+
+            int left = i - arr[i];
+            if (left >= 0 && !visited[left]) {
+                visited[left] = true;
+                q.add(left);
+            }
+
+            int right = i + arr[i];
+            if (right < n && !visited[right]) {
+                visited[right] = true;
+                q.add(right);
+            }
+        }
+        return false;
+    }
+}
