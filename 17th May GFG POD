@@ -1,0 +1,21 @@
+public class Solution {
+    // Returns the beautiful array as a List<Integer>
+    public List<Integer> makeBeautiful(int[] arr) {
+        ArrayList<Integer> stack = new ArrayList<>();
+        for (int x : arr) {
+            if (stack.isEmpty()) {
+                stack.add(x);
+            } else {
+                int top = stack.get(stack.size() - 1);
+                // check opposite signs: one negative and the other non-negative
+                if ((top < 0 && x >= 0) || (top >= 0 && x < 0)) {
+                    // remove the top (both are removed)
+                    stack.remove(stack.size() - 1);
+                } else {
+                    stack.add(x);
+                }
+            }
+        }
+        return stack;
+    }
+}
