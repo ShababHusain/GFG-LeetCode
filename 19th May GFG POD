@@ -1,0 +1,30 @@
+class Solution {
+    public int minSteps(int[] arr, int start, int end) {
+        final int MOD = 1000;
+        int target = end % MOD;
+        int startVal = start % MOD;
+        if (startVal == target) return 0;
+
+        int[] dist = new int[MOD];
+        Arrays.fill(dist, -1);
+
+        Queue<Integer> q = new ArrayDeque<>();
+        q.add(startVal);
+        dist[startVal] = 0;
+
+        while (!q.isEmpty()) {
+            int cur = q.poll();
+            int steps = dist[cur];
+
+            for (int mul : arr) {
+                int nxt = (cur * (mul % MOD)) % MOD;
+                if (dist[nxt] == -1) {
+                    dist[nxt] = steps + 1;
+                    if (nxt == target) return dist[nxt];
+                    q.add(nxt);
+                }
+            }
+        }
+        return -1; // unreachable
+    }
+}
