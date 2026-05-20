@@ -1,0 +1,26 @@
+class Solution {
+    public boolean isProduct(int[] arr, long target) {
+        HashSet<Long> seen = new HashSet<>();
+        // If target is 0, any zero in the array makes it possible (0 * any = 0)
+        if (target == 0) {
+            for (int v : arr) if (v == 0) return true;
+            return false;
+        }
+
+        for (int v : arr) {
+            long x = v;
+            if (x == 0) {
+                // x == 0 can't divide non-zero target, skip
+                // (we already handled target == 0 above)
+                seen.add(x);
+                continue;
+            }
+            if (target % x == 0) {
+                long partner = target / x;
+                if (seen.contains(partner)) return true;
+            }
+            seen.add(x);
+        }
+        return false;
+    }
+}
