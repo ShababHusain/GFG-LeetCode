@@ -1,0 +1,30 @@
+class Solution {
+    public int longestCommonPrefix(int[] arr1, int[] arr2) {
+        // collect all prefixes from arr1
+        java.util.HashSet<String> prefixes = new java.util.HashSet<>();
+        for (int x : arr1) {
+            String s = String.valueOf(x);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < s.length(); i++) {
+                sb.append(s.charAt(i));
+                prefixes.add(sb.toString());
+            }
+        }
+
+        int best = 0;
+        // check prefixes from arr2 against the set
+        for (int y : arr2) {
+            String s = String.valueOf(y);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < s.length(); i++) {
+                sb.append(s.charAt(i));
+                if (prefixes.contains(sb.toString())) {
+                    best = Math.max(best, sb.length());
+                }
+            }
+            // early exit if we've reached the maximum possible digit length
+            if (best == 10) break; // numbers <= 1e8 so 9 digits max; 10 is safe upper bound
+        }
+        return best;
+    }
+}
