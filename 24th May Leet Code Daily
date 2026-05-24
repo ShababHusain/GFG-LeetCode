@@ -1,0 +1,32 @@
+class Solution {
+    public int maxJumps(int[] arr, int d) {
+        int n = arr.length;
+        int[] dp = new int[n]; // dp[i] = max number of indices visitable starting from i (0 means uncomputed)
+        int ans = 0;
+        for (int i = 0; i < n; i++) {
+            ans = Math.max(ans, dfs(i, arr, d, dp));
+        }
+        return ans;
+    }
+
+    private int dfs(int i, int[] arr, int d, int[] dp) {
+        if (dp[i] != 0) return dp[i];
+        int n = arr.length;
+        int best = 1; // count the starting index itself
+
+        // jump to the right up to distance d, stop if blocked by >= arr[i]
+        for (int k = i + 1; k <= Math.min(n - 1, i + d); k++) {
+            if (arr[k] >= arr[i]) break;
+            best = Math.max(best, 1 + dfs(k, arr, d, dp));
+        }
+
+        // jump to the left up to distance d, stop if blocked by >= arr[i]
+        for (int k = i - 1; k >= Math.max(0, i - d); k--) {
+            if (arr[k] >= arr[i]) break;
+            best = Math.max(best, 1 + dfs(k, arr, d, dp));
+        }
+
+        dp[i] = best;
+        return best;
+    }
+}
