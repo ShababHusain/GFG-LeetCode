@@ -1,0 +1,24 @@
+class Solution {
+    public boolean checkElements(int start, int end, int[] arr) {
+        if (arr == null) return false;
+        if (start > end) return false;
+
+        int rangeSize = end - start + 1;
+        if (rangeSize > arr.length) return false;
+
+        boolean[] seen = new boolean[rangeSize];
+        int count = 0;
+
+        for (int v : arr) {
+            if (v >= start && v <= end) {
+                int idx = v - start;
+                if (!seen[idx]) {
+                    seen[idx] = true;
+                    count++;
+                    if (count == rangeSize) return true;
+                }
+            }
+        }
+        return count == rangeSize;
+    }
+}
