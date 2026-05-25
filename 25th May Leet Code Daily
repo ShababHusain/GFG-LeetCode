@@ -1,0 +1,31 @@
+class Solution {
+    public boolean canReach(String s, int minJump, int maxJump) {
+        int n = s.length();
+        if (s.charAt(0) != '0') return false;
+        boolean[] dp = new boolean[n];
+        dp[0] = true;
+
+        int windowSum = 0; // number of reachable positions j in current window
+
+        for (int i = 1; i < n; i++) {
+            // add dp[i - minJump] into window when it becomes part of the window
+            int addIndex = i - minJump;
+            if (addIndex >= 0 && dp[addIndex]) {
+                windowSum++;
+            }
+
+            // remove dp[i - maxJump - 1] when it leaves the window
+            int removeIndex = i - maxJump - 1;
+            if (removeIndex >= 0 && dp[removeIndex]) {
+                windowSum--;
+            }
+
+            // i is reachable if s[i] == '0' and windowSum > 0
+            if (s.charAt(i) == '0' && windowSum > 0) {
+                dp[i] = true;
+            }
+        }
+
+        return dp[n - 1];
+    }
+}
