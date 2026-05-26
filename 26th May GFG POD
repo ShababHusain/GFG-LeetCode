@@ -1,0 +1,26 @@
+class Solution {
+    int minToggle(int[] arr) {
+        // code here
+        if (arr == null || arr.length == 0) return 0;
+        int n = arr.length;
+        int totalOnes = 0;
+        for (int v : arr) totalOnes += v;
+
+        int minToggles = Integer.MAX_VALUE;
+        int prefixOnes = 0; // ones in left part (0..i-1)
+
+        // consider partition before index i, for i = 0..n
+        for (int i = 0; i <= n; i++) {
+            int onesLeft = prefixOnes;
+            int onesRight = totalOnes - prefixOnes;
+            int rightLen = n - i;
+            int zerosRight = rightLen - onesRight;
+            int toggles = onesLeft + zerosRight;
+            if (toggles < minToggles) minToggles = toggles;
+
+            if (i < n) prefixOnes += arr[i];
+        }
+
+        return minToggles;
+    }
+}
