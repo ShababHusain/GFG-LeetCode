@@ -1,0 +1,32 @@
+class Solution {
+    public int numberOfSpecialChars(String word) {
+        if (word == null || word.length() == 0) return 0;
+        int n = word.length();
+        int[] firstUpper = new int[26];
+        int[] lastLower = new int[26];
+
+        // initialize
+        final int INF = Integer.MAX_VALUE / 2;
+        for (int i = 0; i < 26; i++) {
+            firstUpper[i] = INF;
+            lastLower[i] = -1;
+        }
+
+        for (int i = 0; i < n; i++) {
+            char c = word.charAt(i);
+            if (c >= 'a' && c <= 'z') {
+                lastLower[c - 'a'] = i;
+            } else if (c >= 'A' && c <= 'Z') {
+                firstUpper[c - 'A'] = Math.min(firstUpper[c - 'A'], i);
+            }
+        }
+
+        int count = 0;
+        for (int i = 0; i < 26; i++) {
+            if (lastLower[i] != -1 && firstUpper[i] != INF && lastLower[i] < firstUpper[i]) {
+                count++;
+            }
+        }
+        return count;
+    }
+}
