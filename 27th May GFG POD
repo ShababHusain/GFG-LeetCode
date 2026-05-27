@@ -1,0 +1,23 @@
+class Solution {
+    public boolean wifiRange(String s, int x) {
+        if (s == null || s.length() == 0) return false;
+        int n = s.length();
+        int[] diff = new int[n + 1]; // difference array
+
+        for (int i = 0; i < n; i++) {
+            if (s.charAt(i) == '1') {
+                int left = Math.max(0, i - x);
+                int right = Math.min(n - 1, i + x);
+                diff[left] += 1;
+                diff[right + 1] -= 1;
+            }
+        }
+
+        int cover = 0;
+        for (int i = 0; i < n; i++) {
+            cover += diff[i];
+            if (cover <= 0) return false; // this room is not covered
+        }
+        return true;
+    }
+}
