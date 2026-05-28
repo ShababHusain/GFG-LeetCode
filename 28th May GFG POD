@@ -1,0 +1,46 @@
+/* Structure of binary tree node
+class Node{
+    public int data;
+    public Node left, right;
+    public Node(int item)
+    {
+        data = item;
+        left = right = null;
+    }
+}
+*/
+import java.util.*;
+
+class Solution {
+    public ArrayList<Integer> verticalSum(Node root) {
+        ArrayList<Integer> result = new ArrayList<>();
+        if (root == null) return result;
+
+        // TreeMap keeps keys (HDs) sorted from leftmost to rightmost
+        TreeMap<Integer, Integer> sumMap = new TreeMap<>();
+        Queue<Pair> q = new LinkedList<>();
+        q.add(new Pair(root, 0));
+
+        while (!q.isEmpty()) {
+            Pair p = q.poll();
+            Node node = p.node;
+            int hd = p.hd;
+
+            sumMap.put(hd, sumMap.getOrDefault(hd, 0) + node.data);
+
+            if (node.left != null) q.add(new Pair(node.left, hd - 1));
+            if (node.right != null) q.add(new Pair(node.right, hd + 1));
+        }
+
+        for (Map.Entry<Integer, Integer> e : sumMap.entrySet()) {
+            result.add(e.getValue());
+        }
+        return result;
+    }
+
+    private static class Pair {
+        Node node;
+        int hd;
+        Pair(Node n, int h) { node = n; hd = h; }
+    }
+}
