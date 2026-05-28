@@ -1,0 +1,56 @@
+class Solution {
+    private static class TrieNode {
+        TrieNode[] next = new TrieNode[26];
+        int bestIndex = -1;
+    }
+
+    public int[] stringIndices(String[] wordsContainer, String[] wordsQuery) {
+        int n = wordsContainer.length;
+        int[] lengths = new int[n];
+        for (int i = 0; i < n; i++) lengths[i] = wordsContainer[i].length();
+
+        TrieNode root = new TrieNode();
+
+        // Build reversed trie and store bestIndex at each node
+        for (int idx = 0; idx < n; idx++) {
+            String w = wordsContainer[idx];
+            int len = w.length();
+            TrieNode node = root;
+            // update root (empty suffix) best index
+            node.bestIndex = betterIndex(node.bestIndex, idx, lengths);
+
+            for (int p = len - 1; p >= 0; p--) {
+                int c = w.charAt(p) - 'a';
+                if (node.next[c] == null) node.next[c] = new TrieNode();
+                node = node.next[c];
+                node.bestIndex = betterIndex(node.bestIndex, idx, lengths);
+            }
+        }
+
+        // Answer queries
+        int m = wordsQuery.length;
+        int[] ans = new int[m];
+        for (int i = 0; i < m; i++) {
+            String q = wordsQuery[i];
+            TrieNode node = root;
+            int lastBest = node.bestIndex; // empty suffix candidate
+            for (int p = q.length() - 1; p >= 0; p--) {
+                int c = q.charAt(p) - 'a';
+                if (node.next[c] == null) break;
+                node = node.next[c];
+                if (node.bestIndex != -1) lastBest = node.bestIndex;
+            }
+            ans[i] = lastBest;
+        }
+        return ans;
+    }
+
+    // choose better index according to (shorter length, then smaller index)
+    private int betterIndex(int a, int b, int[] lengths) {
+        if (a == -1) return b;
+        if (b == -1) return a;
+        if (lengths[b] < lengths[a]) return b;
+        if (lengths[b] > lengths[a]) return a;
+        return Math.min(a, b);
+    }
+}
