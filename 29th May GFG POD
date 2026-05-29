@@ -1,0 +1,37 @@
+import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
+
+class Solution {
+    public int validGroups(String s) {
+        int n = s.length();
+        int[] digits = new int[n];
+        for (int i = 0; i < n; ++i) digits[i] = s.charAt(i) - '0';
+
+        Map<String, BigInteger> memo = new HashMap<>();
+        BigInteger ways = dfs(0, 0, digits, memo);
+
+        // Convert to int for the required signature (may overflow if the true count > Integer.MAX_VALUE).
+        return ways.intValue();
+    }
+
+    private BigInteger dfs(int idx, int prevSum, int[] digits, Map<String, BigInteger> memo) {
+        int n = digits.length;
+        if (idx == n) return BigInteger.ONE;
+
+        String key = idx + "," + prevSum;
+        if (memo.containsKey(key)) return memo.get(key);
+
+        BigInteger total = BigInteger.ZERO;
+        int curSum = 0;
+        for (int j = idx; j < n; ++j) {
+            curSum += digits[j];
+            if (curSum >= prevSum) {
+                total = total.add(dfs(j + 1, curSum, digits, memo));
+            }
+        }
+
+        memo.put(key, total);
+        return total;
+    }
+}
