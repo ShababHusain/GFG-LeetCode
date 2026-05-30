@@ -1,0 +1,175 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+class Solution {
+    static class Node {
+        boolean has;    // any occupied in segment
+        int left;       // leftmost occupied index (min)
+        int right;      // rightmost occupied index (max)
+        int maxGap;     // max difference between consecutive occupied positions inside segment
+
+        Node() {
+            has = false;
+            left = Integer.MAX_VALUE;
+            right = Integer.MIN_VALUE;
+            maxGap = 0;
+        }
+    }
+
+    public List<Boolean> getResults(int[][] queries) {
+        int maxX = 0;
+        int type2Count = 0;
+        for (int[] q : queries) {
+            if (q[0] == 1 || q[0] == 2) maxX = Math.max(maxX, q[1]);
+            if (q[0] == 2) type2Count++;
+        }
+        int size = maxX + 1; // positions 0..maxX inclusive
+        SegmentTree st = new SegmentTree(size);
+
+        List<Boolean> ans = new ArrayList<>(type2Count);
+        for (int[] q : queries) {
+            if (q[0] == 1) {
+                st.update(q[1], true);
+            } else {
+                int x = q[1];
+                int sz = q[2];
+                Node res = st.query(0, x);
+                int maxAvailable;
+                if (!res.has) {
+                    // no obstacles in (0..x], can place block of length x (from 0 to x)
+                    maxAvailable = x;
+                } else {
+                    int first = res.left;
+                    int last = res.right;
+                    int between = res.maxGap; // max difference between consecutive occupied positions
+                    // include gap from 0 to first, and from last to x
+                    maxAvailable = Math.max(Math.max(between, first - 0), x - last);
+                }
+                ans.add(maxAvailable >= sz);
+            }
+        }
+        return ans;
+    }
+
+    static class SegmentTree {
+        int n;
+        Node[] tree;
+        SegmentTree(int size) {
+            n = 1;
+            while (n < size) n <<= 1;
+            tree = new Node[n << 1];
+            for (int i = 1; i < tree.length; ++i) tree[i] = new Node();
+            build(1, 0, n - 1, size);
+        }
+
+        private void build(int node, int l, int r, int actualSize) {
+            if (l == r) {
+                if (l < actualSize) {
+                    // initially no obstacle => has=false
+                    tree[node].has = false;
+                    tree[node].left = Integer.MAX_VALUE;
+                    tree[node].right = Integer.MIN_VALUE;
+                    tree[node].maxGap = 0;
+                } else {
+                    // out-of-range leaves: treat as no obstacle
+                    tree[node].has = false;
+                    tree[node].left = Integer.MAX_VALUE;
+                    tree[node].right = Integer.MIN_VALUE;
+                    tree[node].maxGap = 0;
+                }
+                return;
+            }
+            int mid = (l + r) >>> 1;
+            build(node << 1, l, mid, actualSize);
+            build(node << 1 | 1, mid + 1, r, actualSize);
+            pull(node);
+        }
+
+        private void pull(int node) {
+            Node L = tree[node << 1], R = tree[node << 1 | 1], cur = tree[node];
+            if (!L.has && !R.has) {
+                cur.has = false;
+                cur.left = Integer.MAX_VALUE;
+                cur.right = Integer.MIN_VALUE;
+                cur.maxGap = 0;
+            } else if (!L.has) {
+                cur.has = true;
+                cur.left = R.left;
+                cur.right = R.right;
+                cur.maxGap = R.maxGap;
+            } else if (!R.has) {
+                cur.has = true;
+                cur.left = L.left;
+                cur.right = L.right;
+                cur.maxGap = L.maxGap;
+            } else {
+                cur.has = true;
+                cur.left = L.left;
+                cur.right = R.right;
+                cur.maxGap = Math.max(Math.max(L.maxGap, R.maxGap), R.left - L.right);
+            }
+        }
+
+        // set position pos to occupied (true) or free (false)
+        public void update(int pos, boolean occupied) { update(1, 0, n - 1, pos, occupied); }
+
+        private void update(int node, int l, int r, int pos, boolean occupied) {
+            if (l == r) {
+                if (occupied) {
+                    tree[node].has = true;
+                    tree[node].left = l;
+                    tree[node].right = l;
+                    tree[node].maxGap = 0;
+                } else {
+                    tree[node].has = false;
+                    tree[node].left = Integer.MAX_VALUE;
+                    tree[node].right = Integer.MIN_VALUE;
+                    tree[node].maxGap = 0;
+                }
+                return;
+            }
+            int mid = (l + r) >>> 1;
+            if (pos <= mid) update(node << 1, l, mid, pos, occupied);
+            else update(node << 1 | 1, mid + 1, r, pos, occupied);
+            pull(node);
+        }
+
+        // query range [ql, qr] inclusive
+        public Node query(int ql, int qr) {
+            return query(1, 0, n - 1, ql, qr);
+        }
+
+        private Node query(int node, int l, int r, int ql, int qr) {
+            if (ql > r || qr < l) {
+                return new Node(); // neutral: has=false
+            }
+            if (ql <= l && r <= qr) {
+                return tree[node];
+            }
+            int mid = (l + r) >>> 1;
+            Node left = query(node << 1, l, mid, ql, qr);
+            Node right = query(node << 1 | 1, mid + 1, r, ql, qr);
+            Node res = new Node();
+            if (!left.has && !right.has) {
+                // nothing
+            } else if (!left.has) {
+                res.has = true;
+                res.left = right.left;
+                res.right = right.right;
+                res.maxGap = right.maxGap;
+            } else if (!right.has) {
+                res.has = true;
+                res.left = left.left;
+                res.right = left.right;
+                res.maxGap = left.maxGap;
+            } else {
+                res.has = true;
+                res.left = left.left;
+                res.right = right.right;
+                res.maxGap = Math.max(Math.max(left.maxGap, right.maxGap), right.left - left.right);
+            }
+            return res;
+        }
+    }
+}
