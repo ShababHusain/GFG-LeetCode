@@ -1,0 +1,20 @@
+class Solution {
+    public void replaceElements(int[] arr) {
+        int n = arr.length;
+        if (n <= 1) return;
+
+        int prevOrig = arr[0];
+        int newFirst = arr[0] ^ arr[1];
+
+        for (int i = 1; i <= n - 2; ++i) {
+            int curOrig = arr[i];
+            arr[i] = prevOrig ^ arr[i + 1]; // uses original arr[i-1] and original arr[i+1]
+            prevOrig = curOrig;
+        }
+
+        // last element uses original arr[n-2] (stored in prevOrig) and original arr[n-1]
+        arr[n - 1] = prevOrig ^ arr[n - 1];
+        // set first element after we've preserved needed originals
+        arr[0] = newFirst;
+    }
+}
