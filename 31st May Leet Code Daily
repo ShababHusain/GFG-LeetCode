@@ -1,0 +1,13 @@
+import java.util.Arrays;
+
+class Solution {
+    public boolean asteroidsDestroyed(int mass, int[] asteroids) {
+        long cur = mass;               // use long to avoid overflow
+        Arrays.sort(asteroids);        // greedy: absorb smallest first
+        for (int a : asteroids) {
+            if (cur < a) return false; // cannot destroy this asteroid
+            cur += a;                  // absorb asteroid
+        }
+        return true;                   // all destroyed
+    }
+}
