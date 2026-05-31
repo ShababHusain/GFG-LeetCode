@@ -1,0 +1,9 @@
+class Solution {
+    public boolean isSumOfConsecutive(int n) {
+        // n must be at least 2 to be sum of two or more positive consecutive integers
+        if (n <= 1) return false;
+        // A number can be expressed as a sum of >=2 consecutive positive integers
+        // iff it is NOT a power of two.
+        return (n & (n - 1)) != 0;
+    }
+}
