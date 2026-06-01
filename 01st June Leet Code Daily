@@ -1,0 +1,13 @@
+class Solution {
+    public int minimumCost(int[] cost) {
+        Arrays.sort(cost);
+        int n = cost.length;
+        long total = 0;
+        // iterate from largest to smallest; skip every 3rd candy (i % 3 == 2)
+        for (int i = n - 1, cnt = 0; i >= 0; i--, cnt++) {
+            if (cnt % 3 == 2) continue; // this candy is free
+            total += cost[i];
+        }
+        return (int) total;
+    }
+}
