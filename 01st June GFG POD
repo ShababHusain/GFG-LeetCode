@@ -1,0 +1,47 @@
+import java.math.BigInteger;
+
+class Solution {
+    private static final long MOD = 1_000_000_007L;
+
+    public int findMaxProduct(int[] arr) {
+        int n = arr.length;
+        if (n == 0) return 0;
+        // Important: if only one element, return it as-is (matches expected GfG behavior)
+        if (n == 1) return arr[0];
+
+        int countZero = 0;
+        int countNeg = 0;
+        int maxNeg = Integer.MIN_VALUE; // negative closest to zero, e.g., -1 > -5
+        BigInteger product = BigInteger.ONE;
+        boolean hasNonZero = false;
+
+        for (int v : arr) {
+            if (v == 0) {
+                countZero++;
+                continue;
+            }
+            hasNonZero = true;
+            if (v < 0) {
+                countNeg++;
+                if (v > maxNeg) maxNeg = v;
+            }
+            product = product.multiply(BigInteger.valueOf(v));
+        }
+
+        // All zeros
+        if (!hasNonZero) return 0;
+
+        // Special case: exactly one negative and rest zeros -> best is 0
+        if (countNeg == 1 && countZero + countNeg == n) return 0;
+
+        // If odd number of negatives, remove the negative with smallest absolute value
+        if ((countNeg & 1) == 1) {
+            product = product.divide(BigInteger.valueOf(maxNeg));
+        }
+
+        // Return product modulo 1e9+7 (non-negative remainder)
+        BigInteger modVal = BigInteger.valueOf(MOD);
+        BigInteger result = product.mod(modVal);
+        return result.intValue();
+    }
+}
