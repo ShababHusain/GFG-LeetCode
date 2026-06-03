@@ -1,0 +1,100 @@
+class Solution {
+    public int earliestFinishTime(int[] landStartTime, int[] landDuration,
+                                  int[] waterStartTime, int[] waterDuration) {
+        int n = landStartTime.length;
+        int m = waterStartTime.length;
+        // Build pairs and sort by start time
+        int[][] lands = new int[n][2];
+        for (int i = 0; i < n; i++) {
+            lands[i][0] = landStartTime[i];
+            lands[i][1] = landDuration[i];
+        }
+        int[][] waters = new int[m][2];
+        for (int j = 0; j < m; j++) {
+            waters[j][0] = waterStartTime[j];
+            waters[j][1] = waterDuration[j];
+        }
+        Arrays.sort(lands, (a, b) -> Integer.compare(a[0], b[0]));
+        Arrays.sort(waters, (a, b) -> Integer.compare(a[0], b[0]));
+
+        // Preprocess waters: prefix min of wd, suffix min of ws+wd
+        int[] ws = new int[m];
+        int[] wd = new int[m];
+        for (int i = 0; i < m; i++) {
+            ws[i] = waters[i][0];
+            wd[i] = waters[i][1];
+        }
+        int[] prefMinWd = new int[m];
+        prefMinWd[0] = wd[0];
+        for (int i = 1; i < m; i++) prefMinWd[i] = Math.min(prefMinWd[i - 1], wd[i]);
+
+        int[] sufMinWsPlusWd = new int[m];
+        sufMinWsPlusWd[m - 1] = ws[m - 1] + wd[m - 1];
+        for (int i = m - 2; i >= 0; i--) {
+            sufMinWsPlusWd[i] = Math.min(sufMinWsPlusWd[i + 1], ws[i] + wd[i]);
+        }
+
+        // Preprocess lands similarly for water -> land direction
+        int[] ls = new int[n];
+        int[] ld = new int[n];
+        for (int i = 0; i < n; i++) {
+            ls[i] = lands[i][0];
+            ld[i] = lands[i][1];
+        }
+        int[] prefMinLd = new int[n];
+        prefMinLd[0] = ld[0];
+        for (int i = 1; i < n; i++) prefMinLd[i] = Math.min(prefMinLd[i - 1], ld[i]);
+
+        int[] sufMinLsPlusLd = new int[n];
+        sufMinLsPlusLd[n - 1] = ls[n - 1] + ld[n - 1];
+        for (int i = n - 2; i >= 0; i--) {
+            sufMinLsPlusLd[i] = Math.min(sufMinLsPlusLd[i + 1], ls[i] + ld[i]);
+        }
+
+        long best = Long.MAX_VALUE;
+
+        // Evaluate land -> water for every land ride
+        for (int i = 0; i < n; i++) {
+            long finishLand = (long) ls[i] + ld[i]; // t
+            // binary search last index in ws with ws <= finishLand
+            int idx = upperBound(ws, (int) finishLand) - 1;
+            long candidate = Long.MAX_VALUE;
+            if (idx >= 0) {
+                // there exists water with ws <= t
+                candidate = Math.min(candidate, finishLand + prefMinWd[idx]);
+            }
+            if (idx + 1 < m) {
+                // there exists water with ws > t
+                candidate = Math.min(candidate, (long) sufMinWsPlusWd[idx + 1]);
+            }
+            best = Math.min(best, candidate);
+        }
+
+        // Evaluate water -> land for every water ride
+        for (int j = 0; j < m; j++) {
+            long finishWater = (long) ws[j] + wd[j]; // t
+            int idx = upperBound(ls, (int) finishWater) - 1;
+            long candidate = Long.MAX_VALUE;
+            if (idx >= 0) {
+                candidate = Math.min(candidate, finishWater + prefMinLd[idx]);
+            }
+            if (idx + 1 < n) {
+                candidate = Math.min(candidate, (long) sufMinLsPlusLd[idx + 1]);
+            }
+            best = Math.min(best, candidate);
+        }
+
+        return (int) best;
+    }
+
+    // returns first index > target (upper bound) in sorted arr
+    private int upperBound(int[] arr, int target) {
+        int lo = 0, hi = arr.length;
+        while (lo < hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (arr[mid] <= target) lo = mid + 1;
+            else hi = mid;
+        }
+        return lo;
+    }
+}
