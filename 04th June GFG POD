@@ -1,0 +1,18 @@
+class Solution {
+    int maxSubstring(String s) {
+        int maxEnding = 0;
+        int maxSoFar = Integer.MIN_VALUE;
+        boolean hasZero = false;
+
+        for (int i = 0; i < s.length(); i++) {
+            int val = (s.charAt(i) == '0') ? 1 : -1;
+            if (val == 1) hasZero = true;
+            maxEnding = Math.max(val, maxEnding + val);
+            maxSoFar = Math.max(maxSoFar, maxEnding);
+        }
+
+        // If there are no zeros, problem requires returning -1
+        if (!hasZero) return -1;
+        return maxSoFar;
+    }
+}
