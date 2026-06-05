@@ -1,0 +1,92 @@
+import java.util.*;
+
+public class Solution {
+    // sentinel index for "no digit yet"
+    private static final int NONE = 10;
+
+    // memo arrays: only used when tight == false
+    private long[][][][] memoCount;
+    private long[][][][] memoSum;
+    private int[] digits;
+    private int len;
+
+    private long[] dfs(int pos, boolean tight, boolean started, int p1, int p2) {
+        // returns {count, sumWaviness}
+        if (pos == len) {
+            // one number (possibly zero); waviness for <3-digit numbers is 0
+            return new long[]{1L, 0L};
+        }
+        if (!tight) {
+            long mc = memoCount[pos][started ? 1 : 0][p1][p2];
+            if (mc != -1L) {
+                long ms = memoSum[pos][started ? 1 : 0][p1][p2];
+                return new long[]{mc, ms};
+            }
+        }
+
+        int limit = tight ? digits[pos] : 9;
+        long totalCount = 0L;
+        long totalSum = 0L;
+
+        for (int d = 0; d <= limit; ++d) {
+            boolean nextStarted = started || (d != 0);
+            int newP1, newP2;
+            if (!nextStarted) {
+                newP1 = NONE;
+                newP2 = NONE;
+            } else {
+                // if we had started before, shift p2 -> p1; else p1 stays NONE
+                newP1 = started ? p2 : NONE;
+                newP2 = d;
+            }
+
+            long[] child = dfs(pos + 1, tight && (d == limit), nextStarted, newP1, newP2);
+            long cntChild = child[0];
+            long sumChild = child[1];
+
+            // compute waviness added at this placement: the middle digit is p2 (before placing d)
+            int add = 0;
+            if (p1 != NONE && p2 != NONE && nextStarted) {
+                // p1 and p2 valid means there are at least two digits before placing d
+                if ((p2 > p1 && p2 > d) || (p2 < p1 && p2 < d)) add = 1;
+            }
+
+            totalCount += cntChild;
+            totalSum += sumChild + add * cntChild;
+        }
+
+        if (!tight) {
+            memoCount[pos][started ? 1 : 0][p1][p2] = totalCount;
+            memoSum[pos][started ? 1 : 0][p1][p2] = totalSum;
+        }
+        return new long[]{totalCount, totalSum};
+    }
+
+    private long solve(long bound) {
+        if (bound < 0) return 0L;
+        String s = Long.toString(bound);
+        len = s.length();
+        digits = new int[len];
+        for (int i = 0; i < len; ++i) digits[i] = s.charAt(i) - '0';
+
+        // initialize memo with -1
+        memoCount = new long[len + 1][2][11][11];
+        memoSum   = new long[len + 1][2][11][11];
+        for (int i = 0; i <= len; ++i)
+            for (int j = 0; j < 2; ++j)
+                for (int a = 0; a < 11; ++a)
+                    for (int b = 0; b < 11; ++b) {
+                        memoCount[i][j][a][b] = -1L;
+                        memoSum[i][j][a][b] = -1L;
+                    }
+
+        long[] res = dfs(0, true, false, NONE, NONE);
+        // res[1] is total waviness for all numbers in [0, bound]
+        return res[1];
+    }
+
+    public long totalWaviness(long num1, long num2) {
+        return solve(num2) - solve(num1 - 1);
+    }
+
+}
