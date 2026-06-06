@@ -1,0 +1,17 @@
+class Solution {
+    public int numOfWays(int n, int m) {
+        long N = 1L * n * m;
+        // total ordered placements of two distinct knights
+        long totalOrdered = N * (N - 1);
+
+        // ordered attacking placements:
+        long attack1 = 0, attack2 = 0;
+        if (n >= 2 && m >= 3) attack1 = 4L * (n - 1) * (m - 2);
+        if (m >= 2 && n >= 3) attack2 = 4L * (m - 1) * (n - 2);
+
+        long attackingOrdered = attack1 + attack2;
+        long result = totalOrdered - attackingOrdered;
+
+        return (int) result;
+    }
+}
