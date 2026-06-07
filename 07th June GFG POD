@@ -1,0 +1,8 @@
+class Solution {
+    public String profession(int level, int pos) {
+        // code here
+        // pos is 1-indexed; path bits correspond to pos-1
+        int flips = Integer.bitCount(pos - 1);
+        return (flips % 2 == 0) ? "Engineer" : "Doctor";
+    }
+}
