@@ -1,0 +1,51 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+
+class Solution {
+    public TreeNode createBinaryTree(int[][] descriptions) {
+        // Map value -> TreeNode
+        Map<Integer, TreeNode> map = new HashMap<>();
+        // Track all children values to identify root later
+        Set<Integer> children = new HashSet<>();
+        // Track all parent values (optional, but useful)
+        Set<Integer> parents = new HashSet<>();
+
+        for (int[] d : descriptions) {
+            int parentVal = d[0];
+            int childVal = d[1];
+            int isLeft = d[2];
+
+            TreeNode parent = map.computeIfAbsent(parentVal, k -> new TreeNode(k));
+            TreeNode child = map.computeIfAbsent(childVal, k -> new TreeNode(k));
+
+            if (isLeft == 1) parent.left = child;
+            else parent.right = child;
+
+            parents.add(parentVal);
+            children.add(childVal);
+        }
+
+        // Root is a parent that is not anyone's child
+        for (int p : parents) {
+            if (!children.contains(p)) {
+                return map.get(p);
+            }
+        }
+
+        // Fallback (shouldn't happen for valid input)
+        return null;
+    }
+}
