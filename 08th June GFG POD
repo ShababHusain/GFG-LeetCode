@@ -1,0 +1,52 @@
+/* Structure of linked list node
+class Node {
+
+    int data;
+    Node next;
+
+    Node(int d) {
+        data = d;
+        next = null;
+    }
+}
+*/
+class Solution {
+    Node compute(Node head) {
+        if (head == null || head.next == null) return head;
+
+        // Reverse the list
+        Node rev = reverse(head);
+
+        // Traverse reversed list and keep nodes that are >= maxSeen
+        Node dummy = new Node(0);
+        Node tail = dummy;
+        int maxSeen = Integer.MIN_VALUE;
+        Node cur = rev;
+        while (cur != null) {
+            Node next = cur.next; // save next before we possibly change cur.next
+            if (cur.data >= maxSeen) {
+                maxSeen = cur.data;
+                tail.next = cur;
+                tail = cur;
+                tail.next = null; // detach to avoid carrying old links
+            }
+            // else skip cur (do not link it)
+            cur = next;
+        }
+
+        // Reverse back the filtered list and return
+        return reverse(dummy.next);
+    }
+
+    private Node reverse(Node head) {
+        Node prev = null;
+        Node cur = head;
+        while (cur != null) {
+            Node nxt = cur.next;
+            cur.next = prev;
+            prev = cur;
+            cur = nxt;
+        }
+        return prev;
+    }
+}
