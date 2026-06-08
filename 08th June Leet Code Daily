@@ -1,0 +1,21 @@
+class Solution {
+    public int[] pivotArray(int[] nums, int pivot) {
+        List<Integer> less = new ArrayList<>();
+        List<Integer> equal = new ArrayList<>();
+        List<Integer> greater = new ArrayList<>();
+
+        for (int v : nums) {
+            if (v < pivot) less.add(v);
+            else if (v == pivot) equal.add(v);
+            else greater.add(v);
+        }
+
+        int n = nums.length;
+        int[] res = new int[n];
+        int idx = 0;
+        for (int v : less) res[idx++] = v;
+        for (int v : equal) res[idx++] = v;
+        for (int v : greater) res[idx++] = v;
+        return res;
+    }
+}
