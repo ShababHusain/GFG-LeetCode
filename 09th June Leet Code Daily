@@ -1,0 +1,13 @@
+class Solution {
+    public long maxTotalValue(int[] nums, int k) {
+         if (nums == null || nums.length == 0) return 0L;
+        int n = nums.length;
+        int minV = nums[0], maxV = nums[0];
+        for (int v : nums) {
+            if (v < minV) minV = v;
+            if (v > maxV) maxV = v;
+        }
+        long diff = (long) maxV - (long) minV;
+        return diff * (long) k;
+    }
+}
