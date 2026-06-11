@@ -1,0 +1,11 @@
+class Solution {
+    public int findIndex(String s) {
+        // code here
+        int totalClose = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == ')') totalClose++;
+        }
+        return totalClose; // 0 <= totalClose <= n
+    
+    }
+}
