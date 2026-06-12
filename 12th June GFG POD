@@ -1,0 +1,22 @@
+class Solution {
+    public boolean kSubstr(String s, int k) {
+        // code here
+        int n = s.length();
+        if (n % k != 0) return false;
+        int m = n / k;
+        if (m == 1) return true;
+
+        Map<String, Integer> freq = new HashMap<>();
+        for (int i = 0; i < n; i += k) {
+            String block = s.substring(i, i + k);
+            freq.put(block, freq.getOrDefault(block, 0) + 1);
+        }
+
+        int maxCount = 0;
+        for (int c : freq.values()) {
+            if (c > maxCount) maxCount = c;
+        }
+
+        return maxCount >= m - 1;
+    }
+}
