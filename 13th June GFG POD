@@ -1,0 +1,35 @@
+class Solution {
+    static final int MOD = 1000000007;
+
+    // Fast exponentiation for modular inverse
+    static long power(long a, long b) {
+        long res = 1;
+        while (b > 0) {
+            if ((b & 1) == 1) res = (res * a) % MOD;
+            a = (a * a) % MOD;
+            b >>= 1;
+        }
+        return res;
+    }
+
+    public int computeValue(int n) {
+        // Precompute factorials up to 2n
+        long[] fact = new long[2 * n + 1];
+        fact[0] = 1;
+        for (int i = 1; i <= 2 * n; i++) {
+            fact[i] = (fact[i - 1] * i) % MOD;
+        }
+
+        // numerator = (2n)!
+        long numerator = fact[2 * n];
+
+        // denominator = (n! * n!) % MOD
+        long denominator = (fact[n] * fact[n]) % MOD;
+
+        // modular inverse of denominator
+        long inverse = power(denominator, MOD - 2);
+
+        // result = numerator * inverse % MOD
+        return (int) ((numerator * inverse) % MOD);
+    }
+}
