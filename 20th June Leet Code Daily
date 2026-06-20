@@ -1,0 +1,37 @@
+class Solution {
+    public int maxBuilding(int n, int[][] restrictions) {
+        // Step 1: add implicit restrictions
+        List<int[]> list = new ArrayList<>();
+        list.add(new int[]{1, 0});
+        for (int[] r : restrictions) list.add(r);
+        list.add(new int[]{n, n - 1});
+        
+        // Step 2: sort by building index
+        list.sort((a, b) -> a[0] - b[0]);
+        
+        // Step 3: forward pass
+        for (int i = 1; i < list.size(); i++) {
+            int[] prev = list.get(i - 1);
+            int[] curr = list.get(i);
+            curr[1] = Math.min(curr[1], prev[1] + (curr[0] - prev[0]));
+        }
+        
+        // Step 4: backward pass
+        for (int i = list.size() - 2; i >= 0; i--) {
+            int[] next = list.get(i + 1);
+            int[] curr = list.get(i);
+            curr[1] = Math.min(curr[1], next[1] + (next[0] - curr[0]));
+        }
+        
+        // Step 5: compute maximum possible height
+        int ans = 0;
+        for (int i = 1; i < list.size(); i++) {
+            int id1 = list.get(i - 1)[0], h1 = list.get(i - 1)[1];
+            int id2 = list.get(i)[0], h2 = list.get(i)[1];
+            int dist = id2 - id1;
+            ans = Math.max(ans, (h1 + h2 + dist) / 2);
+        }
+        
+        return ans;
+    }
+}
