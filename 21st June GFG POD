@@ -1,0 +1,33 @@
+class Solution {
+    public String chooseSwap(String s) {
+        // Step 1: Track which characters appear in the string
+        boolean[] seen = new boolean[26];
+        for (char c : s.toCharArray()) {
+            seen[c - 'a'] = true;
+        }
+
+        // Step 2: Traverse the string to find the first beneficial swap
+        for (int i = 0; i < s.length(); i++) {
+            char curr = s.charAt(i);
+
+            // Look for a smaller character that appears later in the string
+            for (char ch = 'a'; ch < curr; ch++) {
+                if (seen[ch - 'a']) {
+                    // Step 3: Perform the swap
+                    char[] arr = s.toCharArray();
+                    for (int j = 0; j < arr.length; j++) {
+                        if (arr[j] == curr) arr[j] = ch;
+                        else if (arr[j] == ch) arr[j] = curr;
+                    }
+                    return new String(arr);
+                }
+            }
+
+            // Mark current character as processed
+            seen[curr - 'a'] = false;
+        }
+
+        // Step 4: If no swap improves the string, return original
+        return s;
+    }
+}
