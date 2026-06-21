@@ -1,0 +1,30 @@
+class Solution {
+    public int maxIceCream(int[] costs, int coins) {
+        int maxCost = 0;
+        for (int c : costs) {
+            maxCost = Math.max(maxCost, c);
+        }
+        
+        // Frequency array for counting sort
+        int[] freq = new int[maxCost + 1];
+        for (int c : costs) {
+            freq[c]++;
+        }
+        
+        int bars = 0;
+        
+        // Greedily buy from cheapest to most expensive
+        for (int price = 1; price <= maxCost; price++) {
+            if (freq[price] == 0) continue;
+            
+            // How many bars can we buy at this price?
+            int count = Math.min(freq[price], coins / price);
+            bars += count;
+            coins -= count * price;
+            
+            if (coins < price) break; // Can't afford next bar at this price
+        }
+        
+        return bars;
+    }
+}
