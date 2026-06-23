@@ -1,0 +1,41 @@
+class Solution {
+    static final int MOD = 1_000_000_007;
+
+    public int zigZagArrays(int n, int l, int r) {
+        int m = r - l + 1;
+        long[][] dpUp = new long[n+1][m];   // dir = 1
+        long[][] dpDown = new long[n+1][m]; // dir = 0
+
+        // Initialize: arrays of length 1
+        for (int j = 0; j < m; j++) {
+            dpUp[1][j] = 1;
+            dpDown[1][j] = 1;
+        }
+
+        for (int i = 1; i < n; i++) {
+            // prefix sums for dpUp[i]
+            long[] prefix = new long[m+1];
+            for (int j = 0; j < m; j++) {
+                prefix[j+1] = (prefix[j] + dpUp[i][j]) % MOD;
+            }
+            // suffix sums for dpDown[i]
+            long[] suffix = new long[m+1];
+            for (int j = m-1; j >= 0; j--) {
+                suffix[j] = (suffix[j+1] + dpDown[i][j]) % MOD;
+            }
+
+            for (int y = 0; y < m; y++) {
+                // if next must be down, choose x < y
+                dpDown[i+1][y] = prefix[y];
+                // if next must be up, choose x > y
+                dpUp[i+1][y] = suffix[y+1];
+            }
+        }
+
+        long ans = 0;
+        for (int j = 0; j < m; j++) {
+            ans = (ans + dpUp[n][j] + dpDown[n][j]) % MOD;
+        }
+        return (int) ans;
+    }
+}
