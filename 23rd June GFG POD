@@ -1,0 +1,16 @@
+class Solution {
+    int maxPeopleDefeated(int p) {
+        long sum = 0;   // total strength consumed
+        int i = 1;      // start from person 1
+        int count = 0;  // number of people defeated
+
+        while (true) {
+            long strength = 1L * i * i; // strength of person i
+            if (sum + strength > p) break; // stop if exceeding p
+            sum += strength;
+            count++;
+            i++;
+        }
+        return count;
+    }
+}
