@@ -1,0 +1,83 @@
+class Solution {
+    private static final int MOD = 1000000007;
+
+    public int zigZagArrays(int n, int l, int r) {
+        int M = r - l + 1;
+        
+        // T[i][j] represents valid transitions in our folded state space.
+        // It is valid if i + j >= M (0-indexed).
+        long[][] T = new long[M][M];
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < M; j++) {
+                if (i + j >= M) {
+                    T[i][j] = 1;
+                }
+            }
+        }
+        
+        // V2[i] = i represents the number of valid length-2 arrays ending in an UP state at relative value i
+        long[] V2 = new long[M];
+        for (int i = 0; i < M; i++) {
+            V2[i] = i; 
+        }
+        
+        // Exponentiate the transition matrix by (n - 2) steps
+        long[][] T_exp = power(T, n - 2);
+        
+        // Multiply our initial length-2 vector by the exponentiated matrix
+        long[] Vn = new long[M];
+        for (int i = 0; i < M; i++) {
+            if (V2[i] == 0) continue;
+            for (int j = 0; j < M; j++) {
+                Vn[j] = (Vn[j] + V2[i] * T_exp[i][j]) % MOD;
+            }
+        }
+        
+        // Sum all the possibilities ending in an UP state
+        long totalUPs = 0;
+        for (int i = 0; i < M; i++) {
+            totalUPs = (totalUPs + Vn[i]) % MOD;
+        }
+        
+        // Because of mathematical symmetry, DOWN states have the exact same count
+        long total = (totalUPs * 2) % MOD;
+        
+        return (int) total;
+    }
+    
+    // --- Matrix Exponentiation Helper ---
+    private long[][] power(long[][] base, long exp) {
+        int size = base.length;
+        long[][] res = new long[size][size];
+        
+        // Initialize as Identity Matrix
+        for (int i = 0; i < size; i++) {
+            res[i][i] = 1;
+        }
+        
+        while (exp > 0) {
+            if (exp % 2 == 1) {
+                res = multiply(res, base);
+            }
+            base = multiply(base, base);
+            exp /= 2;
+        }
+        return res;
+    }
+    
+    // --- Matrix Multiplication Helper ---
+    private long[][] multiply(long[][] A, long[][] B) {
+        int size = A.length;
+        long[][] C = new long[size][size];
+        
+        for (int i = 0; i < size; i++) {
+            for (int k = 0; k < size; k++) {
+                if (A[i][k] == 0) continue; // Skip zero multipliers for optimization
+                for (int j = 0; j < size; j++) {
+                    C[i][j] = (C[i][j] + A[i][k] * B[k][j]) % MOD;
+                }
+            }
+        }
+        return C;
+    }
+}
