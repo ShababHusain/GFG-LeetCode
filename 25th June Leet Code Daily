@@ -1,0 +1,59 @@
+class Solution {
+    public int countMajoritySubarrays(int[] nums, int target) {
+        int n = nums.length;
+        int[] pref = new int[n + 1];
+        pref[0] = 0;
+        for (int i = 1; i <= n; i++) {
+            pref[i] = pref[i - 1] + (nums[i - 1] == target ? 1 : -1);
+        }
+
+        // Coordinate compression
+        int[] all = Arrays.copyOf(pref, pref.length);
+        Arrays.sort(all);
+        int m = 0;
+        // build unique array
+        int[] uniq = new int[all.length];
+        for (int v : all) {
+            if (m == 0 || uniq[m - 1] != v) uniq[m++] = v;
+        }
+        // map value -> index (1-based)
+        Map<Integer, Integer> comp = new HashMap<>();
+        for (int i = 0; i < m; i++) comp.put(uniq[i], i + 1);
+
+        Fenwick bit = new Fenwick(m + 2);
+        long ans = 0L;
+
+        // For each prefix pref[j], count how many previous pref[i] < pref[j]
+        for (int j = 0; j <= n; j++) {
+            int idx = comp.get(pref[j]);
+            if (idx - 1 >= 1) ans += bit.query(idx - 1);
+            bit.update(idx, 1);
+        }
+
+        return (int) ans;
+    }
+
+    // Fenwick tree for frequencies (1-indexed)
+    static class Fenwick {
+        private final long[] bit;
+        private final int size;
+        Fenwick(int n) {
+            size = n;
+            bit = new long[n + 1];
+        }
+        void update(int i, long delta) {
+            while (i <= size) {
+                bit[i] += delta;
+                i += i & -i;
+            }
+        }
+        long query(int i) {
+            long s = 0;
+            while (i > 0) {
+                s += bit[i];
+                i -= i & -i;
+            }
+            return s;
+        }
+    }
+}
