@@ -1,0 +1,65 @@
+class Solution {
+    public long countMajoritySubarrays(int[] nums, int target) {
+        int n = nums.length;
+        // Quick check: if target never appears, answer is 0
+        boolean seen = false;
+        for (int v : nums) if (v == target) { seen = true; break; }
+        if (!seen) return 0L;
+
+        // Build transformed prefix sums: +1 for target, -1 otherwise
+        int[] pref = new int[n + 1];
+        pref[0] = 0;
+        for (int i = 1; i <= n; i++) {
+            pref[i] = pref[i - 1] + (nums[i - 1] == target ? 1 : -1);
+        }
+
+        // Coordinate compression: sort a copy and keep unique values in front
+        int[] all = Arrays.copyOf(pref, pref.length);
+        Arrays.sort(all);
+        int m = 1;
+        for (int i = 1; i < all.length; i++) {
+            if (all[i] != all[m - 1]) {
+                all[m++] = all[i];
+            }
+        }
+
+        // Fenwick tree (1-indexed) sized by number of unique prefix values
+        Fenwick bit = new Fenwick(m + 2);
+        long ans = 0L;
+
+        // For each prefix pref[j], count how many previous pref[i] < pref[j]
+        for (int j = 0; j <= n; j++) {
+            int pos = Arrays.binarySearch(all, 0, m, pref[j]);
+            // binarySearch must find it; convert to 1-based index
+            int idx = pos + 1;
+            if (idx - 1 >= 1) ans += bit.query(idx - 1);
+            bit.update(idx, 1);
+        }
+
+        return ans;
+    }
+
+    // Fenwick tree for long frequencies (1-indexed)
+    static class Fenwick {
+        private final long[] bit;
+        private final int size;
+        Fenwick(int n) {
+            size = n;
+            bit = new long[n + 1];
+        }
+        void update(int i, long delta) {
+            while (i <= size) {
+                bit[i] += delta;
+                i += i & -i;
+            }
+        }
+        long query(int i) {
+            long s = 0;
+            while (i > 0) {
+                s += bit[i];
+                i -= i & -i;
+            }
+            return s;
+        }
+    }
+}
