@@ -1,0 +1,18 @@
+class Solution {
+    private static final int MOD = 1_000_000_007;
+
+    public int countWays(int n, int m) {
+        // If n < m, only horizontal placement per row is possible -> exactly 1 way
+        if (n < m) return 1;
+        // dp[i] = number of ways to tile i x m floor
+        long[] dp = new long[n + 1];
+        dp[0] = 1;
+        // for 1..m-1 -> only horizontal tiles
+        for (int i = 1; i < m && i <= n; i++) dp[i] = 1;
+        // recurrence: dp[i] = dp[i-1] + dp[i-m]
+        for (int i = m; i <= n; i++) {
+            dp[i] = (dp[i - 1] + dp[i - m]) % MOD;
+        }
+        return (int) dp[n];
+    }
+}
