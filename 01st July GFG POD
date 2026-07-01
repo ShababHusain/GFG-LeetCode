@@ -1,0 +1,31 @@
+class Solution {
+    public int maxSumSubarray(int[] arr) {
+        int n = arr.length;
+        if (n == 0) return 0;
+
+        int noSkip = arr[0];                     // best ending here without skip
+        int skip = Integer.MIN_VALUE;           // best ending here with one skip used
+        int result = arr[0];
+
+        for (int i = 1; i < n; i++) {
+            int prevNoSkip = noSkip;
+
+            // update noSkip (Kadane)
+            noSkip = Math.max(arr[i], prevNoSkip + arr[i]);
+
+            // compute option of continuing a previously skipped subarray
+            int contSkip = (skip == Integer.MIN_VALUE) ? Integer.MIN_VALUE : skip + arr[i];
+
+            // option of skipping current element: take prevNoSkip (skip arr[i])
+            int skipCurrent = prevNoSkip;
+
+            // new skip is the better of continuing after a skip or skipping current element
+            skip = Math.max(contSkip, skipCurrent);
+
+            // update result
+            result = Math.max(result, Math.max(noSkip, skip));
+        }
+
+        return result;
+    }
+}
