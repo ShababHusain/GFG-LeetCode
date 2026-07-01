@@ -1,0 +1,77 @@
+import java.util.*;
+
+class Solution {
+    public int maximumSafenessFactor(List<List<Integer>> grid) {
+        int n = grid.size();
+        int[][] g = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                g[i][j] = grid.get(i).get(j);
+            }
+        }
+
+        // Step 1: multi-source BFS from all thieves to compute dist[][] (min Manhattan distance to nearest thief)
+        int[][] dist = new int[n][n];
+        for (int[] row : dist) Arrays.fill(row, Integer.MAX_VALUE);
+        Deque<int[]> q = new ArrayDeque<>();
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (g[i][j] == 1) {
+                    dist[i][j] = 0;
+                    q.offer(new int[]{i, j});
+                }
+            }
+        }
+        int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
+        while (!q.isEmpty()) {
+            int[] cur = q.poll();
+            int r = cur[0], c = cur[1];
+            for (int[] d : dirs) {
+                int nr = r + d[0], nc = c + d[1];
+                if (nr >= 0 && nr < n && nc >= 0 && nc < n) {
+                    if (dist[nr][nc] > dist[r][c] + 1) {
+                        dist[nr][nc] = dist[r][c] + 1;
+                        q.offer(new int[]{nr, nc});
+                    }
+                }
+            }
+        }
+
+        // Step 2: binary search on safeness factor v
+        int low = 0, high = 2 * n; // safe upper bound
+        int ans = 0;
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            if (canReachWithSafeness(dist, mid)) {
+                ans = mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return ans;
+    }
+
+    private boolean canReachWithSafeness(int[][] dist, int v) {
+        int n = dist.length;
+        if (dist[0][0] < v || dist[n-1][n-1] < v) return false;
+        boolean[][] seen = new boolean[n][n];
+        Deque<int[]> dq = new ArrayDeque<>();
+        dq.offer(new int[]{0,0});
+        seen[0][0] = true;
+        int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
+        while (!dq.isEmpty()) {
+            int[] cur = dq.poll();
+            int r = cur[0], c = cur[1];
+            if (r == n-1 && c == n-1) return true;
+            for (int[] d : dirs) {
+                int nr = r + d[0], nc = c + d[1];
+                if (nr >= 0 && nr < n && nc >= 0 && nc < n && !seen[nr][nc] && dist[nr][nc] >= v) {
+                    seen[nr][nc] = true;
+                    dq.offer(new int[]{nr, nc});
+                }
+            }
+        }
+        return false;
+    }
+}
