@@ -1,0 +1,46 @@
+import java.util.*;
+
+class Solution {
+    public boolean findSafeWalk(List<List<Integer>> grid, int health) {
+        int m = grid.size();
+        if (m == 0) return false;
+        int n = grid.get(0).size();
+
+        // remaining health after standing on start cell
+        int startRem = health - grid.get(0).get(0);
+        if (startRem <= 0) return false; // must remain positive immediately
+
+        // visited[r][c] = max remaining health we've had when visiting (r,c)
+        int[][] visited = new int[m][n];
+        for (int[] row : visited) Arrays.fill(row, Integer.MIN_VALUE);
+
+        Deque<int[]> dq = new ArrayDeque<>();
+        // state: {r, c, remainingHealth}
+        dq.offer(new int[]{0, 0, startRem});
+        visited[0][0] = startRem;
+
+        int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
+
+        while (!dq.isEmpty()) {
+            int[] cur = dq.poll();
+            int r = cur[0], c = cur[1], rem = cur[2];
+
+            if (r == m - 1 && c == n - 1) {
+                if (rem >= 1) return true;
+            }
+
+            for (int[] d : dirs) {
+                int nr = r + d[0], nc = c + d[1];
+                if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
+                int nextRem = rem - grid.get(nr).get(nc);
+                if (nextRem <= 0) continue; // health must remain positive
+                if (nextRem > visited[nr][nc]) {
+                    visited[nr][nc] = nextRem;
+                    dq.offer(new int[]{nr, nc, nextRem});
+                }
+            }
+        }
+
+        return false;
+    }
+}
