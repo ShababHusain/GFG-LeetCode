@@ -1,0 +1,88 @@
+import java.util.*;
+
+class Solution {
+    private static class Edge {
+        int to;
+        long cost;
+        Edge(int to, long cost) { this.to = to; this.cost = cost; }
+    }
+
+    public int findMaxPathScore(int[][] edges, boolean[] online, long k) {
+        int n = online.length;
+        // build adjacency list and indegree
+        List<Edge>[] adj = new ArrayList[n];
+        for (int i = 0; i < n; i++) adj[i] = new ArrayList<>();
+        int[] indeg = new int[n];
+        List<Long> costs = new ArrayList<>();
+
+        for (int[] e : edges) {
+            int u = e[0], v = e[1];
+            long c = e[2];
+            adj[u].add(new Edge(v, c));
+            indeg[v]++;
+            costs.add(c);
+        }
+
+        // Topological order (Kahn)
+        Deque<Integer> dq = new ArrayDeque<>();
+        for (int i = 0; i < n; i++) if (indeg[i] == 0) dq.offer(i);
+        List<Integer> topo = new ArrayList<>(n);
+        while (!dq.isEmpty()) {
+            int u = dq.poll();
+            topo.add(u);
+            for (Edge e : adj[u]) {
+                indeg[e.to]--;
+                if (indeg[e.to] == 0) dq.offer(e.to);
+            }
+        }
+
+        // If there are no edges, no path unless start==end (n>=2 per constraints) -> return -1
+        if (costs.isEmpty()) return -1;
+
+        // unique sorted costs
+        Collections.sort(costs);
+        List<Long> uniq = new ArrayList<>();
+        long prev = Long.MIN_VALUE;
+        for (long c : costs) {
+            if (c != prev) {
+                uniq.add(c);
+                prev = c;
+            }
+        }
+
+        int lo = 0, hi = uniq.size() - 1;
+        long best = -1;
+        while (lo <= hi) {
+            int mid = (lo + hi) >>> 1;
+            long threshold = uniq.get(mid);
+            if (feasible(n, adj, topo, online, threshold, k)) {
+                best = threshold;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+
+        return best == -1 ? -1 : (int) best;
+    }
+
+    private boolean feasible(int n, List<Edge>[] adj, List<Integer> topo, boolean[] online, long threshold, long k) {
+        final long INF = Long.MAX_VALUE / 4;
+        long[] dist = new long[n];
+        Arrays.fill(dist, INF);
+        dist[0] = 0; // start is guaranteed online
+
+        for (int u : topo) {
+            if (!online[u]) continue;       // cannot use offline intermediate nodes
+            if (dist[u] == INF) continue;   // unreachable
+            for (Edge e : adj[u]) {
+                if (e.cost < threshold) continue; // edge not allowed
+                int v = e.to;
+                if (!online[v]) continue;         // cannot step into offline node
+                long nd = dist[u] + e.cost;
+                if (nd < dist[v]) dist[v] = nd;
+            }
+        }
+        return dist[n - 1] <= k;
+    }
+}
