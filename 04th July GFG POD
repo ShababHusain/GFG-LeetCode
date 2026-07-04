@@ -1,0 +1,61 @@
+import java.util.*;
+
+class Solution {
+    public int countSubstring(String s) {
+        int n = s.length();
+        long[] pref = new long[n + 1];
+        pref[0] = 0;
+        for (int i = 0; i < n; i++) {
+            pref[i + 1] = pref[i] + (s.charAt(i) == '1' ? 1 : -1);
+        }
+
+        // Coordinate compress prefix values
+        long[] vals = Arrays.copyOf(pref, pref.length);
+        Arrays.sort(vals);
+        int m = 0;
+        for (int i = 0; i < vals.length; i++) {
+            if (i == 0 || vals[i] != vals[i - 1]) m++;
+        }
+        long[] uniq = new long[m];
+        int idx = 0;
+        for (int i = 0; i < vals.length; i++) {
+            if (i == 0 || vals[i] != vals[i - 1]) uniq[idx++] = vals[i];
+        }
+
+        Fenwick bit = new Fenwick(m);
+        long ans = 0L;
+        for (int j = 0; j <= n; j++) {
+            int id = lowerBound(uniq, pref[j]) + 1; // 1-based index for BIT
+            if (id - 1 >= 1) ans += bit.sum(id - 1); // count prefixes strictly less than pref[j]
+            bit.add(id, 1);
+        }
+        return (int) ans;
+    }
+
+    private int lowerBound(long[] arr, long key) {
+        int l = 0, r = arr.length;
+        while (l < r) {
+            int mid = (l + r) >>> 1;
+            if (arr[mid] < key) l = mid + 1;
+            else r = mid;
+        }
+        return l;
+    }
+
+    private static class Fenwick {
+        private final long[] bit;
+        private final int n;
+        Fenwick(int n) {
+            this.n = n;
+            this.bit = new long[n + 1];
+        }
+        void add(int idx, long val) {
+            for (; idx <= n; idx += idx & -idx) bit[idx] += val;
+        }
+        long sum(int idx) {
+            long res = 0;
+            for (; idx > 0; idx -= idx & -idx) res += bit[idx];
+            return res;
+        }
+    }
+}
