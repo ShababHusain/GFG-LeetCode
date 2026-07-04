@@ -1,0 +1,36 @@
+import java.util.*;
+
+class Solution {
+    public int minScore(int n, int[][] roads) {
+        // adjacency list: 1-indexed nodes
+        List<int[]>[] adj = new ArrayList[n + 1];
+        for (int i = 1; i <= n; i++) adj[i] = new ArrayList<>();
+        for (int[] r : roads) {
+            int u = r[0], v = r[1], w = r[2];
+            adj[u].add(new int[]{v, w});
+            adj[v].add(new int[]{u, w});
+        }
+
+        boolean[] seen = new boolean[n + 1];
+        Deque<Integer> dq = new ArrayDeque<>();
+        dq.offer(1);
+        seen[1] = true;
+        int minEdge = Integer.MAX_VALUE;
+
+        while (!dq.isEmpty()) {
+            int u = dq.poll();
+            for (int[] e : adj[u]) {
+                int v = e[0], w = e[1];
+                // update minimum edge seen in the component
+                if (w < minEdge) minEdge = w;
+                if (!seen[v]) {
+                    seen[v] = true;
+                    dq.offer(v);
+                }
+            }
+        }
+
+        // Problem guarantees at least one path between 1 and n, so minEdge will be set.
+        return minEdge;
+    }
+}
