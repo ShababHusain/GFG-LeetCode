@@ -1,0 +1,55 @@
+import java.util.*;
+
+class Solution {
+    private static final int MOD = 1_000_000_007;
+
+    public int[] pathsWithMaxScore(List<String> board) {
+        int n = board.size();
+        char[][] g = new char[n][n];
+        for (int i = 0; i < n; i++) g[i] = board.get(i).toCharArray();
+
+        long[][] maxSum = new long[n][n];
+        long[][] ways = new long[n][n];
+        for (int i = 0; i < n; i++) Arrays.fill(maxSum[i], Long.MIN_VALUE);
+
+        // start at S (bottom-right)
+        maxSum[n-1][n-1] = 0;
+        ways[n-1][n-1] = 1;
+
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = n - 1; j >= 0; j--) {
+                if (g[i][j] == 'X') continue;
+                // skip the start cell (already initialized)
+                if (i == n-1 && j == n-1) continue;
+
+                long best = Long.MIN_VALUE;
+                long cnt = 0;
+
+                // neighbors we can come from when moving S -> E (i+1,j), (i,j+1), (i+1,j+1)
+                int[][] nbrs = {{i+1,j},{i,j+1},{i+1,j+1}};
+                for (int[] nb : nbrs) {
+                    int ni = nb[0], nj = nb[1];
+                    if (ni < 0 || ni >= n || nj < 0 || nj >= n) continue;
+                    if (maxSum[ni][nj] == Long.MIN_VALUE) continue; // unreachable
+                    if (maxSum[ni][nj] > best) {
+                        best = maxSum[ni][nj];
+                        cnt = ways[ni][nj];
+                    } else if (maxSum[ni][nj] == best) {
+                        cnt = (cnt + ways[ni][nj]) % MOD;
+                    }
+                }
+
+                if (best == Long.MIN_VALUE) continue; // no reachable neighbor
+
+                long add = 0;
+                if (g[i][j] >= '1' && g[i][j] <= '9') add = g[i][j] - '0';
+                // 'E' and 'S' contribute 0
+                maxSum[i][j] = best + add;
+                ways[i][j] = cnt % MOD;
+            }
+        }
+
+        if (maxSum[0][0] == Long.MIN_VALUE) return new int[]{0,0};
+        return new int[]{(int)maxSum[0][0], (int)(ways[0][0] % MOD)};
+    }
+}
