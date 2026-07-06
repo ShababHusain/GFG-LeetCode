@@ -1,0 +1,25 @@
+class Solution {
+    public int removeCoveredIntervals(int[][] intervals) {
+        if (intervals == null || intervals.length == 0) return 0;
+
+        // sort by start asc, end desc
+        Arrays.sort(intervals, new Comparator<int[]>() {
+            public int compare(int[] a, int[] b) {
+                if (a[0] != b[0]) return Integer.compare(a[0], b[0]);
+                return Integer.compare(b[1], a[1]); // longer interval first when starts equal
+            }
+        });
+
+        int count = 0;
+        int maxR = -1;
+        for (int[] iv : intervals) {
+            int r = iv[1];
+            if (r > maxR) {
+                count++;
+                maxR = r;
+            }
+            // else covered, do nothing
+        }
+        return count;
+    }
+}
