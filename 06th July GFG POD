@@ -1,0 +1,27 @@
+class Solution {
+    public int maxPathSum(int[] a, int[] b) {
+        int n = a.length, m = b.length;
+        int i = 0, j = 0;
+        long sumA = 0, sumB = 0;
+        long result = 0;
+
+        while (i < n && j < m) {
+            if (a[i] < b[j]) {
+                sumA += a[i++];
+            } else if (a[i] > b[j]) {
+                sumB += b[j++];
+            } else { // a[i] == b[j]
+                result += Math.max(sumA, sumB) + a[i];
+                i++; j++;
+                sumA = 0;
+                sumB = 0;
+            }
+        }
+
+        while (i < n) sumA += a[i++];
+        while (j < m) sumB += b[j++];
+
+        result += Math.max(sumA, sumB);
+        return (int) result;
+    }
+}
