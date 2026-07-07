@@ -1,0 +1,42 @@
+class Solution {
+    public int largestArea(int n, int m, int k, int[][] arr) {
+        // If no blocked cells, whole grid is unblocked
+        if (k == 0 || arr == null || arr.length == 0) return n * m;
+
+        // collect blocked rows and columns (1-based indices in input)
+        int[] brow = new int[k];
+        int[] bcol = new int[k];
+        for (int i = 0; i < k; i++) {
+            brow[i] = arr[i][0];
+            bcol[i] = arr[i][1];
+        }
+
+        Arrays.sort(brow);
+        Arrays.sort(bcol);
+
+        int maxRowGap = maxGap(n, brow);
+        int maxColGap = maxGap(m, bcol);
+
+        return maxRowGap * maxColGap;
+    }
+
+    // compute maximum number of consecutive unblocked indices in [1..limit]
+    private int maxGap(int limit, int[] blocked) {
+        if (blocked == null || blocked.length == 0) return limit;
+
+        int best = 0;
+        // gap before first blocked
+        best = Math.max(best, blocked[0] - 1);
+
+        // gaps between blocked indices
+        for (int i = 0; i + 1 < blocked.length; i++) {
+            int gap = blocked[i + 1] - blocked[i] - 1;
+            if (gap > best) best = gap;
+        }
+
+        // gap after last blocked
+        best = Math.max(best, limit - blocked[blocked.length - 1]);
+
+        return best;
+    }
+}
