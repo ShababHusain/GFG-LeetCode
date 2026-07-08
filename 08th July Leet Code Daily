@@ -1,0 +1,88 @@
+class Solution {
+    private static final int MOD = 1_000_000_007;
+
+    public int[] sumAndMultiply(String s, int[][] queries) {
+        int m = s.length();
+        // collect non-zero positions and digits
+        int[] posTemp = new int[m];
+        int[] valTemp = new int[m];
+        int k = 0;
+        for (int i = 0; i < m; i++) {
+            char c = s.charAt(i);
+            if (c != '0') {
+                posTemp[k] = i;
+                valTemp[k] = c - '0';
+                k++;
+            }
+        }
+
+        if (k == 0) {
+            // no non-zero digits -> all answers are 0
+            int[] res0 = new int[queries.length];
+            Arrays.fill(res0, 0);
+            return res0;
+        }
+
+        int[] pos = Arrays.copyOf(posTemp, k);
+        int[] val = Arrays.copyOf(valTemp, k);
+
+        // precompute powers of 10, prefix numbers and prefix sums
+        long[] pow10 = new long[k + 1];
+        long[] prefNum = new long[k + 1]; // prefNum[0] = 0
+        long[] prefSum = new long[k + 1]; // prefSum[0] = 0
+        pow10[0] = 1;
+        for (int i = 1; i <= k; i++) pow10[i] = (pow10[i - 1] * 10) % MOD;
+
+        for (int i = 1; i <= k; i++) {
+            prefNum[i] = (prefNum[i - 1] * 10 + val[i - 1]) % MOD;
+            prefSum[i] = (prefSum[i - 1] + val[i - 1]) % MOD;
+        }
+
+        int q = queries.length;
+        int[] ans = new int[q];
+        for (int i = 0; i < q; i++) {
+            int Lq = queries[i][0];
+            int Rq = queries[i][1];
+
+            // find first index >= Lq
+            int L = lowerBound(pos, k, Lq);
+            // find last index <= Rq -> upperBound(pos, Rq) - 1
+            int ub = upperBound(pos, k, Rq);
+            int R = ub - 1;
+
+            if (L >= k || R < L) {
+                ans[i] = 0;
+                continue;
+            }
+
+            int len = R - L + 1;
+            long x = (prefNum[R + 1] - (prefNum[L] * pow10[len]) % MOD + MOD) % MOD;
+            long sum = (prefSum[R + 1] - prefSum[L] + MOD) % MOD;
+            long res = (x * sum) % MOD;
+            ans[i] = (int) res;
+        }
+        return ans;
+    }
+
+    // first index in arr[0..n-1] with arr[idx] >= key
+    private int lowerBound(int[] arr, int n, int key) {
+        int l = 0, r = n;
+        while (l < r) {
+            int mid = (l + r) >>> 1;
+            if (arr[mid] < key) l = mid + 1;
+            else r = mid;
+        }
+        return l;
+    }
+
+    // first index in arr[0..n-1] with arr[idx] > key
+    private int upperBound(int[] arr, int n, int key) {
+        int l = 0, r = n;
+        while (l < r) {
+            int mid = (l + r) >>> 1;
+            if (arr[mid] <= key) l = mid + 1;
+            else r = mid;
+        }
+        return l;
+    }
+}
