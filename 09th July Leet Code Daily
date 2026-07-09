@@ -1,0 +1,31 @@
+class Solution {
+    public boolean[] pathExistenceQueries(int n, int[] nums, int maxDiff, int[][] queries) {
+        if (nums == null || nums.length == 0) return new boolean[queries.length];
+
+        // Ensure n matches nums length (defensive)
+        int len = nums.length;
+        // build component ids: consecutive indices belong to same component
+        int[] comp = new int[len];
+        comp[0] = 0;
+        for (int i = 1; i < len; i++) {
+            if ((long)nums[i] - (long)nums[i - 1] <= (long)maxDiff) {
+                comp[i] = comp[i - 1];
+            } else {
+                comp[i] = comp[i - 1] + 1;
+            }
+        }
+
+        boolean[] ans = new boolean[queries.length];
+        for (int i = 0; i < queries.length; i++) {
+            int u = queries[i][0];
+            int v = queries[i][1];
+            // if indices are out of range, treat as not connected (defensive)
+            if (u < 0 || u >= len || v < 0 || v >= len) {
+                ans[i] = false;
+            } else {
+                ans[i] = (comp[u] == comp[v]);
+            }
+        }
+        return ans;
+    }
+}
