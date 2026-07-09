@@ -1,0 +1,29 @@
+class Solution {
+    public int countKdivPairs(int[] arr, int k) {
+        if (arr == null || arr.length < 2 || k <= 0) return 0;
+
+        long[] freq = new long[k];
+        for (int v : arr) {
+            int r = v % k;
+            if (r < 0) r += k;
+            freq[r]++;
+        }
+
+        long count = 0L;
+        // pairs where both elements have remainder 0
+        count += freq[0] * (freq[0] - 1) / 2;
+
+        // pair remainder r with k-r
+        for (int r = 1; r <= k / 2; r++) {
+            int comp = k - r;
+            if (r == comp) {
+                // when k is even, remainder k/2 pairs among themselves
+                count += freq[r] * (freq[r] - 1) / 2;
+            } else if (r < comp) {
+                count += freq[r] * freq[comp];
+            }
+        }
+
+        return (int) count;
+    }
+}
