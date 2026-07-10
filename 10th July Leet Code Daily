@@ -1,0 +1,128 @@
+import java.util.*;
+
+class Solution {
+    public int[] pathExistenceQueries(int n, int[] nums, int maxDiff, int[][] queries) {
+        if (n == 0) return new int[queries.length];
+
+        // Build sorted distinct values
+        int[] vals = Arrays.copyOf(nums, n);
+        Arrays.sort(vals);
+        int k = 0;
+        for (int i = 0; i < n; i++) {
+            if (i == 0 || vals[i] != vals[i - 1]) {
+                vals[k++] = vals[i];
+            }
+        }
+        vals = Arrays.copyOf(vals, k);
+
+        // Map original node -> value-index
+        HashMap<Integer, Integer> valToIndex = new HashMap<>(k * 2);
+        for (int i = 0; i < k; i++) valToIndex.put(vals[i], i);
+        int[] idx = new int[n];
+        for (int i = 0; i < n; i++) idx[i] = valToIndex.get(nums[i]);
+
+        // Compute R[i] = max j such that vals[j] - vals[i] <= maxDiff
+        int[] R = new int[k];
+        int j = 0;
+        for (int i = 0; i < k; i++) {
+            if (j < i) j = i;
+            while (j + 1 < k && (long) vals[j + 1] - vals[i] <= maxDiff) j++;
+            R[i] = j;
+        }
+
+        // Compute L[i] = min j such that vals[i] - vals[j] <= maxDiff
+        int[] L = new int[k];
+        int l = k - 1;
+        for (int i = k - 1; i >= 0; i--) {
+            if (l > i) l = i;
+            while (l - 1 >= 0 && (long) vals[i] - vals[l - 1] <= maxDiff) l--;
+            L[i] = l;
+        }
+
+        // Binary lifting tables
+        int LOG = 1;
+        while ((1 << LOG) <= k) LOG++;
+        int[][] up = new int[LOG][k];    // rightward jumps (furthest index after 2^t jumps)
+        int[][] down = new int[LOG][k];  // leftward jumps (furthest left index after 2^t jumps)
+
+        for (int i = 0; i < k; i++) {
+            up[0][i] = R[i];
+            down[0][i] = L[i];
+        }
+        for (int t = 1; t < LOG; t++) {
+            for (int i = 0; i < k; i++) {
+                int mid = up[t - 1][i];
+                up[t][i] = up[t - 1][mid];
+                int midL = down[t - 1][i];
+                down[t][i] = down[t - 1][midL];
+            }
+        }
+
+        int q = queries.length;
+        int[] ans = new int[q];
+        for (int i = 0; i < q; i++) {
+            int u = queries[i][0];
+            int v = queries[i][1];
+            if (u == v) {
+                ans[i] = 0;
+                continue;
+            }
+            int a = idx[u], b = idx[v];
+            if (a == b) {
+                // different nodes but same value -> direct edge
+                ans[i] = 1;
+                continue;
+            }
+            int res;
+            if (a < b) {
+                res = minimalRightJumps(a, b, R, up, LOG);
+            } else {
+                res = minimalLeftJumps(a, b, L, down, LOG);
+            }
+            ans[i] = (res == -1) ? -1 : res;
+        }
+        return ans;
+    }
+
+    // minimal number of rightward group-jumps to reach index >= target from start (start < target)
+    // returns -1 if unreachable
+    private int minimalRightJumps(int start, int target, int[] R, int[][] up, int LOG) {
+        if (start >= target) return 0;
+        if (R[start] == start) return -1; // cannot move right at all
+        if (R[start] >= target) return 1;
+        int pos = start;
+        int steps = 0;
+        for (int t = LOG - 1; t >= 0; t--) {
+            int nxt = up[t][pos];
+            if (nxt < target) {
+                // move pos forward by 2^t jumps
+                if (nxt == pos) continue; // no progress at this level
+                pos = nxt;
+                steps += (1 << t);
+            }
+        }
+        // one final jump if possible
+        if (up[0][pos] >= target) return steps + 1;
+        return -1;
+    }
+
+    // minimal number of leftward group-jumps to reach index <= target from start (start > target)
+    // returns -1 if unreachable
+    private int minimalLeftJumps(int start, int target, int[] L, int[][] down, int LOG) {
+        if (start <= target) return 0;
+        if (L[start] == start) return -1; // cannot move left at all
+        if (L[start] <= target) return 1;
+        int pos = start;
+        int steps = 0;
+        for (int t = LOG - 1; t >= 0; t--) {
+            int nxt = down[t][pos];
+            if (nxt > target) {
+                if (nxt == pos) continue;
+                pos = nxt;
+                steps += (1 << t);
+            }
+        }
+        if (down[0][pos] <= target) return steps + 1;
+        return -1;
+    }
+}
