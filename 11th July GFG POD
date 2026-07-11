@@ -1,0 +1,40 @@
+class Solution {
+    int maxLen; 
+    int[] dx = {1, -1, 0, 0};
+    int[] dy = {0, 0, 1, -1};
+
+    public int longestPath(int[][] mat, int xs, int ys, int xd, int yd) {
+        int n = mat.length, m = mat[0].length;
+        
+        // If source or destination is blocked
+        if (mat[xs][ys] == 0 || mat[xd][yd] == 0) return -1;
+        
+        boolean[][] visited = new boolean[n][m];
+        maxLen = -1;
+        
+        dfs(mat, xs, ys, xd, yd, visited, 0);
+        
+        return maxLen;
+    }
+
+    private void dfs(int[][] mat, int x, int y, int xd, int yd, boolean[][] visited, int length) {
+        // Destination reached
+        if (x == xd && y == yd) {
+            maxLen = Math.max(maxLen, length);
+            return;
+        }
+        
+        visited[x][y] = true;
+        
+        for (int i = 0; i < 4; i++) {
+            int nx = x + dx[i], ny = y + dy[i];
+            
+            if (nx >= 0 && ny >= 0 && nx < mat.length && ny < mat[0].length &&
+                mat[nx][ny] == 1 && !visited[nx][ny]) {
+                dfs(mat, nx, ny, xd, yd, visited, length + 1);
+            }
+        }
+        
+        visited[x][y] = false; // backtrack
+    }
+}
