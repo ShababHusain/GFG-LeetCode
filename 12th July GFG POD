@@ -1,0 +1,18 @@
+class Solution {
+    public int maxAmount(int[] arr, int k) {
+        final int MOD = 1000000007;
+        PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder());
+        
+        for (int val : arr) pq.add(val);
+        
+        long total = 0;
+        while (k > 0 && !pq.isEmpty()) {
+            int top = pq.poll();
+            total = (total + top) % MOD;
+            if (top - 1 > 0) pq.add(top - 1);
+            k--;
+        }
+        
+        return (int) total;
+    }
+}
