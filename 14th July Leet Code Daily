@@ -1,0 +1,50 @@
+class Solution {
+    private static final int MOD = 1_000_000_007;
+
+    public int subsequencePairCount(int[] nums) {
+        int n = nums.length;
+        int maxA = 0;
+        for (int v : nums) maxA = Math.max(maxA, v);
+
+        int M = maxA;
+        // dp[x][y] = number of ways to get gcds x and y so far
+        long[][] dp = new long[M + 1][M + 1];
+        dp[0][0] = 1; // no elements chosen yet
+
+        for (int v : nums) {
+            long[][] ndp = new long[M + 1][M + 1];
+            for (int x = 0; x <= M; ++x) {
+                for (int y = 0; y <= M; ++y) {
+                    long ways = dp[x][y];
+                    if (ways == 0) continue;
+                    // 1) skip v
+                    ndp[x][y] = (ndp[x][y] + ways) % MOD;
+                    // 2) put v into subsequence1
+                    int gx = gcd(x, v);
+                    ndp[gx][y] = (ndp[gx][y] + ways) % MOD;
+                    // 3) put v into subsequence2
+                    int gy = gcd(y, v);
+                    ndp[x][gy] = (ndp[x][gy] + ways) % MOD;
+                }
+            }
+            dp = ndp;
+        }
+
+        long ans = 0;
+        for (int g = 1; g <= M; ++g) {
+            ans = (ans + dp[g][g]) % MOD;
+        }
+        return (int) ans;
+    }
+
+    private int gcd(int a, int b) {
+        if (a == 0) return b;
+        if (b == 0) return a;
+        while (b != 0) {
+            int t = a % b;
+            a = b;
+            b = t;
+        }
+        return a;
+    }
+}
