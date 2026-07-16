@@ -1,0 +1,30 @@
+class Solution {
+    public int countWays(int n, int sum) {
+        // impossible if sum is outside achievable range
+        if (sum < 0 || sum > 9 * n) return -1;
+        // handle sum == 0: only valid when n == 1 (number 0), otherwise no n-digit positive number
+        if (sum == 0) return (n == 1) ? 1 : -1;
+
+        long[] dp = new long[sum + 1];
+        // first digit: 1..9 (no leading zero)
+        for (int d = 1; d <= 9 && d <= sum; ++d) dp[d] = 1;
+
+        // fill for remaining n-1 positions
+        for (int pos = 2; pos <= n; ++pos) {
+            long[] ndp = new long[sum + 1];
+            for (int s = 0; s <= sum; ++s) {
+                long ways = dp[s];
+                if (ways == 0) continue;
+                for (int digit = 0; digit <= 9; ++digit) {
+                    int ns = s + digit;
+                    if (ns > sum) break;
+                    ndp[ns] += ways;
+                }
+            }
+            dp = ndp;
+        }
+
+        long ans = dp[sum];
+        return ans == 0 ? -1 : (int) ans;
+    }
+}
