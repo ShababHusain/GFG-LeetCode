@@ -1,0 +1,57 @@
+class Solution {
+    public int[] gcdValues(int[] nums, long[] queries) {
+        int n = nums.length;
+        int q = queries.length;
+
+        // find max value in nums
+        int MAX = 0;
+        for (int v : nums) if (v > MAX) MAX = v;
+
+        // frequency of each value
+        int[] freq = new int[MAX + 1];
+        for (int v : nums) freq[v]++;
+
+        // cntMult[g] = number of elements that are multiples of g
+        long[] cntMult = new long[MAX + 1];
+        for (int g = 1; g <= MAX; g++) {
+            long cnt = 0;
+            for (int m = g; m <= MAX; m += g) cnt += freq[m];
+            cntMult[g] = cnt;
+        }
+
+        // pairs[g] = number of unordered pairs with gcd exactly g
+        long[] pairs = new long[MAX + 1];
+        for (int g = MAX; g >= 1; g--) {
+            long c = cntMult[g];
+            long total = c * (c - 1) / 2; // pairs with gcd divisible by g
+            for (int m = 2 * g; m <= MAX; m += g) {
+                total -= pairs[m];
+            }
+            pairs[g] = total;
+        }
+
+        // Prepare queries with original indices and sort by query value
+        class Q { long val; int idx; Q(long v, int i){ val = v; idx = i; } }
+        Q[] qs = new Q[q];
+        for (int i = 0; i < q; i++) qs[i] = new Q(queries[i], i);
+        Arrays.sort(qs, Comparator.comparingLong(o -> o.val));
+
+        int[] ans = new int[q];
+        long acc = 0;      // number of pairs accounted for so far
+        int ptr = 0;       // pointer into sorted queries
+
+        // sweep gcd values from 1..MAX
+        for (int g = 1; g <= MAX && ptr < q; g++) {
+            long cnt = pairs[g];
+            if (cnt == 0) continue;
+            // while current query index falls within the block of value g
+            while (ptr < q && qs[ptr].val < acc + cnt) {
+                ans[qs[ptr].idx] = g;
+                ptr++;
+            }
+            acc += cnt;
+        }
+
+        return ans;
+    }
+}
