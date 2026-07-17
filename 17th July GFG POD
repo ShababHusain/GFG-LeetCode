@@ -1,0 +1,52 @@
+class Solution {
+    public int maxDiffSubArrays(int[] arr) {
+        int n = arr.length;
+
+        // Arrays to store max/min subarray sums from left and right
+        int[] leftMax = new int[n];
+        int[] leftMin = new int[n];
+        int[] rightMax = new int[n];
+        int[] rightMin = new int[n];
+
+        // Kadane for left max
+        int maxEndingHere = arr[0];
+        leftMax[0] = arr[0];
+        for (int i = 1; i < n; i++) {
+            maxEndingHere = Math.max(arr[i], maxEndingHere + arr[i]);
+            leftMax[i] = Math.max(leftMax[i - 1], maxEndingHere);
+        }
+
+        // Kadane for left min
+        int minEndingHere = arr[0];
+        leftMin[0] = arr[0];
+        for (int i = 1; i < n; i++) {
+            minEndingHere = Math.min(arr[i], minEndingHere + arr[i]);
+            leftMin[i] = Math.min(leftMin[i - 1], minEndingHere);
+        }
+
+        // Kadane for right max
+        maxEndingHere = arr[n - 1];
+        rightMax[n - 1] = arr[n - 1];
+        for (int i = n - 2; i >= 0; i--) {
+            maxEndingHere = Math.max(arr[i], maxEndingHere + arr[i]);
+            rightMax[i] = Math.max(rightMax[i + 1], maxEndingHere);
+        }
+
+        // Kadane for right min
+        minEndingHere = arr[n - 1];
+        rightMin[n - 1] = arr[n - 1];
+        for (int i = n - 2; i >= 0; i--) {
+            minEndingHere = Math.min(arr[i], minEndingHere + arr[i]);
+            rightMin[i] = Math.min(rightMin[i + 1], minEndingHere);
+        }
+
+        // Compute maximum absolute difference
+        int ans = Integer.MIN_VALUE;
+        for (int i = 0; i < n - 1; i++) {
+            ans = Math.max(ans, Math.abs(leftMax[i] - rightMin[i + 1]));
+            ans = Math.max(ans, Math.abs(leftMin[i] - rightMax[i + 1]));
+        }
+
+        return ans;
+    }
+}
