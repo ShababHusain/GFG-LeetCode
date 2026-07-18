@@ -1,0 +1,103 @@
+class Solution {
+    private static final int MOD = 1_000_000_007;
+
+    public int findWays(int[][] matrix, int k) {
+        int n = matrix.length;
+        int m = matrix[0].length;
+
+        // 1) suffix ones count
+        int[][] ones = new int[n + 1][m + 1];
+        for (int r = n - 1; r >= 0; --r) {
+            for (int c = m - 1; c >= 0; --c) {
+                ones[r][c] = matrix[r][c] + ones[r + 1][c] + ones[r][c + 1] - ones[r + 1][c + 1];
+            }
+        }
+
+        // 2) next smaller index in column direction (first row > r with ones[nr][c] < ones[r][c])
+        int[][] nextRow = new int[n][m];
+        for (int c = 0; c < m; ++c) {
+            // compute next smaller for array A[r] = ones[r][c]
+            int[] stack = new int[n];
+            int top = -1;
+            for (int r = n - 1; r >= 0; --r) {
+                while (top >= 0 && ones[stack[top]][c] >= ones[r][c]) top--;
+                nextRow[r][c] = (top == -1) ? n : stack[top];
+                stack[++top] = r;
+            }
+        }
+
+        // 3) next smaller index in row direction (first col > c with ones[r][nc] < ones[r][c])
+        int[][] nextCol = new int[n][m];
+        for (int r = 0; r < n; ++r) {
+            int[] stack = new int[m];
+            int top = -1;
+            for (int c = m - 1; c >= 0; --c) {
+                while (top >= 0 && ones[r][stack[top]] >= ones[r][c]) top--;
+                nextCol[r][c] = (top == -1) ? m : stack[top];
+                stack[++top] = c;
+            }
+        }
+
+        // 4) DP layers: prev = ways for t-1 pieces, cur = ways for t pieces
+        int[][] prev = new int[n][m];
+        int[][] cur  = new int[n][m];
+
+        // base t = 1
+        for (int r = 0; r < n; ++r) {
+            for (int c = 0; c < m; ++c) {
+                prev[r][c] = (ones[r][c] > 0) ? 1 : 0;
+            }
+        }
+
+        // iterate t = 2..k
+        for (int t = 2; t <= k; ++t) {
+            // build suffix sums of prev:
+            // suffixRowSum[c][r] = sum_{x=r..n-1} prev[x][c]
+            int[][] suffixRowSum = new int[m][n + 1];
+            for (int c = 0; c < m; ++c) {
+                long s = 0;
+                for (int r = n - 1; r >= 0; --r) {
+                    s += prev[r][c];
+                    if (s >= MOD) s -= MOD;
+                    suffixRowSum[c][r] = (int) s;
+                }
+                suffixRowSum[c][n] = 0;
+            }
+            // suffixColSum[r][c] = sum_{x=c..m-1} prev[r][x]
+            int[][] suffixColSum = new int[n][m + 1];
+            for (int r = 0; r < n; ++r) {
+                long s = 0;
+                for (int c = m - 1; c >= 0; --c) {
+                    s += prev[r][c];
+                    if (s >= MOD) s -= MOD;
+                    suffixColSum[r][c] = (int) s;
+                }
+                suffixColSum[r][m] = 0;
+            }
+
+            // compute cur
+            for (int r = 0; r < n; ++r) {
+                for (int c = 0; c < m; ++c) {
+                    if (ones[r][c] == 0) {
+                        cur[r][c] = 0;
+                        continue;
+                    }
+                    long ways = 0;
+                    int nr = nextRow[r][c];
+                    if (nr < n) ways += suffixRowSum[c][nr];
+                    int nc = nextCol[r][c];
+                    if (nc < m) ways += suffixColSum[r][nc];
+                    cur[r][c] = (int) (ways % MOD);
+                }
+            }
+
+            // swap prev and cur, and clear cur for next iteration
+            int[][] tmp = prev;
+            prev = cur;
+            cur = tmp;
+            for (int i = 0; i < n; ++i) java.util.Arrays.fill(cur[i], 0);
+        }
+
+        return prev[0][0];
+    }
+}
