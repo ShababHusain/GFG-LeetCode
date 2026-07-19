@@ -1,0 +1,33 @@
+class Solution {
+    public ArrayList<Boolean> processQueries(int[] arr, int[][] queries) {
+        int n = arr.length;
+        ArrayList<Boolean> ans = new ArrayList<>(queries.length);
+
+        // nextInc[i] = farthest index j >= i such that arr[i..j] is non-decreasing
+        int[] nextInc = new int[n];
+        nextInc[n - 1] = n - 1;
+        for (int i = n - 2; i >= 0; --i) {
+            if (arr[i] <= arr[i + 1]) nextInc[i] = nextInc[i + 1];
+            else nextInc[i] = i;
+        }
+
+        // nextDec[i] = farthest index j >= i such that arr[i..j] is non-increasing
+        int[] nextDec = new int[n];
+        nextDec[n - 1] = n - 1;
+        for (int i = n - 2; i >= 0; --i) {
+            if (arr[i] >= arr[i + 1]) nextDec[i] = nextDec[i + 1];
+            else nextDec[i] = i;
+        }
+
+        for (int[] q : queries) {
+            int l = q[0], r = q[1];
+            if (nextInc[l] >= r) {
+                ans.add(true);
+            } else {
+                int k = nextInc[l];
+                ans.add(nextDec[k] >= r);
+            }
+        }
+        return ans;
+    }
+}
