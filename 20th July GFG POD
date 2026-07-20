@@ -1,0 +1,35 @@
+class Solution {
+    private static class TrieNode {
+        Map<Character, TrieNode> children = new HashMap<>();
+        int count = 0; // number of words passing through this node
+    }
+
+    public ArrayList<String> findPrefixes(ArrayList<String> arr) {
+        TrieNode root = new TrieNode();
+
+        // Build trie and increment counts
+        for (String s : arr) {
+            TrieNode cur = root;
+            for (char ch : s.toCharArray()) {
+                cur.children.putIfAbsent(ch, new TrieNode());
+                cur = cur.children.get(ch);
+                cur.count++;
+            }
+        }
+
+        // For each word, find shortest prefix where node.count == 1
+        ArrayList<String> res = new ArrayList<>(arr.size());
+        for (String s : arr) {
+            StringBuilder pref = new StringBuilder();
+            TrieNode cur = root;
+            for (char ch : s.toCharArray()) {
+                pref.append(ch);
+                cur = cur.children.get(ch);
+                if (cur == null) break; // defensive; shouldn't happen
+                if (cur.count == 1) break;
+            }
+            res.add(pref.toString());
+        }
+        return res;
+    }
+}
