@@ -1,0 +1,75 @@
+class Solution {
+    public int maxIndexDifference(String s) {
+        int n = s.length();
+        if (n == 0) return -1;
+
+        // positions of each letter
+        ArrayList<Integer>[] pos = new ArrayList[26];
+        for (int i = 0; i < 26; ++i) pos[i] = new ArrayList<>();
+        for (int i = 0; i < n; ++i) pos[s.charAt(i) - 'a'].add(i);
+
+        // if no 'a'
+        if (pos[0].isEmpty()) return -1;
+
+        // bestReach[i] = farthest index reachable starting exactly at i
+        int[] bestReach = new int[n];
+        for (int i = 0; i < n; ++i) bestReach[i] = i; // at least itself
+
+        // process letters from 'z' down to 'a'
+        for (int c = 25; c >= 0; --c) {
+            if (pos[c].isEmpty()) continue;
+            if (c == 25) {
+                // 'z' can't jump further; bestReach already set to index
+                continue;
+            }
+            // prepare suffix max array for positions of letter c+1
+            ArrayList<Integer> nextList = pos[c + 1];
+            if (nextList.isEmpty()) {
+                // no next-letter occurrences, all positions of c remain their own index
+                continue;
+            }
+            int m = nextList.size();
+            int[] sufMax = new int[m];
+            // sufMax[i] = max(bestReach[nextList[i]], bestReach[nextList[i+1]], ...)
+            sufMax[m - 1] = bestReach[nextList.get(m - 1)];
+            for (int i = m - 2; i >= 0; --i) {
+                sufMax[i] = Math.max(bestReach[nextList.get(i)], sufMax[i + 1]);
+            }
+
+            // for each position p of letter c, find first index in nextList > p
+            for (int p : pos[c]) {
+                int idx = firstGreater(nextList, p);
+                if (idx == -1) {
+                    // no next-letter to the right; bestReach[p] stays p
+                    continue;
+                } else {
+                    // we can jump to any nextList[idx..end]; take the one that gives max eventual reach
+                    bestReach[p] = Math.max(bestReach[p], sufMax[idx]);
+                }
+            }
+        }
+
+        // answer: maximum bestReach[start] - start over all starts that are 'a'
+        int ans = 0;
+        for (int start : pos[0]) {
+            ans = Math.max(ans, bestReach[start] - start);
+        }
+        return ans;
+    }
+
+    // return index of first element > key in sorted list, or -1 if none
+    private int firstGreater(ArrayList<Integer> list, int key) {
+        int lo = 0, hi = list.size() - 1;
+        int ans = -1;
+        while (lo <= hi) {
+            int mid = (lo + hi) >>> 1;
+            if (list.get(mid) > key) {
+                ans = mid;
+                hi = mid - 1;
+            } else {
+                lo = mid + 1;
+            }
+        }
+        return ans;
+    }
+}
