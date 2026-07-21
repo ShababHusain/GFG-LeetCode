@@ -1,0 +1,65 @@
+class Solution {
+    public int maxActiveSectionsAfterTrade(String s) {
+        int n = s.length();
+        if (n == 0) return 0;
+
+        // Build runs of consecutive characters
+        ArrayList<Integer> runs = new ArrayList<>();
+        ArrayList<Character> chs = new ArrayList<>();
+        int i = 0;
+        while (i < n) {
+            char c = s.charAt(i);
+            int j = i;
+            while (j < n && s.charAt(j) == c) j++;
+            runs.add(j - i);
+            chs.add(c);
+            i = j;
+        }
+
+        int m = runs.size();
+        // total number of '1's in the original string
+        int totalOnes = 0;
+        for (int k = 0; k < m; ++k) if (chs.get(k) == '1') totalOnes += runs.get(k);
+
+        // compute the maximum zero-run length that is flippable in the augmented string
+        // (i.e., the zero-run has '1' on both sides in the augmented string).
+        // For run index k:
+        //   left neighbor is (k-1 >= 0 ? chs[k-1] : '1' (augmented))
+        //   right neighbor is (k+1 < m ? chs[k+1] : '1' (augmented))
+        int maxFlippableZero = 0;
+        for (int k = 0; k < m; ++k) {
+            if (chs.get(k) != '0') continue;
+            char left = (k - 1 >= 0) ? chs.get(k - 1) : '1';
+            char right = (k + 1 < m) ? chs.get(k + 1) : '1';
+            if (left == '1' && right == '1') {
+                maxFlippableZero = Math.max(maxFlippableZero, runs.get(k));
+            }
+        }
+
+        int ans = totalOnes; // option: do no trade
+
+        // consider every removable 1-run: must be surrounded by zeros in the original string
+        // (in augmented string it must have zeros on both sides, which implies it's not first/last run)
+        for (int k = 0; k < m; ++k) {
+            if (chs.get(k) != '1') continue;
+            if (k == 0 || k == m - 1) continue; // cannot be surrounded by zeros because of augmented '1's
+            if (chs.get(k - 1) != '0' || chs.get(k + 1) != '0') continue; // not surrounded by zeros
+
+            int len1 = runs.get(k);
+            int leftZero = runs.get(k - 1);
+            int rightZero = runs.get(k + 1);
+
+            // Option A: flip the merged zero-run formed after removing this 1-run
+            // final ones = totalOnes - len1 + (leftZero + len1 + rightZero) = totalOnes + leftZero + rightZero
+            int candA = totalOnes + leftZero + rightZero;
+
+            // Option B: flip some other zero-run that was flippable initially
+            // final ones = totalOnes - len1 + maxFlippableZero
+            int candB = totalOnes - len1 + maxFlippableZero;
+
+            ans = Math.max(ans, Math.max(candA, candB));
+        }
+
+        return ans;
+    }
+}
