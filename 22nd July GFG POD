@@ -1,0 +1,21 @@
+class Solution {
+    public int minDeletions(int[] arr) {
+        int n = arr.length;
+        List<Integer> lis = new ArrayList<>();
+        
+        for (int num : arr) {
+            // Find position to insert current number in LIS
+            int pos = Collections.binarySearch(lis, num);
+            if (pos < 0) pos = -(pos + 1); // insertion point
+            
+            if (pos == lis.size()) {
+                lis.add(num);
+            } else {
+                lis.set(pos, num);
+            }
+        }
+        
+        // Minimum deletions = total elements - LIS length
+        return n - lis.size();
+    }
+}
