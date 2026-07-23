@@ -1,0 +1,9 @@
+class Solution {
+    public int uniqueXorTriplets(int[] nums) {
+        int n = nums.length;
+        if (n <= 2) return n;
+        // highest power of two <= n
+        int p = Integer.highestOneBit(n);
+        return p << 1; // 2 * p$0
+    }
+}
