@@ -1,0 +1,140 @@
+import java.util.*;
+
+class Solution {
+    public List<Integer> maxActiveSectionsAfterTrade(String s, int[][] queries) {
+        int n = s.length();
+        int[] next_zero = new int[n];
+        int[] prev_zero = new int[n];
+        
+        int last = -1;
+        for (int i = 0; i < n; i++) {
+            if (s.charAt(i) == '0') last = i;
+            prev_zero[i] = last;
+        }
+        last = -1;
+        for (int i = n - 1; i >= 0; i--) {
+            if (s.charAt(i) == '0') last = i;
+            next_zero[i] = last;
+        }
+        
+        int totalOnes = 0;
+        for (int i = 0; i < n; i++) {
+            if (s.charAt(i) == '1') totalOnes++;
+        }
+        
+        // Group contiguous '0' blocks
+        List<Integer> gz = new ArrayList<>();
+        List<Integer> zStart = new ArrayList<>();
+        List<Integer> zEnd = new ArrayList<>();
+        int[] zId = new int[n];
+        Arrays.fill(zId, -1);
+        
+        int i = 0;
+        while (i < n) {
+            if (s.charAt(i) == '0') {
+                int j = i;
+                while (j < n && s.charAt(j) == '0') {
+                    zId[j] = gz.size();
+                    j++;
+                }
+                gz.add(j - i);
+                zStart.add(i);
+                zEnd.add(j - 1);
+                i = j;
+            } else {
+                i++;
+            }
+        }
+        
+        int m = gz.size();
+        int[] GZ = new int[m];
+        for (int k = 0; k < m; k++) {
+            GZ[k] = gz.get(k);
+        }
+        
+        // Sums of adjacent '0' blocks globally
+        int[] GZ2 = new int[Math.max(0, m - 1)];
+        for (int k = 0; k < m - 1; k++) {
+            GZ2[k] = GZ[k] + GZ[k + 1];
+        }
+        
+        SparseTable stGZ2 = new SparseTable(GZ2);
+        
+        int q = queries.length;
+        List<Integer> ans = new ArrayList<>(q);
+        
+        for (int k = 0; k < q; k++) {
+            int l = queries[k][0];
+            int r = queries[k][1];
+            
+            int p1 = next_zero[l];
+            int p2 = prev_zero[r];
+            
+            // If there are no '0's or no valid blocks in the substring boundaries
+            if (p1 == -1 || p1 > r || p2 == -1 || p2 < l) {
+                ans.add(totalOnes);
+                continue;
+            }
+            
+            int A = zId[p1];
+            int B = zId[p2];
+            
+            // Only one continuous '0' block is bounded, no trade is possible
+            if (A == B) {
+                ans.add(totalOnes);
+                continue;
+            }
+            
+            int Z1 = zEnd.get(A) - p1 + 1; // Effective size of first block bounded by 'l'
+            int Zk = p2 - zStart.get(B) + 1; // Effective size of last block bounded by 'r'
+            
+            // Only two adjacent blocks fall in the boundary
+            if (B == A + 1) {
+                ans.add(totalOnes + Z1 + Zk);
+                continue;
+            }
+            
+            // At least 3 blocks of '0's are within bounds.
+            // Check edge boundaries and use Sparse Table for purely internal pairwise sums.
+            int maxZPair = Math.max(Z1 + GZ[A + 1], GZ[B - 1] + Zk);
+            if (B - 2 >= A + 1) {
+                maxZPair = Math.max(maxZPair, stGZ2.query(A + 1, B - 2));
+            }
+            
+            ans.add(totalOnes + maxZPair);
+        }
+        
+        return ans;
+    }
+    
+    // Internal helper class resolving Range Maximum Queries (RMQ) in O(1) Lookup
+    class SparseTable {
+        int[][] st;
+        int[] log2;
+        
+        SparseTable(int[] arr) {
+            int n = arr.length;
+            if (n == 0) return;
+            log2 = new int[n + 1];
+            for (int i = 2; i <= n; i++) {
+                log2[i] = log2[i / 2] + 1;
+            }
+            int K = log2[n] + 1;
+            st = new int[K][n];
+            for (int i = 0; i < n; i++) {
+                st[0][i] = arr[i];
+            }
+            for (int j = 1; j < K; j++) {
+                for (int i = 0; i + (1 << j) <= n; i++) {
+                    st[j][i] = Math.max(st[j - 1][i], st[j - 1][i + (1 << (j - 1))]);
+                }
+            }
+        }
+        
+        int query(int L, int R) {
+            if (L > R) return Integer.MIN_VALUE;
+            int j = log2[R - L + 1];
+            return Math.max(st[j][L], st[j][R - (1 << j) + 1]);
+        }
+    }
+}
