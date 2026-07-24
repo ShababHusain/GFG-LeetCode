@@ -1,0 +1,48 @@
+class Solution {
+    public int uniqueXorTriplets(int[] nums) {
+        int n = nums.length;
+        int maxVal = 0;
+        for (int v : nums) if (v > maxVal) maxVal = v;
+
+        // transform size: power of two >= maxVal+1
+        int U = 1;
+        while (U <= maxVal) U <<= 1;
+
+        long[] A = new long[U];
+        for (int v : nums) A[v]++;
+
+        // FWHT (XOR) forward
+        fwht(A);
+
+        // pointwise cube (counts of ordered triples in transform domain)
+        for (int i = 0; i < U; i++) {
+            long x = A[i];
+            A[i] = x * x * x;
+        }
+
+        // inverse FWHT (same routine), then divide by U to normalize
+        fwht(A);
+
+        int ans = 0;
+        for (int i = 0; i < U; i++) {
+            long cnt = A[i] / U; // number of ordered triples producing XOR == i
+            if (cnt > 0) ans++;
+        }
+        return ans;
+    }
+
+    // In-place FWHT for XOR (forward and inverse use same transform).
+    private void fwht(long[] a) {
+        int n = a.length;
+        for (int len = 1; len < n; len <<= 1) {
+            for (int i = 0; i < n; i += (len << 1)) {
+                for (int j = 0; j < len; j++) {
+                    long u = a[i + j];
+                    long v = a[i + j + len];
+                    a[i + j] = u + v;
+                    a[i + j + len] = u - v;
+                }
+            }
+        }
+    }
+}
