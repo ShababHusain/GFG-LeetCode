@@ -1,0 +1,42 @@
+class Solution {
+    public int shortestPath(int V, int src, int dest, int[][] edges) {
+        // Build adjacency list
+        List<List<int[]>> graph = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            graph.add(new ArrayList<>());
+        }
+        for (int[] e : edges) {
+            int u = e[0], v = e[1], w = e[2];
+            graph.get(u).add(new int[]{v, w});
+            graph.get(v).add(new int[]{u, w});
+        }
+
+        // Distance array
+        int[] dist = new int[V];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        dist[src] = 0;
+
+        // Min-heap for Dijkstra
+        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[1]));
+        pq.offer(new int[]{src, 0});
+
+        while (!pq.isEmpty()) {
+            int[] curr = pq.poll();
+            int u = curr[0], d = curr[1];
+
+            if (u == dest) return d; // early exit
+
+            if (d > dist[u]) continue;
+
+            for (int[] nei : graph.get(u)) {
+                int v = nei[0], w = nei[1];
+                if (dist[u] + w < dist[v]) {
+                    dist[v] = dist[u] + w;
+                    pq.offer(new int[]{v, dist[v]});
+                }
+            }
+        }
+
+        return dist[dest] == Integer.MAX_VALUE ? -1 : dist[dest];
+    }
+}
