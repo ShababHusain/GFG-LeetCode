@@ -1,0 +1,14 @@
+class Solution {
+    public int minSubsets(int[] arr) {
+        Arrays.sort(arr);  // Step 1: sort the array
+        int count = 1;     // At least one subset
+
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[i] != arr[i - 1] + 1) {
+                count++;   // Start a new subset
+            }
+        }
+
+        return count;
+    }
+}
