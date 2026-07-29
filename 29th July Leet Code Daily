@@ -1,0 +1,80 @@
+import java.math.BigInteger;
+import java.util.Arrays;
+
+class Solution {
+    public String smallestPalindrome(String s, int k) {
+        int[] freq = new int[26];
+        for (char c : s.toCharArray()) freq[c - 'a']++;
+
+        // Build half counts and middle char
+        int[] halfCnt = new int[26];
+        String middle = "";
+        int halfLen = 0;
+        for (int i = 0; i < 26; i++) {
+            halfCnt[i] = freq[i] / 2;
+            halfLen += halfCnt[i];
+            if (freq[i] % 2 == 1) middle = String.valueOf((char) (i + 'a'));
+        }
+
+        long cap = (long) k;
+        long totalCapped = multinomialCapped(halfCnt, halfLen, cap);
+        if (totalCapped < k) return "";
+
+        StringBuilder left = new StringBuilder();
+        int remaining = halfLen;
+        int[] curCnt = Arrays.copyOf(halfCnt, 26);
+        long kk = k;
+
+        for (int pos = 0; pos < halfLen; pos++) {
+            for (int c = 0; c < 26; c++) {
+                if (curCnt[c] == 0) continue;
+                curCnt[c]--;
+                long perms = multinomialCapped(curCnt, remaining - 1, cap);
+                if (perms >= kk) {
+                    left.append((char) (c + 'a'));
+                    remaining--;
+                    break;
+                } else {
+                    kk -= perms;
+                    curCnt[c]++; // restore and try next char
+                }
+            }
+        }
+
+        String leftStr = left.toString();
+        String rightStr = new StringBuilder(leftStr).reverse().toString();
+        return leftStr + middle + rightStr;
+    }
+
+    // Compute multinomial = total! / prod(cnt_i!) but capped at cap.
+    private long multinomialCapped(int[] cnt, int total, long cap) {
+        BigInteger capBI = BigInteger.valueOf(cap);
+        int rem = total;
+        BigInteger prod = BigInteger.ONE;
+
+        for (int i = 0; i < 26; i++) {
+            int take = cnt[i];
+            if (take == 0) continue;
+            BigInteger comb = binomialCappedBig(rem, take, capBI);
+            prod = prod.multiply(comb);
+            if (prod.compareTo(capBI) > 0) return cap; // early cap
+            rem -= take;
+        }
+        return prod.longValue();
+    }
+
+    // Compute C(n, r) with early cap using BigInteger
+    private BigInteger binomialCappedBig(int n, int r, BigInteger capBI) {
+        if (r < 0 || r > n) return BigInteger.ZERO;
+        r = Math.min(r, n - r);
+        if (r == 0) return BigInteger.ONE;
+
+        BigInteger res = BigInteger.ONE;
+        for (int i = 1; i <= r; i++) {
+            res = res.multiply(BigInteger.valueOf(n - r + i));
+            res = res.divide(BigInteger.valueOf(i));
+            if (res.compareTo(capBI) > 0) return capBI.add(BigInteger.ONE); // indicate >cap
+        }
+        return res;
+    }
+}
