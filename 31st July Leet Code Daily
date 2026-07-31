@@ -1,0 +1,22 @@
+class Solution {
+    public int minimumPushes(String word) {
+        int[] freq = new int[26];
+        for (char c : word.toCharArray()) {
+            freq[c - 'a']++;
+        }
+
+        // Sort frequencies in descending order
+        Arrays.sort(freq);
+        int pushes = 0;
+        int slot = 0;
+
+        for (int i = 25; i >= 0; i--) {
+            if (freq[i] == 0) break;
+            int multiplier = (slot / 8) + 1; // cost group
+            pushes += freq[i] * multiplier;
+            slot++;
+        }
+
+        return pushes;
+    }
+}
