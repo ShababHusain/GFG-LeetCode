@@ -1,0 +1,31 @@
+class Solution {
+    public int maxSumWithK(int[] arr, int k) {
+        int n = arr.length;
+
+        // Step 1: Kadane’s algorithm to compute max sum ending at each index
+        int[] maxEndHere = new int[n];
+        maxEndHere[0] = arr[0];
+        for (int i = 1; i < n; i++) {
+            maxEndHere[i] = Math.max(arr[i], maxEndHere[i - 1] + arr[i]);
+        }
+
+        // Step 2: Sliding window sum of size k
+        int windowSum = 0;
+        for (int i = 0; i < k; i++) {
+            windowSum += arr[i];
+        }
+
+        int result = windowSum;
+
+        // Step 3: Slide the window and combine with Kadane’s results
+        for (int i = k; i < n; i++) {
+            windowSum += arr[i] - arr[i - k];
+            result = Math.max(result, windowSum);
+
+            // Combine with best subarray ending before this window
+            result = Math.max(result, windowSum + maxEndHere[i - k]);
+        }
+
+        return result;
+    }
+}
