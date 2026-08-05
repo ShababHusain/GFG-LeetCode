@@ -1,0 +1,55 @@
+class Solution {
+    public List<Integer> remainingMethods(int n, int k, int[][] invocations) {
+        List<List<Integer>> graph = new ArrayList<>();
+        List<List<Integer>> reverseGraph = new ArrayList<>();
+        
+        for (int i = 0; i < n; i++) {
+            graph.add(new ArrayList<>());
+            reverseGraph.add(new ArrayList<>());
+        }
+        
+        // Build graph and reverse graph
+        for (int[] edge : invocations) {
+            int a = edge[0], b = edge[1];
+            graph.get(a).add(b);
+            reverseGraph.get(b).add(a);
+        }
+        
+        // Step 1: Find suspicious set
+        Set<Integer> suspicious = new HashSet<>();
+        Queue<Integer> q = new LinkedList<>();
+        q.add(k);
+        suspicious.add(k);
+        
+        while (!q.isEmpty()) {
+            int cur = q.poll();
+            for (int nei : graph.get(cur)) {
+                if (!suspicious.contains(nei)) {
+                    suspicious.add(nei);
+                    q.add(nei);
+                }
+            }
+        }
+        
+        // Step 2: Check if removable
+        for (int s : suspicious) {
+            for (int invoker : reverseGraph.get(s)) {
+                if (!suspicious.contains(invoker)) {
+                    // Found external invoker → cannot remove
+                    List<Integer> all = new ArrayList<>();
+                    for (int i = 0; i < n; i++) all.add(i);
+                    return all;
+                }
+            }
+        }
+        
+        // Step 3: Return remaining methods
+        List<Integer> remaining = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            if (!suspicious.contains(i)) {
+                remaining.add(i);
+            }
+        }
+        return remaining;
+    }
+}
