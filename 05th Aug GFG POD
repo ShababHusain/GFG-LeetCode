@@ -1,0 +1,27 @@
+class Solution {
+    // Helper: count subarrays with sum <= X
+    private long countSubarrays(int[] arr, int X) {
+        int n = arr.length;
+        long count = 0;
+        int left = 0;
+        int sum = 0;
+        
+        for (int right = 0; right < n; right++) {
+            sum += arr[right];
+            
+            // Shrink window until sum <= X
+            while (sum > X && left <= right) {
+                sum -= arr[left++];
+            }
+            
+            // All subarrays ending at 'right' with start >= left are valid
+            count += (right - left + 1);
+        }
+        
+        return count;
+    }
+    
+    public int countSubarray(int[] arr, int l, int r) {
+        return (int)(countSubarrays(arr, r) - countSubarrays(arr, l - 1));
+    }
+}
