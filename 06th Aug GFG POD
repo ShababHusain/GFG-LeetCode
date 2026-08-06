@@ -1,0 +1,21 @@
+class Solution {
+    public int countMinOperations(int arr[]) {
+        int increments = 0;
+        int maxVal = 0;
+        
+        // Count increments (popcount) and track max value
+        for (int num : arr) {
+            increments += Integer.bitCount(num); // number of 1s in binary
+            maxVal = Math.max(maxVal, num);
+        }
+        
+        // Count doubles = number of bits in maxVal - 1
+        int doubles = 0;
+        while (maxVal > 0) {
+            maxVal >>= 1;
+            doubles++;
+        }
+        
+        return increments + (doubles > 0 ? doubles - 1 : 0);
+    }
+}
