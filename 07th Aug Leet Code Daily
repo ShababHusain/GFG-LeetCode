@@ -1,0 +1,110 @@
+import java.util.Arrays;
+
+class Solution {
+    public String smallestNumber(String num, long t) {
+        long temp = t;
+        
+        // Inline prime factorization to properly reduce 'temp'
+        int req2 = 0;
+        while (temp % 2 == 0) { req2++; temp /= 2; }
+        
+        int req3 = 0;
+        while (temp % 3 == 0) { req3++; temp /= 3; }
+        
+        int req5 = 0;
+        while (temp % 5 == 0) { req5++; temp /= 5; }
+        
+        int req7 = 0;
+        while (temp % 7 == 0) { req7++; temp /= 7; }
+        
+        // If t has prime factors other than 2, 3, 5, 7, it's impossible.
+        if (temp > 1) {
+            return "-1";
+        }
+        
+        int n = num.length();
+        int[] count2 = {0, 0, 1, 0, 2, 0, 1, 0, 3, 0};
+        int[] count3 = {0, 0, 0, 1, 0, 0, 1, 0, 0, 2};
+        int[] count5 = {0, 0, 0, 0, 0, 1, 0, 0, 0, 0};
+        int[] count7 = {0, 0, 0, 0, 0, 0, 0, 1, 0, 0};
+        
+        int[][] dp = new int[60][60];
+        for (int[] row : dp) Arrays.fill(row, 1000000);
+        dp[0][0] = 0;
+        for (int i = 0; i <= 55; i++) {
+            for (int j = 0; j <= 40; j++) {
+                if (i == 0 && j == 0) continue;
+                int res = 1000000;
+                res = Math.min(res, 1 + dp[Math.max(0, i - 1)][j]);                         // Using 2
+                res = Math.min(res, 1 + dp[i][Math.max(0, j - 1)]);                         // Using 3
+                res = Math.min(res, 1 + dp[Math.max(0, i - 2)][j]);                         // Using 4
+                res = Math.min(res, 1 + dp[Math.max(0, i - 1)][Math.max(0, j - 1)]);        // Using 6
+                res = Math.min(res, 1 + dp[Math.max(0, i - 3)][j]);                         // Using 8
+                res = Math.min(res, 1 + dp[i][Math.max(0, j - 2)]);                         // Using 9
+                dp[i][j] = res;
+            }
+        }
+        
+        int[] pref2 = new int[n + 1];
+        int[] pref3 = new int[n + 1];
+        int[] pref5 = new int[n + 1];
+        int[] pref7 = new int[n + 1];
+        int idxZero = n;
+        
+        for (int i = 0; i < n; i++) {
+            int d = num.charAt(i) - '0';
+            if (d == 0) {
+                idxZero = Math.min(idxZero, i);
+            } else {
+                pref2[i + 1] = pref2[i] + count2[d];
+                pref3[i + 1] = pref3[i] + count3[d];
+                pref5[i + 1] = pref5[i] + count5[d];
+                pref7[i + 1] = pref7[i] + count7[d];
+            }
+        }
+        
+        // 1. Check if num itself fulfills the requirement naturally 
+        if (idxZero == n && pref2[n] >= req2 && pref3[n] >= req3 && pref5[n] >= req5 && pref7[n] >= req7) {
+            return num;
+        }
+        
+        // 2. Try mutating a prefix element from right to left
+        for (int i = Math.min(n - 1, idxZero); i >= 0; i--) {
+            int currentD = num.charAt(i) - '0';
+            for (int D = Math.max(1, currentD + 1); D <= 9; D++) {
+                int rem2 = Math.max(0, req2 - pref2[i] - count2[D]);
+                int rem3 = Math.max(0, req3 - pref3[i] - count3[D]);
+                int rem5 = Math.max(0, req5 - pref5[i] - count5[D]);
+                int rem7 = Math.max(0, req7 - pref7[i] - count7[D]);
+                
+                int remSpace = n - 1 - i;
+                if (dp[rem2][rem3] + rem5 + rem7 <= remSpace) {
+                    return num.substring(0, i) + D + constructGreedy(remSpace, rem2, rem3, rem5, rem7, dp, count2, count3, count5, count7);
+                }
+            }
+        }
+        
+        // 3. Extender fallback - Length Extension needed
+        int minL = dp[req2][req3] + req5 + req7;
+        int reqLength = Math.max(n + 1, minL);
+        return constructGreedy(reqLength, req2, req3, req5, req7, dp, count2, count3, count5, count7);
+    }
+    
+    private String constructGreedy(int len, int a, int b, int c, int d, int[][] dp, int[] c2, int[] c3, int[] c5, int[] c7) {
+        StringBuilder sb = new StringBuilder();
+        for (int k = 0; k < len; k++) {
+            for (int D = 1; D <= 9; D++) {
+                int na = Math.max(0, a - c2[D]);
+                int nb = Math.max(0, b - c3[D]);
+                int nc = Math.max(0, c - c5[D]);
+                int nd = Math.max(0, d - c7[D]);
+                if (dp[na][nb] + nc + nd <= len - 1 - k) {
+                    sb.append(D);
+                    a = na; b = nb; c = nc; d = nd;
+                    break;
+                }
+            }
+        }
+        return sb.toString();
+    }
+}
