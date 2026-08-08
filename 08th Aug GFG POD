@@ -1,0 +1,41 @@
+class Solution {
+    int minEdgesReq(int n, int[][] edges) {
+        int m = edges.length;
+        // If total edges less than n-1, even with rewiring it's impossible to have a connected graph
+        if (m < n - 1) return -1;
+
+        List<Integer>[] adj = new ArrayList[n];
+        for (int i = 0; i < n; i++) adj[i] = new ArrayList<>();
+        for (int[] e : edges) {
+            adj[e[0]].add(e[1]);
+            adj[e[1]].add(e[0]);
+        }
+
+        boolean[] seen = new boolean[n];
+        int components = 0;
+        Deque<Integer> dq = new ArrayDeque<>();
+        for (int i = 0; i < n; i++) {
+            if (seen[i]) continue;
+            components++;
+            // BFS/DFS to mark this component
+            dq.clear();
+            dq.add(i);
+            seen[i] = true;
+            while (!dq.isEmpty()) {
+                int u = dq.poll();
+                for (int v : adj[u]) {
+                    if (!seen[v]) {
+                        seen[v] = true;
+                        dq.add(v);
+                    }
+                }
+            }
+        }
+
+        // edges required to keep components internally connected = n - components
+        // extra edges available for rewiring = m - (n - components)
+        int extra = m - (n - components);
+        int need = components - 1;
+        return extra >= need ? need : -1;
+    }
+}
