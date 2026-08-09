@@ -1,0 +1,36 @@
+class Solution {
+    public int zigzagSequence(int[][] mat) {
+        if (mat == null || mat.length == 0) return 0;
+        int n = mat.length;
+        // prev[c] = best sum ending at previous row, column c
+        int[] prev = new int[n];
+        for (int c = 0; c < n; c++) prev[c] = mat[0][c];
+
+        for (int r = 1; r < n; r++) {
+            // find largest and second largest in prev and index of largest
+            int max1 = Integer.MIN_VALUE, max2 = Integer.MIN_VALUE, idxMax1 = -1;
+            for (int c = 0; c < n; c++) {
+                int v = prev[c];
+                if (v > max1) {
+                    max2 = max1;
+                    max1 = v;
+                    idxMax1 = c;
+                } else if (v > max2) {
+                    max2 = v;
+                }
+            }
+
+            int[] cur = new int[n];
+            for (int c = 0; c < n; c++) {
+                int bestPrev = (c == idxMax1) ? max2 : max1;
+                // bestPrev should always be valid because n >= 1
+                cur[c] = mat[r][c] + bestPrev;
+            }
+            prev = cur;
+        }
+
+        int ans = Integer.MIN_VALUE;
+        for (int c = 0; c < n; c++) ans = Math.max(ans, prev[c]);
+        return ans;
+    }
+}
