@@ -1,0 +1,31 @@
+class Solution {
+    public int missingInteger(int[] nums) {
+        int n = nums.length;
+        // compute sum of longest sequential prefix starting at index 0
+        int sum = nums[0];
+        int i = 1;
+        while (i < n && nums[i] == nums[i - 1] + 1) {
+            sum += nums[i];
+            i++;
+        }
+
+        // put all numbers into a set for O(1) membership checks
+        HashSet<Integer> set = new HashSet<>();
+        int maxVal = Integer.MIN_VALUE;
+        for (int v : nums) {
+            set.add(v);
+            if (v > maxVal) maxVal = v;
+        }
+
+        // If sum is greater than any value present and greater than maxVal,
+        // it cannot be in the array, so return sum immediately.
+        if (sum > maxVal && !set.contains(sum)) return sum;
+
+        // otherwise scan upward from sum until we find a missing integer
+        int x = sum;
+        while (true) {
+            if (!set.contains(x)) return x;
+            x++;
+        }
+    }
+}
