@@ -1,0 +1,53 @@
+import java.util.*;
+
+class Solution {
+    ArrayList<Integer> largestSquare(int[][] mat, int[][] queries, int k) {
+        int n = mat.length, m = mat[0].length;
+
+        // Build prefix sum matrix
+        int[][] pref = new int[n+1][m+1];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                pref[i+1][j+1] = mat[i][j] + pref[i][j+1] + pref[i+1][j] - pref[i][j];
+            }
+        }
+
+        ArrayList<Integer> ans = new ArrayList<>();
+
+        for (int[] q : queries) {
+            int i = q[0], j = q[1];
+            int lo = 0, hi = Math.min(Math.min(i, n-1-i), Math.min(j, m-1-j));
+            int best = 0;
+
+            while (lo <= hi) {
+                int mid = (lo + hi) / 2;
+                int r1 = i - mid, c1 = j - mid;
+                int r2 = i + mid, c2 = j + mid;
+
+                int ones = countOnes(pref, r1, c1, r2, c2);
+
+                if (ones <= k) {
+                    best = mid;
+                    lo = mid + 1;
+                } else {
+                    hi = mid - 1;
+                }
+            }
+
+            if (best == 0) {
+                // Check if the 1x1 center cell itself is valid
+                int centerOnes = countOnes(pref, i, j, i, j);
+                if (centerOnes > k) ans.add(-1);
+                else ans.add(1);
+            } else {
+                ans.add(2 * best + 1);
+            }
+        }
+
+        return ans;
+    }
+
+    private int countOnes(int[][] pref, int r1, int c1, int r2, int c2) {
+        return pref[r2+1][c2+1] - pref[r1][c2+1] - pref[r2+1][c1] + pref[r1][c1];
+    }
+}
