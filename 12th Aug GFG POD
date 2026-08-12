@@ -1,0 +1,48 @@
+class Solution {
+    private static final int MOD = 1_000_000_007;
+
+    public ArrayList<Integer> findWays(int[][] grid) {
+        int n = grid.length;
+        long[][] dpWays = new long[n][n];
+        int[][] dpMax = new int[n][n];
+
+        // initialize dpMax with very small sentinel
+        for (int i = 0; i < n; i++) Arrays.fill(dpMax[i], Integer.MIN_VALUE);
+
+        // start cell
+        dpWays[0][0] = 1;
+        dpMax[0][0] = grid[0][0];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (dpWays[i][j] == 0) continue; // no path reaches here
+
+                int cell = grid[i][j];
+
+                // move Right if allowed (1 or 3)
+                if ((cell == 1 || cell == 3) && j + 1 < n) {
+                    int ni = i, nj = j + 1;
+                    dpWays[ni][nj] = (dpWays[ni][nj] + dpWays[i][j]) % MOD;
+                    int candidateMax = dpMax[i][j] + grid[ni][nj];
+                    dpMax[ni][nj] = Math.max(dpMax[ni][nj], candidateMax);
+                }
+
+                // move Down if allowed (2 or 3)
+                if ((cell == 2 || cell == 3) && i + 1 < n) {
+                    int ni = i + 1, nj = j;
+                    dpWays[ni][nj] = (dpWays[ni][nj] + dpWays[i][j]) % MOD;
+                    int candidateMax = dpMax[i][j] + grid[ni][nj];
+                    dpMax[ni][nj] = Math.max(dpMax[ni][nj], candidateMax);
+                }
+            }
+        }
+
+        int totalPaths = (int)(dpWays[n-1][n-1] % MOD);
+        int maxAdventure = totalPaths == 0 ? 0 : dpMax[n-1][n-1];
+
+        ArrayList<Integer> res = new ArrayList<>(2);
+        res.add(totalPaths);
+        res.add(maxAdventure);
+        return res;
+    }
+}
