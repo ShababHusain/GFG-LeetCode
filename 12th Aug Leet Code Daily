@@ -1,0 +1,37 @@
+class Solution {
+    public int maxSubarrayLength(int[] nums, int k) {
+        if (nums == null || nums.length == 0) return 0;
+        int n = nums.length;
+        if (k >= n) return n;
+
+        Map<Integer, Integer> freq = new HashMap<>();
+        int left = 0;
+        int bad = 0; // number of values whose freq > k
+        int maxLen = 0;
+
+        for (int right = 0; right < n; right++) {
+            int x = nums[right];
+            int f = freq.getOrDefault(x, 0) + 1;
+            freq.put(x, f);
+            if (f == k + 1) {
+                bad++; // x just started violating
+            }
+
+            while (bad > 0) {
+                int y = nums[left];
+                int fy = freq.get(y);
+                if (fy == k + 1) {
+                    bad--; // y will stop violating after decrement
+                }
+                if (fy == 1) freq.remove(y);
+                else freq.put(y, fy - 1);
+                left++;
+            }
+
+            // now bad == 0, window [left..right] is valid
+            maxLen = Math.max(maxLen, right - left + 1);
+        }
+
+        return maxLen;
+    }
+}
