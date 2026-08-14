@@ -1,0 +1,22 @@
+class Solution {
+    public boolean isPossible(int[] arr, int s, int x) {
+        // Step 1: Generate sequence
+        List<Long> seq = new ArrayList<>();
+        seq.add((long) s);
+        long sum = s;
+        for (int num : arr) {
+            long next = sum + num;
+            seq.add(next);
+            sum += next;
+        }
+
+        // Step 2: Greedy check
+        long target = x;
+        for (int i = seq.size() - 1; i >= 0 && target > 0; i--) {
+            if (seq.get(i) <= target) {
+                target -= seq.get(i);
+            }
+        }
+        return target == 0;
+    }
+}
