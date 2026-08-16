@@ -1,0 +1,23 @@
+class Solution {
+    public int minProd(int[] arr) {
+        int n = arr.length;
+        // Use long for intermediate products to avoid overflow for up to 10 elements.
+        long minProduct = Long.MAX_VALUE;
+        int totalSubsets = 1 << n;
+
+        // Enumerate all non-empty subsets
+        for (int mask = 1; mask < totalSubsets; mask++) {
+            long prod = 1L;
+            for (int i = 0; i < n; i++) {
+                if ((mask & (1 << i)) != 0) {
+                    prod *= arr[i];
+                }
+            }
+            if (prod < minProduct) minProduct = prod;
+        }
+
+        // Cast to int to match the method signature.
+        // Note: with given constraints (n <= 10, |arr[i]| <= 10) minProduct fits in long.
+        return (int) minProduct;
+    }
+}
