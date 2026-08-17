@@ -1,0 +1,42 @@
+class Solution {
+    private long[] pref;
+    private long[][] memo;
+    private int n;
+
+    public int stoneGameV(int[] stoneValue) {
+        n = stoneValue.length;
+        pref = new long[n + 1];
+        for (int i = 1; i <= n; i++) pref[i] = pref[i - 1] + stoneValue[i - 1];
+
+        memo = new long[n + 2][n + 2];
+        for (int i = 0; i <= n + 1; i++) {
+            for (int j = 0; j <= n + 1; j++) memo[i][j] = -1L;
+        }
+
+        long ans = dfs(1, n);
+        return (int) ans;
+    }
+
+    // returns maximum score Alice can obtain from subarray [l..r] (1-indexed)
+    private long dfs(int l, int r) {
+        if (l >= r) return 0L; // zero or one stone -> no more score
+        if (memo[l][r] != -1L) return memo[l][r];
+
+        long best = 0L;
+        for (int k = l; k < r; k++) {
+            long left = pref[k] - pref[l - 1];
+            long right = pref[r] - pref[k];
+
+            if (left < right) {
+                best = Math.max(best, left + dfs(l, k));
+            } else if (left > right) {
+                best = Math.max(best, right + dfs(k + 1, r));
+            } else { // left == right
+                best = Math.max(best, left + Math.max(dfs(l, k), dfs(k + 1, r)));
+            }
+        }
+
+        memo[l][r] = best;
+        return best;
+    }
+}
