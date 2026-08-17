@@ -1,0 +1,63 @@
+class Solution {
+    public int minThrows(int n, int[] lad, int[] sn) {
+        if (n <= 0) return -1;
+        int N = n * n;
+
+        // move[i] = j means landing on i immediately moves you to j (ladder or snake).
+        int[] move = new int[N + 1];
+        Arrays.fill(move, -1);
+
+        // populate ladders
+        if (lad != null) {
+            for (int i = 0; i + 1 < lad.length; i += 2) {
+                int start = lad[i];
+                int end = lad[i + 1];
+                if (start >= 1 && start <= N && end >= 1 && end <= N) {
+                    move[start] = end;
+                }
+            }
+        }
+
+        // populate snakes
+        if (sn != null) {
+            for (int i = 0; i + 1 < sn.length; i += 2) {
+                int start = sn[i];
+                int end = sn[i + 1];
+                if (start >= 1 && start <= N && end >= 1 && end <= N) {
+                    move[start] = end;
+                }
+            }
+        }
+
+        boolean[] visited = new boolean[N + 1];
+        Queue<int[]> q = new ArrayDeque<>(); // {cell, moves}
+
+        // start from cell 1 (apply immediate ladder/snake if present)
+        int startCell = 1;
+        if (move[1] != -1) startCell = move[1];
+        visited[startCell] = true;
+        q.add(new int[]{startCell, 0});
+
+        while (!q.isEmpty()) {
+            int[] cur = q.poll();
+            int cell = cur[0];
+            int moves = cur[1];
+
+            if (cell == N) return moves;
+
+            for (int d = 1; d <= 6; d++) {
+                int next = cell + d;
+                if (next > N) break;
+
+                if (move[next] != -1) next = move[next];
+
+                if (!visited[next]) {
+                    visited[next] = true;
+                    q.add(new int[]{next, moves + 1});
+                }
+            }
+        }
+
+        return -1; // unreachable
+    }
+}
