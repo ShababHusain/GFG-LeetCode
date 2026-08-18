@@ -1,0 +1,172 @@
+import java.util.*;
+
+public class Solution {
+    // rolling hash constants
+    private static final long MOD = 1_000_000_007L;
+    private static final long BASE = 91138233L;
+
+    // persistent node storage (allocated per input)
+    private int[] parent;
+    private int[][] up;
+    private char[] lastChar;
+    private int[] length;
+    private int nodeCount;
+    private int LOG;
+
+    // rolling hash arrays for original string
+    private long[] pref;
+    private long[] pow;
+
+    public String compress(String s) {
+        if (s == null || s.length() == 0) return "";
+        int n = s.length();
+
+        // prepare rolling hash for s
+        buildRollingHash(s);
+
+        // allocate enough nodes: up to 2*n nodes (append + possible '*' per position)
+        int maxNodes = 2 * n + 5;
+
+        // compute LOG for binary lifting
+        LOG = 1;
+        while ((1 << LOG) <= maxNodes) LOG++;
+        // allocate arrays
+        parent = new int[maxNodes];
+        up = new int[LOG][maxNodes];
+        lastChar = new char[maxNodes];
+        length = new int[maxNodes];
+
+        // initialize node 0 as the empty string
+        nodeCount = 0;
+        parent[0] = -1;
+        lastChar[0] = '\0';
+        length[0] = 0;
+        for (int k = 0; k < LOG; k++) up[k][0] = 0;
+
+        // dpNode[i] = node index representing best encoding for prefix length i
+        int[] dpNode = new int[n + 1];
+        dpNode[0] = 0;
+
+        for (int i = 1; i <= n; i++) {
+            // candidate 1: append s.charAt(i-1) to dp[i-1]
+            int cand1 = newNodeFrom(dpNode[i - 1], s.charAt(i - 1));
+            int best = cand1;
+
+            // candidate 2: duplication if i even and halves equal
+            if ((i & 1) == 0) {
+                int half = i / 2;
+                if (equalSubstrings(s, 0, half - 1, half, i - 1)) {
+                    int cand2 = newNodeFrom(dpNode[half], '*');
+                    best = chooseBetter(best, cand2);
+                }
+            }
+            dpNode[i] = best;
+        }
+
+        return buildStringFromNode(dpNode[n]);
+    }
+
+    // create a new node with given parent and lastChar, return its index
+    private int newNode(int parentIdx, char ch) {
+        int idx = ++nodeCount;
+        parent[idx] = parentIdx;
+        lastChar[idx] = ch;
+        length[idx] = (parentIdx == -1) ? 0 : length[parentIdx] + 1;
+        up[0][idx] = (parentIdx == -1) ? 0 : parentIdx;
+        for (int k = 1; k < LOG; k++) {
+            up[k][idx] = up[k - 1][ up[k - 1][idx] ];
+        }
+        return idx;
+    }
+
+    private int newNodeFrom(int base, char ch) {
+        return newNode(base, ch);
+    }
+
+    // choose better node between a and b:
+    //  - smaller encoded length preferred
+    //  - if equal length, lexicographically smaller preferred
+    private int chooseBetter(int a, int b) {
+        if (length[a] != length[b]) return (length[a] < length[b]) ? a : b;
+        if (compareNodesLex(a, b) <= 0) return a;
+        else return b;
+    }
+
+    // compare two encoded nodes lexicographically: return -1 if a<b, 0 if equal, 1 if a>b
+    private int compareNodesLex(int a, int b) {
+        if (a == b) return 0;
+        int la = length[a], lb = length[b];
+        int low = 0, high = Math.min(la, lb);
+        while (low < high) {
+            int mid = (low + high + 1) >>> 1;
+            if (prefixEqual(a, b, mid)) low = mid;
+            else high = mid - 1;
+        }
+        int lcp = low;
+        if (lcp == la && lcp == lb) return 0;
+        if (lcp == la) return -1;
+        if (lcp == lb) return 1;
+        char ca = charAt(a, lcp);
+        char cb = charAt(b, lcp);
+        return Character.compare(ca, cb);
+    }
+
+    // check whether first 'k' characters of node a and node b are equal
+    private boolean prefixEqual(int a, int b, int k) {
+        if (k == 0) return true;
+        if (k > length[a] || k > length[b]) return false;
+        for (int i = 0; i < k; i++) {
+            if (charAt(a, i) != charAt(b, i)) return false;
+        }
+        return true;
+    }
+
+    // get character at position pos (0-indexed) in node's encoded string
+    private char charAt(int node, int pos) {
+        int steps = length[node] - pos - 1;
+        int cur = node;
+        for (int k = 0; k < LOG && steps > 0; k++) {
+            if ((steps & 1) != 0) cur = up[k][cur];
+            steps >>= 1;
+        }
+        return lastChar[cur];
+    }
+
+    // build final string from node by walking parents and reversing
+    private String buildStringFromNode(int node) {
+        int L = length[node];
+        char[] out = new char[L];
+        int cur = node;
+        for (int i = L - 1; i >= 0; i--) {
+            out[i] = lastChar[cur];
+            cur = parent[cur];
+        }
+        return new String(out);
+    }
+
+    // rolling hash helpers
+    private void buildRollingHash(String s) {
+        int n = s.length();
+        pref = new long[n + 1];
+        pow = new long[n + 1];
+        pow[0] = 1;
+        for (int i = 1; i <= n; i++) pow[i] = (pow[i - 1] * BASE) % MOD;
+        pref[0] = 0;
+        for (int i = 0; i < n; i++) {
+            pref[i + 1] = (pref[i] * BASE + s.charAt(i)) % MOD;
+        }
+    }
+
+    private boolean equalSubstrings(String s, int a1, int b1, int a2, int b2) {
+        if (b1 - a1 != b2 - a2) return false;
+        long h1 = substringHash(a1, b1);
+        long h2 = substringHash(a2, b2);
+        return h1 == h2;
+    }
+
+    private long substringHash(int l, int r) {
+        long res = pref[r + 1] - (pref[l] * pow[r - l + 1]) % MOD;
+        if (res < 0) res += MOD;
+        return res;
+    }
+}
