@@ -1,0 +1,32 @@
+class Solution {
+
+    public int countTriplets(int[] arr, int l, int r) {
+        if (arr == null || arr.length < 3) return 0;
+        Arrays.sort(arr);
+        long atMostR = countTripletsAtMost(arr, r);
+        long atMostLminus1 = countTripletsAtMost(arr, (long)l - 1);
+        long ans = atMostR - atMostLminus1;
+        return (int) ans;
+    }
+
+    // Count number of triplets with sum <= target
+    private long countTripletsAtMost(int[] a, long target) {
+        int n = a.length;
+        long cnt = 0L;
+        for (int i = 0; i < n - 2; i++) {
+            int left = i + 1;
+            int right = n - 1;
+            while (left < right) {
+                long sum = (long) a[i] + a[left] + a[right];
+                if (sum <= target) {
+                    // all pairs (left, left+1..right) with fixed i and left are valid
+                    cnt += (right - left);
+                    left++;
+                } else {
+                    right--;
+                }
+            }
+        }
+        return cnt;
+    }
+}
