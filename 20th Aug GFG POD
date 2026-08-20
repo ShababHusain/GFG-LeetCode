@@ -1,0 +1,41 @@
+/* Structure of binary tree node
+class Node {
+    int data;
+    Node left, right;
+
+    Node(int item) {
+        data = item;
+        left = right = null;
+    }
+}
+*/
+
+class Solution {
+    private int maxAns;
+
+    int maxDiff(Node root) {
+        if (root == null) return 0;
+        maxAns = Integer.MIN_VALUE;
+        // Start DFS from root; only children (strict descendants) are compared with ancestors
+        dfs(root, root.data);
+        return maxAns;
+    }
+
+    // node: current node whose children will be treated as descendants
+    // maxAnc: maximum ancestor value seen so far (ancestors above node, including node)
+    private void dfs(Node node, int maxAnc) {
+        if (node == null) return;
+
+        // Process left child as a descendant (strict)
+        if (node.left != null) {
+            maxAns = Math.max(maxAns, maxAnc - node.left.data);
+            dfs(node.left, Math.max(maxAnc, node.left.data));
+        }
+
+        // Process right child as a descendant (strict)
+        if (node.right != null) {
+            maxAns = Math.max(maxAns, maxAnc - node.right.data);
+            dfs(node.right, Math.max(maxAnc, node.right.data));
+        }
+    }
+}
