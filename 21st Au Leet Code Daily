@@ -1,0 +1,78 @@
+class Solution {
+    private long gcd(long a, long b) {
+        while (b != 0) {
+            long t = a % b;
+            a = b;
+            b = t;
+        }
+        return a;
+    }
+
+    public long findKthSmallest(int[] coins, int k) {
+        int n = coins.length;
+        Arrays.sort(coins);
+        int total = 1 << n;
+        long[] lcms = new long[total];
+        int[] bits = new int[total];
+
+        // Precompute LCMs for all non-empty subsets; 0 means "too large / contributes 0"
+        for (int mask = 1; mask < total; ++mask) {
+            int lb = Integer.numberOfTrailingZeros(mask);
+            int prev = mask ^ (1 << lb);
+            bits[mask] = bits[prev] + 1;
+            if (prev == 0) {
+                lcms[mask] = coins[lb];
+            } else {
+                long a = lcms[prev];
+                long b = coins[lb];
+                if (a == 0) {
+                    lcms[mask] = 0;
+                } else {
+                    long g = gcd(a, b);
+                    long div = a / g;
+                    if (div > Long.MAX_VALUE / b) {
+                        lcms[mask] = 0;
+                    } else {
+                        long l = div * b;
+                        if (l <= 0) lcms[mask] = 0;
+                        else lcms[mask] = l;
+                    }
+                }
+            }
+        }
+
+        final long K = (long) k;
+
+        // helper to count distinct multiples <= x using inclusion-exclusion
+        java.util.function.LongUnaryOperator countLe = (long x) -> {
+            if (x <= 0) return 0L;
+            long cnt = 0L;
+            for (int mask = 1; mask < total; ++mask) {
+                long L = lcms[mask];
+                if (L == 0) continue;
+                long add = x / L;
+                if ((bits[mask] & 1) == 1) cnt += add;
+                else cnt -= add;
+            }
+            return cnt;
+        };
+
+        // Binary search bounds
+        long lo = 1L;
+        long minCoin = coins[0];
+        long hi;
+        if (minCoin == 0) hi = Long.MAX_VALUE / 2;
+        else {
+            if (minCoin > Long.MAX_VALUE / K) hi = Long.MAX_VALUE / 2;
+            else hi = minCoin * K;
+        }
+
+        while (lo < hi) {
+            long mid = lo + ((hi - lo) >>> 1);
+            long c = countLe.applyAsLong(mid);
+            if (c >= K) hi = mid;
+            else lo = mid + 1;
+        }
+        return lo;
+    }
+}
