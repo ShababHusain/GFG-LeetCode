@@ -1,0 +1,32 @@
+class Solution {
+    int transform(String s1, String s2) {
+        if (s1 == null || s2 == null) return -1;
+        int n = s1.length();
+        if (n != s2.length()) return -1;
+        if (n == 0) return 0;
+
+        // Check same multiset of characters
+        int[] freq = new int[256];
+        for (int i = 0; i < n; ++i) {
+            freq[s1.charAt(i) & 0xFF]++;
+            freq[s2.charAt(i) & 0xFF]--;
+        }
+        for (int v : freq) if (v != 0) return -1;
+
+        // For each character of s2 from right to left, find a matching char in s1 scanning leftwards.
+        // If a match cannot be found for s2[i], then i+1 characters must be moved.
+        int j = n - 1; // pointer in s1
+        for (int i = n - 1; i >= 0; --i) {
+            // move j left until we find s2.charAt(i)
+            while (j >= 0 && s1.charAt(j) != s2.charAt(i)) j--;
+            if (j < 0) {
+                // no match for s2[i] in remaining s1 prefix -> remaining (i+1) chars must be moved
+                return i + 1;
+            }
+            // matched, consume this position in s1 and continue
+            j--;
+        }
+        // all characters matched in order -> no moves needed
+        return 0;
+    }
+}
