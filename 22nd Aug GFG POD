@@ -1,0 +1,81 @@
+/* Structure of Binary Tree Node
+class Node {
+    int data;
+    Node left;
+    Node right;
+
+    Node(int val) {
+        data = val;
+        left = right = null;
+    }
+} */
+
+class Solution {
+
+    public int numberOfTurns(Node root, int p, int q) {
+        if (root == null) return -1;
+
+        Node lca = findLCA(root, p, q);
+        if (lca == null) return -1;
+
+        // If LCA is exactly one of the nodes
+        if (lca.data == p) {
+            int cnt = countTurnsFrom(lca, q, -1);
+            return (cnt == 0) ? -1 : cnt;
+        }
+        if (lca.data == q) {
+            int cnt = countTurnsFrom(lca, p, -1);
+            return (cnt == 0) ? -1 : cnt;
+        }
+
+        // LCA is different from both nodes
+        int c1 = countTurnsFrom(lca, p, -1);
+        int c2 = countTurnsFrom(lca, q, -1);
+
+        if (c1 == -1 || c2 == -1) return -1; // safety: one node not found under LCA
+
+        int total = c1 + c2 + 1; // +1 for the turn at LCA when switching sides
+        return (total == 0) ? -1 : total;
+    }
+
+    // Find LCA of two nodes by value
+    private Node findLCA(Node root, int a, int b) {
+        if (root == null) return null;
+        if (root.data == a || root.data == b) return root;
+
+        Node left = findLCA(root.left, a, b);
+        Node right = findLCA(root.right, a, b);
+
+        if (left != null && right != null) return root;
+        return (left != null) ? left : right;
+    }
+
+    /**
+     * Count number of turns from 'start' node down to node with value 'target'.
+     * prevDir: -1 = start (no previous direction), 0 = came from left, 1 = came from right
+     * Returns:
+     *   -1 if target not found in subtree,
+     *   otherwise number of turns along the path from start to target.
+     */
+    private int countTurnsFrom(Node start, int target, int prevDir) {
+        if (start == null) return -1;
+        if (start.data == target) return 0;
+
+        // search left subtree
+        int leftRes = countTurnsFrom(start.left, target, 0);
+        if (leftRes != -1) {
+            // if prevDir is undefined or same as current (left), no extra turn; else add 1
+            if (prevDir == -1 || prevDir == 0) return leftRes;
+            else return leftRes + 1;
+        }
+
+        // search right subtree
+        int rightRes = countTurnsFrom(start.right, target, 1);
+        if (rightRes != -1) {
+            if (prevDir == -1 || prevDir == 1) return rightRes;
+            else return rightRes + 1;
+        }
+
+        return -1; // not found
+    }
+}
