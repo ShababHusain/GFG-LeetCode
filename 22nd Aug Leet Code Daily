@@ -1,0 +1,17 @@
+class Solution {
+    public boolean checkDivisibility(int n) {
+        int original = n;
+        int sum = 0;
+        int prod = 1;
+
+        while (n > 0) {
+            int d = n % 10;
+            sum += d;
+            prod *= d;
+            n /= 10;
+        }
+
+        int total = sum + prod; // total >= 1 for n >= 1
+        return original % total == 0;
+    }
+}
