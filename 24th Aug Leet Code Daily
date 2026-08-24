@@ -1,0 +1,23 @@
+class Solution {
+    public int stoneGameVIII(int[] stones) {
+        int n = stones.length;
+        long[] pref = new long[n + 1];
+        for (int i = 1; i <= n; i++) {
+            pref[i] = pref[i - 1] + stones[i - 1];
+        }
+
+        // dp[n] = 0, best[n] = pref[n] - dp[n] = pref[n]
+        long dpNext = 0;          // holds dp for the next iteration (dp[i+1] conceptually)
+        long mx = pref[n];        // max of (pref[j] - dp[j]) for j in [i+1..n], initially j = n
+
+        // compute dp[i] for i = n-1 down to 1; final dpNext will be dp[1]
+        for (int i = n - 1; i >= 1; i--) {
+            long dpI = mx;               // dp[i] = max_{j>i} (pref[j] - dp[j]) = mx
+            long bestI = pref[i] - dpI;  // best[i] = pref[i] - dp[i]
+            if (bestI > mx) mx = bestI; // update mx for earlier indices
+            dpNext = dpI;
+        }
+
+        return (int) dpNext;
+    }
+}
