@@ -1,0 +1,35 @@
+class Solution {
+    private static final long MOD = 1_000_000_007L;
+
+    private long modPow(long a, long e) {
+        long res = 1;
+        a %= MOD;
+        while (e > 0) {
+            if ((e & 1) == 1) res = (res * a) % MOD;
+            a = (a * a) % MOD;
+            e >>= 1;
+        }
+        return res;
+    }
+
+    private long modInv(long x) {
+        return modPow(x, MOD - 2);
+    }
+
+    public int prefixStrings(int n) {
+        // Catalan number C_n = binom(2n, n) / (n+1) mod MOD
+        int max = 2 * n;
+        long[] fact = new long[max + 1];
+        long[] invFact = new long[max + 1];
+
+        fact[0] = 1;
+        for (int i = 1; i <= max; ++i) fact[i] = fact[i - 1] * i % MOD;
+
+        invFact[max] = modInv(fact[max]);
+        for (int i = max - 1; i >= 0; --i) invFact[i] = invFact[i + 1] * (i + 1) % MOD;
+
+        long binom = fact[2 * n] * invFact[n] % MOD * invFact[n] % MOD;
+        long catalan = binom * modInv(n + 1) % MOD;
+        return (int) catalan;
+    }
+}
