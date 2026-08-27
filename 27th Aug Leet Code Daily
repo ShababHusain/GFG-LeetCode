@@ -1,0 +1,64 @@
+class Solution {
+    public String lexGreaterPermutation(String s, String target) {
+        int n = s.length();
+        int[] pool = new int[26];
+        
+        for (char c : s.toCharArray()) {
+            pool[c - 'a']++;
+        }
+        
+        int max_i = 0;
+        for (int i = 0; i < n; i++) {
+            if (pool[target.charAt(i) - 'a'] > 0) {
+                pool[target.charAt(i) - 'a']--;
+                max_i = i + 1;
+            } else {
+                break;
+            }
+        }
+        
+        int start_i = Math.min(n - 1, max_i);
+        
+        pool = new int[26];
+        for (char c : s.toCharArray()) {
+            pool[c - 'a']++;
+        }
+        for (int i = 0; i < start_i; i++) {
+            pool[target.charAt(i) - 'a']--;
+        }
+        
+        for (int i = start_i; i >= 0; i--) {
+            char tChar = target.charAt(i);
+            char picked = 0;
+            
+            for (int c = tChar - 'a' + 1; c < 26; c++) {
+                if (pool[c] > 0) {
+                    picked = (char) (c + 'a');
+                    break;
+                }
+            }
+            
+            if (picked != 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(target.substring(0, i));
+                sb.append(picked);
+                pool[picked - 'a']--;
+                
+                for (int c = 0; c < 26; c++) {
+                    while (pool[c] > 0) {
+                        sb.append((char) (c + 'a'));
+                        pool[c]--;
+                    }
+                }
+                
+                return sb.toString();
+            }
+            
+            if (i > 0) {
+                pool[target.charAt(i - 1) - 'a']++;
+            }
+        }
+        
+        return "";
+    }
+}
