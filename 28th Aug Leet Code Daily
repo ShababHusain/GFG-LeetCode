@@ -1,0 +1,100 @@
+class Solution {
+    public String lexPalindromicPermutation(String s, String target) {
+        int n = s.length();
+        int[] count = new int[26];
+        
+        for (char c : s.toCharArray()) {
+            count[c - 'a']++;
+        }
+        
+        int oddCount = 0;
+        char midChar = 0;
+        int[] avail = new int[26];
+        
+        for (int i = 0; i < 26; i++) {
+            if (count[i] % 2 != 0) {
+                oddCount++;
+                midChar = (char) (i + 'a');
+            }
+            avail[i] = count[i] / 2;
+        }
+        
+        // A palindrome can only have at most one odd-frequency character
+        if (oddCount > 1) {
+            return "";
+        }
+        
+        String midStr = oddCount == 1 ? String.valueOf(midChar) : "";
+        int m = n / 2;
+        
+        // Iterate on prefix length i from m down to 0
+        for (int i = m; i >= 0; i--) {
+            int[] req = new int[26];
+            boolean possible = true;
+            
+            // Check if forming the prefix of target of length i is possible
+            for (int k = 0; k < i; k++) {
+                int idx = target.charAt(k) - 'a';
+                req[idx]++;
+                if (req[idx] > avail[idx]) {
+                    possible = false;
+                    break;
+                }
+            }
+            
+            if (!possible) {
+                continue;
+            }
+            
+            if (i == m) {
+                StringBuilder halfBuilder = new StringBuilder(target.substring(0, m));
+                String half = halfBuilder.toString();
+                String revHalf = halfBuilder.reverse().toString();
+                String P = half + midStr + revHalf;
+                
+                if (P.compareTo(target) > 0) {
+                    return P;
+                }
+            } else {
+                int[] rem = new int[26];
+                for (int k = 0; k < 26; k++) {
+                    rem[k] = avail[k] - req[k];
+                }
+                
+                int targetCharIdx = target.charAt(i) - 'a';
+                int nextCharIdx = -1;
+                
+                // Find the smallest character strictly greater than target[i]
+                for (int k = targetCharIdx + 1; k < 26; k++) {
+                    if (rem[k] > 0) {
+                        nextCharIdx = k;
+                        break;
+                    }
+                }
+                
+                if (nextCharIdx != -1) {
+                    rem[nextCharIdx]--;
+                    
+                    StringBuilder halfBuilder = new StringBuilder();
+                    halfBuilder.append(target.substring(0, i));
+                    halfBuilder.append((char) (nextCharIdx + 'a'));
+                    
+                    // Greedily append the rest in ascending order to keep it minimal
+                    for (int k = 0; k < 26; k++) {
+                        while (rem[k] > 0) {
+                            halfBuilder.append((char) (k + 'a'));
+                            rem[k]--;
+                        }
+                    }
+                    
+                    String half = halfBuilder.toString();
+                    String revHalf = halfBuilder.reverse().toString();
+                    
+                    return half + midStr + revHalf;
+                }
+            }
+        }
+        
+        return "";
+    }
+}
