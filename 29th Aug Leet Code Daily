@@ -1,0 +1,45 @@
+class Solution {
+    public int[] lexicographicallySmallestArray(int[] nums, int limit) {
+        int n = nums.length;
+        
+        // Store pairs of {value, original_index}
+        int[][] arr = new int[n][2];
+        for (int i = 0; i < n; i++) {
+            arr[i][0] = nums[i];
+            arr[i][1] = i;
+        }
+        
+        // Sort elements by value to easily find connected components
+        Arrays.sort(arr, (a, b) -> Integer.compare(a[0], b[0]));
+        
+        int[] res = new int[n];
+        int i = 0;
+        
+        while (i < n) {
+            int j = i + 1;
+            // Group elements that belong to the same connected component
+            while (j < n && arr[j][0] - arr[j - 1][0] <= limit) {
+                j++;
+            }
+            
+            // Extract the original indices for the current component
+            int[] indices = new int[j - i];
+            for (int k = i; k < j; k++) {
+                indices[k - i] = arr[k][1];
+            }
+            
+            // Sort the indices so we can place the smallest values at the earliest available spots
+            Arrays.sort(indices);
+            
+            // Place the sorted values back into the sorted original indices
+            for (int k = i; k < j; k++) {
+                res[indices[k - i]] = arr[k][0];
+            }
+            
+            // Move to the next component
+            i = j;
+        }
+        
+        return res;
+    }
+}
