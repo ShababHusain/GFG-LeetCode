@@ -1,0 +1,41 @@
+class Solution {
+    public ArrayList<Integer> getMarks(int[] l, int[] r, int[] rank) {
+        int n = l.length;
+        
+        // Use long for prefix sum to prevent overflow
+        long[] prefix = new long[n];
+        prefix[0] = (r[0] - l[0] + 1);
+        
+        for (int i = 1; i < n; i++) {
+            prefix[i] = prefix[i - 1] + (r[i] - l[i] + 1);
+        }
+        
+        ArrayList<Integer> ans = new ArrayList<>();
+        
+        for (int i = 0; i < rank.length; i++) {
+            long target = rank[i];
+            int low = 0;
+            int high = n - 1;
+            int idx = -1;
+            
+            // Binary search to find which interval the rank falls into
+            while (low <= high) {
+                int mid = low + (high - low) / 2;
+                if (prefix[mid] >= target) {
+                    idx = mid;
+                    high = mid - 1; // Look for the earliest possible valid interval
+                } else {
+                    low = mid + 1;
+                }
+            }
+            
+            if (idx != -1) {
+                long prevRanks = (idx == 0) ? 0 : prefix[idx - 1];
+                long offset = target - prevRanks - 1;
+                ans.add((int) (l[idx] + offset));
+            }
+        }
+        
+        return ans;
+    }
+}
