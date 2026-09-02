@@ -1,0 +1,25 @@
+class Solution {
+    public int solve(int n, String s) {
+        int[] state = new int[26];
+        int occupied = 0;
+        int rejectedCount = 0;
+        
+        for (char c : s.toCharArray()) {
+            int index = c - 'A';
+            
+            if (state[index] == 0) {
+                if (occupied < n) {
+                    state[index] = 1;
+                    occupied++;
+                } else {
+                    state[index] = 2;
+                    rejectedCount++;
+                }
+            } else if (state[index] == 1) {
+                occupied--;
+            }
+        }
+        
+        return rejectedCount;
+    }
+}
