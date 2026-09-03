@@ -1,0 +1,30 @@
+class Solution {
+    public int maxDiffSum(int[] arr) {
+        if (arr.length <= 1) {
+            return 0;
+        }
+        
+        int prevUnchanged = 0; // Max sum if arr[i] remains arr[i]
+        int prevReplaced = 0;  // Max sum if arr[i] is replaced by 1
+        
+        for (int i = 1; i < arr.length; i++) {
+            // Case 1: We leave arr[i] unchanged
+            int currentUnchanged = Math.max(
+                prevUnchanged + Math.abs(arr[i] - arr[i - 1]), // previous was unchanged
+                prevReplaced + Math.abs(arr[i] - 1)            // previous was replaced with 1
+            );
+            
+            // Case 2: We replace arr[i] with 1
+            int currentReplaced = Math.max(
+                prevUnchanged + Math.abs(1 - arr[i - 1]),      // previous was unchanged
+                prevReplaced + 0                               // previous was replaced with 1 (|1 - 1| = 0)
+            );
+            
+            // Move forward
+            prevUnchanged = currentUnchanged;
+            prevReplaced = currentReplaced;
+        }
+        
+        return Math.max(prevUnchanged, prevReplaced);
+    }
+}
