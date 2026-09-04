@@ -1,0 +1,39 @@
+class Solution {
+    public int maxFruits(ArrayList<Integer> arr, int m) {
+        int n = arr.size();
+        
+        // Edge case: empty array or window size 0
+        if (n == 0 || m <= 0) {
+            return 0;
+        }
+        
+        int currentSum = 0;
+        
+        // Calculate the fruit sum for the very first window of size m
+        for (int i = 0; i < m; i++) {
+            currentSum += arr.get(i % n);
+        }
+        
+        int maxSum = currentSum;
+        int left = 0;
+        
+        // Slide the window around the circular array
+        // We only need to slide n - 1 times to evaluate all possible starting positions
+        for (int right = m; right < n + m - 1; right++) {
+            // Remove the tree that fell out of the left side of the window
+            currentSum -= arr.get(left % n);
+            
+            // Add the new tree that enters the right side of the window
+            currentSum += arr.get(right % n);
+            
+            // Update maximum sum found so far
+            if (currentSum > maxSum) {
+                maxSum = currentSum;
+            }
+            
+            left++;
+        }
+        
+        return maxSum;
+    }
+}
