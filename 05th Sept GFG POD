@@ -1,0 +1,30 @@
+class Solution {
+    public int longestSubseq(int[] arr) {
+        if (arr == null || arr.length == 0) {
+            return 0;
+        }
+
+        int maxVal = 0;
+        for (int num : arr) {
+            if (num > maxVal) {
+                maxVal = num;
+            }
+        }
+
+        int[] dp = new int[maxVal + 2];
+        int maxLength = 1;
+
+        for (int x : arr) {
+            int lenMinus1 = (x - 1 >= 0) ? dp[x - 1] : 0;
+            int lenPlus1 = dp[x + 1];
+
+            dp[x] = Math.max(lenMinus1, lenPlus1) + 1;
+
+            if (dp[x] > maxLength) {
+                maxLength = dp[x];
+            }
+        }
+
+        return maxLength;
+    }
+}
