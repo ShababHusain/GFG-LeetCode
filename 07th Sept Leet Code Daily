@@ -1,0 +1,28 @@
+class Solution {
+    public int distinctSubseqII(String s) {
+        int MOD = 1_000_000_007;
+        
+        // endsWith[i] stores the number of distinct subsequences ending with the i-th letter
+        int[] endsWith = new int[26];
+        int totalSubseq = 0;
+        
+        for (char c : s.toCharArray()) {
+            int idx = c - 'a';
+            
+            // New subsequences we can form ending with 'c'
+            // (+1 accounts for the single character subsequence "c")
+            int added = (totalSubseq + 1) % MOD;
+            
+            // Calculate the net increase in total subsequences.
+            // We subtract endsWith[idx] to remove duplicates we've already counted.
+            // Adding MOD prevents negative numbers in Java's modulo arithmetic.
+            int netIncrease = (added - endsWith[idx] + MOD) % MOD;
+            
+            // Update our running totals
+            totalSubseq = (totalSubseq + netIncrease) % MOD;
+            endsWith[idx] = added;
+        }
+        
+        return totalSubseq;
+    }
+}
