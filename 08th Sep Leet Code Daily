@@ -1,0 +1,60 @@
+class Solution {
+    public ArrayList<ArrayList<Integer>> searchWord(char[][] mat, String word) {
+        int n = mat.length;
+        int m = mat[0].length;
+
+        // Using a TreeSet with a custom comparator to ensure uniqueness 
+        // and lexicographically sorted order of coordinates
+        TreeSet<int[]> result = new TreeSet<>((a, b) -> {
+            if (a[0] != b[0]) {
+                return Integer.compare(a[0], b[0]);
+            }
+            return Integer.compare(a[1], b[1]);
+        });
+
+        // 8 possible directions: {row_dir, col_dir}
+        int[] dRow = {-1, -1, -1, 0, 0, 1, 1, 1};
+        int[] dCol = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (mat[i][j] == word.charAt(0)) {
+                    for (int dir = 0; dir < 8; dir++) {
+                        if (checkDirection(mat, word, i, j, dRow[dir], dCol[dir])) {
+                            result.add(new int[]{i, j});
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Convert TreeSet to ArrayList<ArrayList<Integer>>
+        ArrayList<ArrayList<Integer>> ans = new ArrayList<>();
+        for (int[] coord : result) {
+            ArrayList<Integer> list = new ArrayList<>();
+            list.add(coord[0]);
+            list.add(coord[1]);
+            ans.add(list);
+        }
+
+        return ans;
+    }
+
+    private boolean checkDirection(char[][] mat, String word, int row, int col, int dRow, int dCol) {
+        int n = mat.length;
+        int m = mat[0].length;
+        int len = word.length();
+
+        for (int k = 0; k < len; k++) {
+            int nextRow = row + k * dRow;
+            int nextCol = col + k * dCol;
+
+            if (nextRow < 0 || nextRow >= n || nextCol < 0 || nextCol >= m || mat[nextRow][nextCol] != word.charAt(k)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
