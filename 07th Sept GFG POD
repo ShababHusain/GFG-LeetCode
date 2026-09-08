@@ -1,0 +1,35 @@
+class Solution {
+    public int minCount(int[] arr) {
+        int n = arr.length;
+        if (n == 0) {
+            return 0;
+        }
+        
+        int[][] dp = new int[102][102];
+        
+        for (int i = n - 1; i >= 0; i--) {
+            int val = arr[i];
+            int[][] nextDp = new int[102][102];
+            
+            for (int lastInc = 0; lastInc <= 100; lastInc++) {
+                for (int lastDec = 1; lastDec <= 101; lastDec++) {
+                    
+                    int maxPicked = dp[lastInc][lastDec];
+                    
+                    if (val > lastInc) {
+                        maxPicked = Math.max(maxPicked, 1 + dp[val][lastDec]);
+                    }
+                    
+                    if (val < lastDec) {
+                        maxPicked = Math.max(maxPicked, 1 + dp[lastInc][val]);
+                    }
+                    
+                    nextDp[lastInc][lastDec] = maxPicked;
+                }
+            }
+            dp = nextDp;
+        }
+        
+        return n - dp[0][101];
+    }
+}
