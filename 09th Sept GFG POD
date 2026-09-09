@@ -1,0 +1,41 @@
+class Solution {
+    public int findMax(int n) {
+        int bestNum = n;
+        int maxDigitSum = getDigitSum(n);
+        
+        long power = 1;
+        while (n / power > 0) {
+            int candidate = (int) ((n / (power * 10)) * power - 1);
+            
+            if (candidate > 0) {
+                int currentSum = getDigitSum(candidate);
+                if (currentSum > maxDigitSum || (currentSum == maxDigitSum && candidate > bestNum)) {
+                    maxDigitSum = currentSum;
+                    bestNum = candidate;
+                }
+            }
+            
+            int altCandidate = (int) (n - (n % (power * 10)) - 1);
+            if (altCandidate > 0) {
+                int currentSum = getDigitSum(altCandidate);
+                if (currentSum > maxDigitSum || (currentSum == maxDigitSum && altCandidate > bestNum)) {
+                    maxDigitSum = currentSum;
+                    bestNum = altCandidate;
+                }
+            }
+            
+            power *= 10;
+        }
+        
+        return bestNum;
+    }
+    
+    private int getDigitSum(int num) {
+        int sum = 0;
+        while (num > 0) {
+            sum += num % 10;
+            num /= 10;
+        }
+        return sum;
+    }
+}
