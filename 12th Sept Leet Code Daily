@@ -1,0 +1,104 @@
+class Solution {
+    private static class Interval {
+        int left, right, weight, originalIndex;
+
+        Interval(int left, int right, int weight, int originalIndex) {
+            this.left = left;
+            this.right = right;
+            this.weight = weight;
+            this.originalIndex = originalIndex;
+        }
+    }
+
+    private static class Result {
+        long weight;
+        List<Integer> indices;
+
+        Result(long weight, List<Integer> indices) {
+            this.weight = weight;
+            this.indices = indices;
+        }
+    }
+
+    public int[] maximumWeight(List<List<Integer>> intervals) {
+        int n = intervals.size();
+        List<Interval> list = new ArrayList<>(n);
+
+        for (int i = 0; i < n; i++) {
+            List<Integer> inv = intervals.get(i);
+            list.add(new Interval(inv.get(0), inv.get(1), inv.get(2), i));
+        }
+
+        // Sort intervals by starting position
+        list.sort((a, b) -> Integer.compare(a.left, b.left));
+
+        Result[][] memo = new Result[n][5];
+        List<Integer> resultList = solve(0, 4, list, memo).indices;
+
+        int[] ans = new int[resultList.size()];
+        for (int i = 0; i < ans.length; i++) {
+            ans[i] = resultList.get(i);
+        }
+        return ans;
+    }
+
+    private Result solve(int i, int quota, List<Interval> intervals, Result[][] memo) {
+        if (i == intervals.size() || quota == 0) {
+            return new Result(0, new ArrayList<>());
+        }
+
+        if (memo[i][quota] != null) {
+            return memo[i][quota];
+        }
+
+        // Option 1: Skip current interval
+        Result skip = solve(i + 1, quota, intervals, memo);
+
+        // Option 2: Pick current interval
+        Interval curr = intervals.get(i);
+        int nextIdx = findNextValid(intervals, i + 1, curr.right);
+        Result nextRes = solve(nextIdx, quota - 1, intervals, memo);
+
+        List<Integer> pickIndices = new ArrayList<>(nextRes.indices);
+        pickIndices.add(curr.originalIndex);
+        Collections.sort(pickIndices);
+
+        Result pick = new Result(curr.weight + nextRes.weight, pickIndices);
+
+        // Choose option with higher weight or lexicographically smaller indices in case of tie
+        Result best;
+        if (pick.weight > skip.weight) {
+            best = pick;
+        } else if (skip.weight > pick.weight) {
+            best = skip;
+        } else {
+            best = compareIndices(pick.indices, skip.indices) < 0 ? pick : skip;
+        }
+
+        return memo[i][quota] = best;
+    }
+
+    private int findNextValid(List<Interval> intervals, int startFrom, int rightBoundary) {
+        int l = startFrom, r = intervals.size();
+        while (l < r) {
+            int mid = l + (r - l) / 2;
+            if (intervals.get(mid).left > rightBoundary) {
+                r = mid;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return l;
+    }
+
+    private int compareIndices(List<Integer> a, List<Integer> b) {
+        int minSize = Math.min(a.size(), b.size());
+        for (int i = 0; i < minSize; i++) {
+            int cmp = Integer.compare(a.get(i), b.get(i));
+            if (cmp != 0) {
+                return cmp;
+            }
+        }
+        return Integer.compare(a.size(), b.size());
+    }
+}
