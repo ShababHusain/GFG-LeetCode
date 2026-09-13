@@ -1,0 +1,51 @@
+class Solution {
+    public int partyHouse(ArrayList<ArrayList<Integer>> adj) {
+        int n = adj.size();
+        if (n <= 1) {
+            return 0;
+        }
+
+        // Step 1: Find the farthest node 'A' starting from node 1
+        int[] firstBfs = bfs(1, adj, n);
+        int nodeA = firstBfs[0];
+
+        // Step 2: Find the farthest node 'B' starting from 'A' to get the tree diameter
+        int[] secondBfs = bfs(nodeA, adj, n);
+        int diameter = secondBfs[1];
+
+        // The minimum possible maximum distance is ceil(diameter / 2)
+        return (diameter + 1) / 2;
+    }
+
+    // Returns array {farthestNode, maxDistance}
+    private int[] bfs(int start, ArrayList<ArrayList<Integer>> adj, int n) {
+        int[] dist = new int[n + 1];
+        Arrays.fill(dist, -1);
+
+        Queue<Integer> queue = new LinkedList<>();
+        queue.add(start);
+        dist[start] = 0;
+
+        int farthestNode = start;
+        int maxDist = 0;
+
+        while (!queue.isEmpty()) {
+            int curr = queue.poll();
+
+            if (dist[curr] > maxDist) {
+                maxDist = dist[curr];
+                farthestNode = curr;
+            }
+
+            // adj[curr - 1] contains 1-based neighbor house numbers
+            for (int neighbor : adj.get(curr - 1)) {
+                if (dist[neighbor] == -1) {
+                    dist[neighbor] = dist[curr] + 1;
+                    queue.add(neighbor);
+                }
+            }
+        }
+
+        return new int[]{farthestNode, maxDist};
+    }
+}
