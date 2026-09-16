@@ -1,0 +1,29 @@
+class Solution {
+    public int dominantPairs(int[] arr) {
+        int n = arr.length;
+        int half = n / 2;
+
+        int[] left = new int[half];
+        int[] right = new int[half];
+
+        for (int i = 0; i < half; i++) {
+            left[i] = arr[i];
+            right[i] = arr[i + half];
+        }
+
+        Arrays.sort(left);
+        Arrays.sort(right);
+
+        int count = 0;
+        int j = 0;
+
+        for (int i = 0; i < half; i++) {
+            while (j < half && left[i] >= 5 * right[j]) {
+                j++;
+            }
+            count += j;
+        }
+
+        return count;
+    }
+}
