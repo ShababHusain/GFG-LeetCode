@@ -1,0 +1,40 @@
+/* The Node structure is defined as
+ class Node {
+    int data;
+    Node left;
+    Node right;
+    Node(int data){
+        this.data = data;
+        left = null;
+        right = null;
+    }
+}
+*/
+
+class Solution {
+    private int minDiff = Integer.MAX_VALUE;
+    private Integer prev = null;
+
+    public int absDiff(Node root) {
+        inOrder(root);
+        return minDiff;
+    }
+
+    private void inOrder(Node root) {
+        if (root == null) {
+            return;
+        }
+
+        // 1. Traverse left subtree
+        inOrder(root.left);
+
+        // 2. Process current node
+        if (prev != null) {
+            minDiff = Math.min(minDiff, root.data - prev);
+        }
+        prev = root.data;
+
+        // 3. Traverse right subtree
+        inOrder(root.right);
+    }
+}
