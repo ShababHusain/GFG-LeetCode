@@ -1,0 +1,32 @@
+
+class Solution {
+    public long[] resultArray(int[] nums, int k) {
+        long[] result = new long[k];
+        long[] dp = new long[k]; // dp[r] stores count of subarrays ending at current index with prod % k == r
+
+        for (int num : nums) {
+            int val = num % k;
+            long[] nextDp = new long[k];
+
+            // 1. Single-element subarray starting at current index
+            nextDp[val]++;
+
+            // 2. Extend all valid subarrays ending at the previous index
+            for (int r = 0; r < k; r++) {
+                if (dp[r] > 0) {
+                    int nextRem = (r * val) % k;
+                    nextDp[nextRem] += dp[r];
+                }
+            }
+
+            // 3. Accumulate counts for all subarrays ending at current index
+            for (int r = 0; r < k; r++) {
+                result[r] += nextDp[r];
+            }
+
+            dp = nextDp;
+        }
+
+        return result;
+    }
+}
