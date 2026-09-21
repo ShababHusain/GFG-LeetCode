@@ -1,0 +1,58 @@
+/* Structure of binary tree Node
+class Node {
+    int data;
+    Node left, right;
+
+    Node(int x) {
+        data = x;
+        left = right = null;
+    }
+}
+*/
+
+class Solution {
+    public boolean areAnagrams(Node root1, Node root2) {
+        if (root1 == null && root2 == null) return true;
+        if (root1 == null || root2 == null) return false;
+
+        Queue<Node> q1 = new LinkedList<>();
+        Queue<Node> q2 = new LinkedList<>();
+
+        q1.add(root1);
+        q2.add(root2);
+
+        while (!q1.isEmpty() && !q2.isEmpty()) {
+            int size1 = q1.size();
+            int size2 = q2.size();
+
+            // Level sizes must match
+            if (size1 != size2) return false;
+
+            Map<Integer, Integer> freq = new HashMap<>();
+
+            // 1. Store node value frequencies at current level of root1
+            for (int i = 0; i < size1; i++) {
+                Node curr1 = q1.poll();
+                freq.put(curr1.data, freq.getOrDefault(curr1.data, 0) + 1);
+
+                if (curr1.left != null) q1.add(curr1.left);
+                if (curr1.right != null) q1.add(curr1.right);
+            }
+
+            // 2. Compare against node values at current level of root2
+            for (int i = 0; i < size2; i++) {
+                Node curr2 = q2.poll();
+                int count = freq.getOrDefault(curr2.data, 0);
+
+                if (count == 0) return false;
+
+                freq.put(curr2.data, count - 1);
+
+                if (curr2.left != null) q2.add(curr2.left);
+                if (curr2.right != null) q2.add(curr2.right);
+            }
+        }
+
+        return q1.isEmpty() && q2.isEmpty();
+    }
+}
