@@ -1,0 +1,73 @@
+class Solution {
+    public String findLongestWord(String s, List<String> d) {
+        // Step 1: Record occurrence indices for each character in string s
+        List<Integer>[] pos = new ArrayList[26];
+        for (int i = 0; i < 26; i++) {
+            pos[i] = new ArrayList<>();
+        }
+
+        for (int i = 0; i < s.length(); i++) {
+            pos[s.charAt(i) - 'a'].add(i);
+        }
+
+        String ans = "";
+
+        // Step 2: Iterate through dictionary words
+        for (String word : d) {
+            int wLen = word.length();
+            int ansLen = ans.length();
+
+            // Pruning: skip if shorter, or if equal length but lexicographically larger
+            if (wLen < ansLen || (wLen == ansLen && word.compareTo(ans) >= 0)) {
+                continue;
+            }
+
+            // Step 3: Check if 'word' is a valid subsequence of 's'
+            if (isSubsequence(word, pos)) {
+                ans = word;
+            }
+        }
+
+        return ans;
+    }
+
+    private boolean isSubsequence(String word, List<Integer>[] pos) {
+        int currIdx = -1;
+
+        for (int i = 0; i < word.length(); i++) {
+            int ch = word.charAt(i) - 'a';
+            List<Integer> list = pos[ch];
+
+            if (list.isEmpty()) {
+                return false;
+            }
+
+            // Binary search for the first index in 's' greater than 'currIdx'
+            int nextIdx = upperBound(list, currIdx);
+            if (nextIdx == list.size()) {
+                return false;
+            }
+
+            currIdx = list.get(nextIdx);
+        }
+
+        return true;
+    }
+
+    private int upperBound(List<Integer> list, int target) {
+        int low = 0, high = list.size() - 1;
+        int result = list.size();
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            if (list.get(mid) > target) {
+                result = mid;
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+
+        return result;
+    }
+}
