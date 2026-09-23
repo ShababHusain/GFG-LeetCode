@@ -1,0 +1,107 @@
+class Solution {
+    static class Node {
+        int prod;
+        int[] counts;
+
+        Node(int k) {
+            this.prod = 1;
+            this.counts = new int[k];
+        }
+    }
+
+    private Node[] tree;
+
+    public int[] resultArray(int[] nums, int k, int[][] queries) {
+        int n = nums.length;
+        tree = new Node[4 * n];
+
+        build(1, 0, n - 1, nums, k);
+
+        int[] ans = new int[queries.length];
+
+        for (int q = 0; q < queries.length; q++) {
+            int idx = queries[q][0];
+            int val = queries[q][1];
+            int start = queries[q][2];
+            int targetX = queries[q][3];
+
+            // 1. Point update at index 'idx'
+            update(1, 0, n - 1, idx, val, k);
+
+            // 2. Query range [start, n - 1]
+            Node resNode = query(1, 0, n - 1, start, n - 1, k);
+
+            // 3. Extract count for remainder targetX
+            ans[q] = (resNode != null) ? resNode.counts[targetX] : 0;
+        }
+
+        return ans;
+    }
+
+    private Node merge(Node left, Node right, int k) {
+        if (left == null) return right;
+        if (right == null) return left;
+
+        Node res = new Node(k);
+        res.prod = (left.prod * right.prod) % k;
+
+        // Add counts from left child
+        for (int r = 0; r < k; r++) {
+            res.counts[r] += left.counts[r];
+        }
+
+        // Add counts from right child offset by left.prod
+        for (int r = 0; r < k; r++) {
+            if (right.counts[r] > 0) {
+                int newRem = (left.prod * r) % k;
+                res.counts[newRem] += right.counts[r];
+            }
+        }
+
+        return res;
+    }
+
+    private void build(int node, int start, int end, int[] nums, int k) {
+        if (start == end) {
+            tree[node] = new Node(k);
+            int rem = nums[start] % k;
+            tree[node].prod = rem;
+            tree[node].counts[rem] = 1;
+            return;
+        }
+        int mid = start + (end - start) / 2;
+        build(2 * node, start, mid, nums, k);
+        build(2 * node + 1, mid + 1, end, nums, k);
+        tree[node] = merge(tree[2 * node], tree[2 * node + 1], k);
+    }
+
+    private void update(int node, int start, int end, int idx, int val, int k) {
+        if (start == end) {
+            tree[node] = new Node(k);
+            int rem = val % k;
+            tree[node].prod = rem;
+            tree[node].counts[rem] = 1;
+            return;
+        }
+        int mid = start + (end - start) / 2;
+        if (idx <= mid) {
+            update(2 * node, start, mid, idx, val, k);
+        } else {
+            update(2 * node + 1, mid + 1, end, idx, val, k);
+        }
+        tree[node] = merge(tree[2 * node], tree[2 * node + 1], k);
+    }
+
+    private Node query(int node, int start, int end, int l, int r, int k) {
+        if (r < start || end < l) {
+            return null;
+        }
+        if (l <= start && end <= r) {
+            return tree[node];
+        }
+        int mid = start + (end - start) / 2;
+        Node leftNode = query(2 * node, start, mid, l, r, k);
+        Node rightNode = query(2 * node + 1, mid + 1, end, l, r, k);
+        return merge(leftNode, rightNode, k);
+    }
+}
