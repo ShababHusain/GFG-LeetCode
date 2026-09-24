@@ -1,0 +1,68 @@
+class Solution {
+    static class Disc {
+        int r, h;
+        Disc(int r, int h) {
+            this.r = r;
+            this.h = h;
+        }
+    }
+
+    static class FenwickTree {
+        int size;
+        int[] tree;
+
+        FenwickTree(int size) {
+            this.size = size;
+            this.tree = new int[size + 1];
+        }
+
+        void update(int idx, int val) {
+            for (; idx <= size; idx += idx & -idx) {
+                tree[idx] = Math.max(tree[idx], val);
+            }
+        }
+
+        int query(int idx) {
+            int maxVal = 0;
+            for (; idx > 0; idx -= idx & -idx) {
+                maxVal = Math.max(maxVal, tree[idx]);
+            }
+            return maxVal;
+        }
+    }
+
+    public int maxStackHeight(int[] r, int[] h) {
+        int n = r.length;
+        Disc[] discs = new Disc[n];
+
+        int maxH = 0;
+        for (int i = 0; i < n; i++) {
+            discs[i] = new Disc(r[i], h[i]);
+            maxH = Math.max(maxH, h[i]);
+        }
+
+        // 1. Sort discs: Radius ASC, Height DESC for equal radii
+        Arrays.sort(discs, (a, b) -> {
+            if (a.r != b.r) {
+                return Integer.compare(a.r, b.r);
+            }
+            return Integer.compare(b.h, a.h);
+        });
+
+        // 2. Fenwick tree sized to maximum height present
+        FenwickTree bit = new FenwickTree(maxH);
+        int overallMax = 0;
+
+        // 3. Compute DP transitions via 1D Range Maximum Queries
+        for (Disc disc : discs) {
+            // Maximum stack height from all discs with strictly smaller height
+            int maxPrev = bit.query(disc.h - 1);
+            int currentMax = maxPrev + disc.h;
+
+            overallMax = Math.max(overallMax, currentMax);
+            bit.update(disc.h, currentMax);
+        }
+
+        return overallMax;
+    }
+}
