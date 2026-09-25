@@ -1,0 +1,52 @@
+class Solution {
+    static class Box {
+        int h, d1, d2;
+        long area;
+
+        Box(int h, int w, int l) {
+            this.h = h;
+            this.d1 = Math.min(w, l);
+            this.d2 = Math.max(w, l);
+            this.area = (long) this.d1 * this.d2;
+        }
+    }
+
+    public int maxHeight(int[] height, int[] width, int[] length) {
+        int n = height.length;
+        Box[] boxes = new Box[3 * n];
+
+        // 1. Generate 3 rotations for each box instance
+        for (int i = 0; i < n; i++) {
+            int h = height[i];
+            int w = width[i];
+            int l = length[i];
+
+            boxes[3 * i] = new Box(h, w, l);
+            boxes[3 * i + 1] = new Box(w, h, l);
+            boxes[3 * i + 2] = new Box(l, h, w);
+        }
+
+        // 2. Sort boxes descending by base area (long to prevent overflow)
+        Arrays.sort(boxes, (a, b) -> Long.compare(b.area, a.area));
+
+        int numBoxes = 3 * n;
+        int[] dp = new int[numBoxes];
+        int maxStackHeight = 0;
+
+        // 3. LIS Dynamic Programming
+        for (int i = 0; i < numBoxes; i++) {
+            dp[i] = boxes[i].h;
+
+            for (int j = 0; j < i; j++) {
+                // Strictly smaller base dimensions required
+                if (boxes[i].d1 < boxes[j].d1 && boxes[i].d2 < boxes[j].d2) {
+                    dp[i] = Math.max(dp[i], dp[j] + boxes[i].h);
+                }
+            }
+
+            maxStackHeight = Math.max(maxStackHeight, dp[i]);
+        }
+
+        return maxStackHeight;
+    }
+}
