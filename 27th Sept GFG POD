@@ -1,0 +1,159 @@
+class Solution {
+    public int longestPath(String s, int[][] edges) {
+        int n = s.length();
+        if (n <= 1) return n;
+
+        // 1. Build Adjacency List using Fast Forward-Star (Head/To/Next)
+        int[] head = new int[n];
+        Arrays.fill(head, -1);
+        int[] to = new int[2 * (n - 1)];
+        int[] next = new int[2 * (n - 1)];
+        int edgeCount = 0;
+
+        for (int[] edge : edges) {
+            int u = edge[0] - 1;
+            int v = edge[1] - 1;
+
+            to[edgeCount] = v;
+            next[edgeCount] = head[u];
+            head[u] = edgeCount++;
+
+            to[edgeCount] = u;
+            next[edgeCount] = head[v];
+            head[v] = edgeCount++;
+        }
+
+        // 2. Iterative BFS to establish Parent relations and Post-Order traversal
+        int[] order = new int[n];
+        int[] parent = new int[n];
+        boolean[] visited = new boolean[n];
+
+        int headIdx = 0, tailIdx = 0;
+        order[tailIdx++] = 0;
+        visited[0] = true;
+        parent[0] = -1;
+
+        while (headIdx < tailIdx) {
+            int u = order[headIdx++];
+            for (int e = head[u]; e != -1; e = next[e]) {
+                int v = to[e];
+                if (!visited[v]) {
+                    visited[v] = true;
+                    parent[v] = u;
+                    order[tailIdx++] = v;
+                }
+            }
+        }
+
+        // 3. Tree DP arrays
+        int[] pureR = new int[n];
+        int[] pureB = new int[n];
+        int[] RB = new int[n];
+        int[] BR = new int[n];
+
+        int maxAns = 0;
+
+        // 4. Process nodes in Reverse BFS Order (Bottom-Up Post-Order)
+        for (int i = n - 1; i >= 0; i--) {
+            int u = order[i];
+            char color = s.charAt(u);
+
+            if (color == 'R') {
+                int top1_r = 0, top2_r = 0;
+                int top1_rb = 0, top2_rb = 0;
+                int id_top1_r = -1, id_top1_rb = -1;
+
+                for (int e = head[u]; e != -1; e = next[e]) {
+                    int v = to[e];
+                    if (v == parent[u]) continue;
+
+                    // Pure Red Arm from child v
+                    int r_val = pureR[v];
+                    if (r_val > top1_r) {
+                        top2_r = top1_r;
+                        top1_r = r_val;
+                        id_top1_r = v;
+                    } else if (r_val > top2_r) {
+                        top2_r = r_val;
+                    }
+
+                    // Red-then-Blue Arm from child v
+                    int rb_val = (s.charAt(v) == 'R') ? RB[v] : pureB[v];
+                    if (rb_val > top1_rb) {
+                        top2_rb = top1_rb;
+                        top1_rb = rb_val;
+                        id_top1_rb = v;
+                    } else if (rb_val > top2_rb) {
+                        top2_rb = rb_val;
+                    }
+                }
+
+                pureR[u] = 1 + top1_r;
+                pureB[u] = 0;
+                RB[u] = 1 + top1_rb;
+                BR[u] = 0;
+
+                // Path combining at u
+                int currentMax = 1 + top1_r + top2_r;
+
+                if (id_top1_rb != id_top1_r) {
+                    currentMax = Math.max(currentMax, 1 + top1_rb + top1_r);
+                } else {
+                    currentMax = Math.max(currentMax, 1 + top1_rb + top2_r);
+                    currentMax = Math.max(currentMax, 1 + top2_rb + top1_r);
+                }
+
+                maxAns = Math.max(maxAns, currentMax);
+
+            } else { // color == 'B'
+                int top1_b = 0, top2_b = 0;
+                int top1_br = 0, top2_br = 0;
+                int id_top1_b = -1, id_top1_br = -1;
+
+                for (int e = head[u]; e != -1; e = next[e]) {
+                    int v = to[e];
+                    if (v == parent[u]) continue;
+
+                    // Pure Blue Arm from child v
+                    int b_val = pureB[v];
+                    if (b_val > top1_b) {
+                        top2_b = top1_b;
+                        top1_b = b_val;
+                        id_top1_b = v;
+                    } else if (b_val > top2_b) {
+                        top2_b = b_val;
+                    }
+
+                    // Blue-then-Red Arm from child v
+                    int br_val = (s.charAt(v) == 'B') ? BR[v] : pureR[v];
+                    if (br_val > top1_br) {
+                        top2_br = top1_br;
+                        top1_br = br_val;
+                        id_top1_br = v;
+                    } else if (br_val > top2_br) {
+                        top2_br = br_val;
+                    }
+                }
+
+                pureR[u] = 0;
+                pureB[u] = 1 + top1_b;
+                RB[u] = 0;
+                BR[u] = 1 + top1_br;
+
+                // Path combining at u
+                int currentMax = 1 + top1_b + top2_b;
+
+                if (id_top1_br != id_top1_b) {
+                    currentMax = Math.max(currentMax, 1 + top1_br + top1_b);
+                } else {
+                    currentMax = Math.max(currentMax, 1 + top1_br + top2_b);
+                    currentMax = Math.max(currentMax, 1 + top2_br + top1_b);
+                }
+
+                maxAns = Math.max(maxAns, currentMax);
+            }
+        }
+
+        return maxAns;
+    }
+}
