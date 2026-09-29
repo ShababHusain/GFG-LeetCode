@@ -1,0 +1,61 @@
+class Solution {
+    private boolean[][][] visited;
+
+    public boolean hasValidPath(char[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+
+        // 1. Path length is (m + n - 1). Must be even for balanced parentheses
+        if ((m + n - 1) % 2 != 0) {
+            return false;
+        }
+
+        // 2. Start must be '(' and end must be ')'
+        if (grid[0][0] == ')' || grid[m - 1][n - 1] == '(') {
+            return false;
+        }
+
+        int maxOpen = (m + n) / 2;
+        visited = new boolean[m][n][maxOpen + 1];
+
+        return dfs(grid, 0, 0, 0, m, n, maxOpen);
+    }
+
+    private boolean dfs(char[][] grid, int r, int c, int open, int m, int n, int maxOpen) {
+        // Update unclosed parentheses count
+        if (grid[r][c] == '(') {
+            open++;
+        } else {
+            open--;
+        }
+
+        // Invalid balance or exceeded maximum possible open parentheses
+        if (open < 0 || open > maxOpen) {
+            return false;
+        }
+
+        // Reached destination: path is valid if all parentheses are closed
+        if (r == m - 1 && c == n - 1) {
+            return open == 0;
+        }
+
+        // If this state was already visited without reaching a valid path
+        if (visited[r][c][open]) {
+            return false;
+        }
+
+        visited[r][c][open] = true;
+
+        // Try moving Down
+        if (r + 1 < m && dfs(grid, r + 1, c, open, m, n, maxOpen)) {
+            return true;
+        }
+
+        // Try moving Right
+        if (c + 1 < n && dfs(grid, r, c + 1, open, m, n, maxOpen)) {
+            return true;
+        }
+
+        return false;
+    }
+}
