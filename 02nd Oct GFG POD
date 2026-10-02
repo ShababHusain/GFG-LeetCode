@@ -1,0 +1,37 @@
+class Solution {
+    public String lexiString(String s) {
+        int n = s.length();
+        if (n <= 1) {
+            return s;
+        }
+
+        int i = 0;
+        int j = 1;
+        int k = 0;
+
+        // Booth's Minimal String Rotation Algorithm - O(N) time, O(1) space
+        while (i < n && j < n && k < n) {
+            char c1 = s.charAt((i + k) % n);
+            char c2 = s.charAt((j + k) % n);
+
+            if (c1 == c2) {
+                k++;
+            } else if (c1 > c2) {
+                i = i + k + 1;
+                if (i == j) {
+                    i++;
+                }
+                k = 0;
+            } else {
+                j = j + k + 1;
+                if (j == i) {
+                    j++;
+                }
+                k = 0;
+            }
+        }
+
+        int minStart = Math.min(i, j);
+        return s.substring(minStart) + s.substring(0, minStart);
+    }
+}
