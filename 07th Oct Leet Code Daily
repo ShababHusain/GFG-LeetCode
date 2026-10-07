@@ -1,0 +1,64 @@
+class Solution {
+    public List<String> removeInvalidParentheses(String s) {
+        int remL = 0;
+        int remR = 0;
+
+        // Step 1: Count minimum '(' and ')' to remove
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                remL++;
+            } else if (c == ')') {
+                if (remL > 0) {
+                    remL--;
+                } else {
+                    remR++;
+                }
+            }
+        }
+
+        Set<String> result = new HashSet<>();
+        backtrack(s, 0, remL, remR, 0, new StringBuilder(), result);
+        return new ArrayList<>(result);
+    }
+
+    private void backtrack(String s, int index, int remL, int remR, int open, StringBuilder current, Set<String> result) {
+        // Base case: end of string
+        if (index == s.length()) {
+            if (remL == 0 && remR == 0 && open == 0) {
+                result.add(current.toString());
+            }
+            return;
+        }
+
+        char c = s.charAt(index);
+        int len = current.length();
+
+        if (c == '(') {
+            // Option 1: Remove '('
+            if (remL > 0) {
+                backtrack(s, index + 1, remL - 1, remR, open, current, result);
+            }
+            // Option 2: Keep '('
+            current.append('(');
+            backtrack(s, index + 1, remL, remR, open + 1, current, result);
+            current.setLength(len);
+        } else if (c == ')') {
+            // Option 1: Remove ')'
+            if (remR > 0) {
+                backtrack(s, index + 1, remL, remR - 1, open, current, result);
+            }
+            // Option 2: Keep ')' (only valid if we have matching open brackets)
+            if (open > 0) {
+                current.append(')');
+                backtrack(s, index + 1, remL, remR, open - 1, current, result);
+                current.setLength(len);
+            }
+        } else {
+            // Non-parenthesis characters are always kept
+            current.append(c);
+            backtrack(s, index + 1, remL, remR, open, current, result);
+            current.setLength(len);
+        }
+    }
+}
