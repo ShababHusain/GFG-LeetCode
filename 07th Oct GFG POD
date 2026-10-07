@@ -1,0 +1,47 @@
+/* Node Structure
+class Node
+{
+    int data;
+    Node left, right;
+
+    Node(int item)
+    {
+        data = item;
+        left = right = null;
+    }
+} */
+
+class Solution {
+    private int maxLeafToLeafSum;
+
+    public int maxPathSum(Node root) {
+        maxLeafToLeafSum = Integer.MIN_VALUE;
+        solve(root);
+
+        // If no node has both left and right subtrees, fewer than 2 leaves exist
+        return maxLeafToLeafSum == Integer.MIN_VALUE ? -1 : maxLeafToLeafSum;
+    }
+
+    private int solve(Node node) {
+        if (node == null) {
+            return Integer.MIN_VALUE;
+        }
+
+        // Base case: Leaf node
+        if (node.left == null && node.right == null) {
+            return node.data;
+        }
+
+        int leftSum = solve(node.left);
+        int rightSum = solve(node.right);
+
+        // If both left and right subtrees exist, update the leaf-to-leaf max sum
+        if (node.left != null && node.right != null) {
+            maxLeafToLeafSum = Math.max(maxLeafToLeafSum, leftSum + rightSum + node.data);
+            return Math.max(leftSum, rightSum) + node.data;
+        }
+
+        // If only one child exists, propagate from the non-null child
+        return (node.left != null ? leftSum : rightSum) + node.data;
+    }
+}
