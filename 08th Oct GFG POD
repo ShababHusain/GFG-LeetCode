@@ -1,0 +1,23 @@
+class Solution {
+    public int maxFrequency(int[] arr, int k) {
+        Arrays.sort(arr);
+
+        int left = 0;
+        int maxFreq = 0;
+        long windowSum = 0;
+
+        for (int right = 0; right < arr.length; right++) {
+            windowSum += arr[right];
+
+            // If cost to make all elements in window equal to arr[right] > k, shrink window
+            while ((long) (right - left + 1) * arr[right] - windowSum > k) {
+                windowSum -= arr[left];
+                left++;
+            }
+
+            maxFreq = Math.max(maxFreq, right - left + 1);
+        }
+
+        return maxFreq;
+    }
+}
