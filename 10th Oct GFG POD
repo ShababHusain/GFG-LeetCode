@@ -1,0 +1,22 @@
+class Solution {
+    public boolean balancePan(int a, int b) {
+        long base = a;
+        long target = b;
+
+        while (target > 0) {
+            long rem = target % base;
+
+            if (rem == 0) {
+                target /= base;
+            } else if (rem == 1) {
+                target = (target - 1) / base;
+            } else if (rem == base - 1) {
+                target = (target + 1) / base;
+            } else {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
