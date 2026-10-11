@@ -1,0 +1,41 @@
+class Solution {
+    public void mergeTwoParts(int[] arr) {
+        int n = arr.length;
+        if (n <= 1) return;
+
+        // Step 1: Find the break point where arr[p] > arr[p + 1]
+        int p = -1;
+        for (int i = 0; i < n - 1; i++) {
+            if (arr[i] > arr[i + 1]) {
+                p = i;
+                break;
+            }
+        }
+
+        // If no breakpoint is found, the array is already fully sorted
+        if (p == -1) return;
+
+        // Step 2: Two-pointer merge of arr[0...p] and arr[p+1...n-1]
+        int[] temp = new int[n];
+        int i = 0, j = p + 1, k = 0;
+
+        while (i <= p && j < n) {
+            if (arr[i] <= arr[j]) {
+                temp[k++] = arr[i++];
+            } else {
+                temp[k++] = arr[j++];
+            }
+        }
+
+        while (i <= p) {
+            temp[k++] = arr[i++];
+        }
+
+        while (j < n) {
+            temp[k++] = arr[j++];
+        }
+
+        // Copy merged elements back to original array
+        System.arraycopy(temp, 0, arr, 0, n);
+    }
+}
