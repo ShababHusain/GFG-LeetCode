@@ -1,0 +1,31 @@
+class Solution {
+    public int maxSum(List<Integer> nums, int k) {
+        int[] bitCount = new int[30];
+
+        // Count set bits at each position across all numbers
+        for (int x : nums) {
+            for (int j = 0; j < 30; j++) {
+                if ((x & (1 << j)) != 0) {
+                    bitCount[j]++;
+                }
+            }
+        }
+
+        long MOD = 1_000_000_007;
+        long totalSum = 0;
+
+        // Greedily construct the k largest possible numbers
+        for (int i = 0; i < k; i++) {
+            long currentVal = 0;
+            for (int j = 29; j >= 0; j--) {
+                if (bitCount[j] > 0) {
+                    currentVal |= (1L << j);
+                    bitCount[j]--;
+                }
+            }
+            totalSum = (totalSum + (currentVal * currentVal) % MOD) % MOD;
+        }
+
+        return (int) totalSum;
+    }
+}
