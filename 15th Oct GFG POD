@@ -1,0 +1,21 @@
+class Solution {
+    public int maxValue(int n) {
+        int consecutiveOnes = 0;
+        
+        // Scan from the highest possible bit (30th bit for 10^9) down to 0
+        for (int i = 30; i >= 0; i--) {
+            if ((n & (1 << i)) != 0) {
+                consecutiveOnes++;
+                if (consecutiveOnes == 3) {
+                    // Clear the 3rd consecutive set bit to break '111'
+                    n ^= (1 << i);
+                    consecutiveOnes = 0; // Reset after breaking
+                }
+            } else {
+                consecutiveOnes = 0;
+            }
+        }
+        
+        return n;
+    }
+}
