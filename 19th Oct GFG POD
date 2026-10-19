@@ -1,0 +1,51 @@
+class Solution {
+    public int goodIndices(int[] arr) {
+        int n = arr.length;
+        // status array: 0 = unvisited, 1 = visiting, 2 = good, 3 = bad
+        int[] status = new int[n];
+        int goodCount = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (status[i] == 0) {
+                dfs(i, arr, status);
+            }
+            if (status[i] == 2) {
+                goodCount++;
+            }
+        }
+
+        return goodCount;
+    }
+
+    private int dfs(int curr, int[] arr, int[] status) {
+        int n = arr.length;
+
+        // Base case: successfully escaped the array bounds
+        if (curr < 0 || curr >= n) {
+            return 2;
+        }
+        // Base case: zero move results in a bad index
+        if (arr[curr] == 0) {
+            return 3;
+        }
+        // Return already memoized result
+        if (status[curr] == 2 || status[curr] == 3) {
+            return status[curr];
+        }
+        // Cycle detected in the current path
+        if (status[curr] == 1) {
+            return 3;
+        }
+
+        // Mark current node as visiting
+        status[curr] = 1;
+
+        // Calculate next index (using long to prevent overflow)
+        long next = (long) curr + arr[curr];
+        int res = dfs((int) next, arr, status);
+
+        // Memoize and return the result
+        status[curr] = res;
+        return res;
+    }
+}
