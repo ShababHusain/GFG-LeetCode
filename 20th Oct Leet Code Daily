@@ -1,0 +1,26 @@
+class Solution {
+    public ArrayList<Integer> lexicographicallyLargest(int[] arr) {
+        int n = arr.length;
+        ArrayList<Integer> result = new ArrayList<>(n);
+        for (int val : arr) {
+            result.add(val);
+        }
+
+        int i = 0;
+        while (i < n) {
+            int j = i;
+            // Find the end of the current contiguous segment of the same parity
+            while (j < n && (result.get(j) % 2) == (result.get(i) % 2)) {
+                j++;
+            }
+
+            // Sublist representing the current segment
+            // Sort this sublist in descending order to maximize values at earlier positions
+            result.subList(i, j).sort(Collections.reverseOrder());
+
+            i = j;
+        }
+
+        return result;
+    }
+}
