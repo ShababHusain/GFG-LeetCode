@@ -1,0 +1,17 @@
+class Solution {
+    public int minSubarraySum(int[] arr) {
+        if (arr == null || arr.length == 0) {
+            return 0;
+        }
+        
+        int curMin = arr[0];
+        int minSoFar = arr[0];
+        
+        for (int i = 1; i < arr.length; i++) {
+            curMin = Math.min(arr[i], curMin + arr[i]);
+            minSoFar = Math.min(minSoFar, curMin);
+        }
+        
+        return minSoFar;
+    }
+}
