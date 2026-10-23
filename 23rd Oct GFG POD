@@ -1,0 +1,58 @@
+import java.util.ArrayList;
+
+class Solution {
+    public int pairsViolatingBST(Node root) {
+        ArrayList<Integer> arr = new ArrayList<>();
+        inorder(root, arr);
+        
+        int[] nums = new int[arr.size()];
+        for (int i = 0; i < arr.size(); i++) {
+            nums[i] = arr.get(i);
+        }
+        
+        return mergeSortAndCount(nums, 0, nums.length - 1);
+    }
+    
+    private void inorder(Node root, ArrayList<Integer> arr) {
+        if (root == null) return;
+        inorder(root.left, arr);
+        arr.add(root.data);
+        inorder(root.right, arr);
+    }
+    
+    private int mergeSortAndCount(int[] arr, int left, int right) {
+        int count = 0;
+        if (left < right) {
+            int mid = left + (right - left) / 2;
+            count += mergeSortAndCount(arr, left, mid);
+            count += mergeSortAndCount(arr, mid + 1, right);
+            count += mergeAndCount(arr, left, mid, right);
+        }
+        return count;
+    }
+    
+    private int mergeAndCount(int[] arr, int left, int mid, int right) {
+        int[] leftSub = java.util.Arrays.copyOfRange(arr, left, mid + 1);
+        int[] rightSub = java.util.Arrays.copyOfRange(arr, mid + 1, right + 1);
+        
+        int i = 0, j = 0, k = left, swaps = 0;
+        
+        while (i < leftSub.length && j < rightSub.length) {
+            if (leftSub[i] <= rightSub[j]) {
+                arr[k++] = leftSub[i++];
+            } else {
+                arr[k++] = rightSub[j++];
+                swaps += (leftSub.length - i);
+            }
+        }
+        
+        while (i < leftSub.length) {
+            arr[k++] = leftSub[i++];
+        }
+        while (j < rightSub.length) {
+            arr[k++] = rightSub[j++];
+        }
+        
+        return swaps;
+    }
+}
