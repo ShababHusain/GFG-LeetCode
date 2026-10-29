@@ -1,0 +1,29 @@
+import java.util.PriorityQueue;
+
+class Solution {
+    public int minComputation(int[] files) {
+        // Create a Min Heap
+        PriorityQueue<Integer> pq = new PriorityQueue<>();
+        
+        // Add all file sizes to the priority queue
+        for (int file : files) {
+            pq.add(file);
+        }
+        
+        int totalCost = 0;
+        
+        // Continue merging until only one file remains
+        while (pq.size() > 1) {
+            int first = pq.poll();
+            int second = pq.poll();
+            
+            int mergedSize = first + second;
+            totalCost += mergedSize;
+            
+            // Push the new combined file size back into the heap
+            pq.add(mergedSize);
+        }
+        
+        return totalCost;
+    }
+}
