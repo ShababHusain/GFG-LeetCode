@@ -1,0 +1,53 @@
+class Solution {
+    public int cntSubsets(int[] arr, int l, int r) {
+        int MOD = 1000000007;
+        int n = arr.length;
+        
+        // Precompute powers of 2 modulo 10^9 + 7
+        long[] power = new long[n + 1];
+        power[0] = 1;
+        for (int i = 1; i <= n; i++) {
+            power[i] = (power[i - 1] * 2) % MOD;
+        }
+        
+        // Count frequencies of each element
+        int[] freq = new int[n + 1];
+        for (int x : arr) {
+            if (x <= n) {
+                freq[x]++;
+            }
+        }
+        
+        long cur = 1;
+        int seen = 0;
+        
+        // Validate and accumulate choices for all numbers strictly less than l
+        for (int i = 0; i < l; i++) {
+            if (freq[i] == 0) {
+                return 0; // Required value missing, so no valid subsets can have MEX in [l, r]
+            }
+            seen += freq[i];
+            long ways = (power[freq[i]] - 1 + MOD) % MOD;
+            cur = (cur * ways) % MOD;
+        }
+        
+        long totalSubsets = 0;
+        
+        // Calculate valid subsets for each MEX in the range [l, r]
+        for (int i = l; i <= r; i++) {
+            int f = freq[i];
+            int greaterElements = n - seen - f;
+            
+            // Subsets with MEX exactly i
+            long validWays = (cur * power[greaterElements]) % MOD;
+            totalSubsets = (totalSubsets + validWays) % MOD;
+            
+            // Prepare for the next MEX value (i becomes required)
+            seen += f;
+            long ways = (power[f] - 1 + MOD) % MOD;
+            cur = (cur * ways) % MOD;
+        }
+        
+        return (int) totalSubsets;
+    }
+}
