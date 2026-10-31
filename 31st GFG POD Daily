@@ -1,0 +1,30 @@
+class Solution {
+    public long maxPackages(int[] arr, int totalTime) {
+        int n = arr.length;
+        
+        // If available time covers all locations, return the sum of all packages
+        if (totalTime >= n) {
+            long totalSum = 0;
+            for (int x : arr) {
+                totalSum += x;
+            }
+            return totalSum;
+        }
+        
+        long currentSum = 0;
+        // Compute the sum for the first window of size totalTime
+        for (int i = 0; i < totalTime; i++) {
+            currentSum += arr[i];
+        }
+        
+        long maxPackages = currentSum;
+        
+        // Slide the window across the array
+        for (int i = totalTime; i < n; i++) {
+            currentSum += arr[i] - arr[i - totalTime];
+            maxPackages = Math.max(maxPackages, currentSum);
+        }
+        
+        return maxPackages;
+    }
+}
