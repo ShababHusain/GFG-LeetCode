@@ -1,0 +1,23 @@
+class Solution {
+    public int maximumSubarray(int[] arr) {
+        long f = 0; // Max subarray sum ending here without square
+        long g = 0; // Max subarray sum ending here with square
+        long ans = Long.MIN_VALUE;
+        
+        for (int x : arr) {
+            // Update state f (no square used yet)
+            long newF = Math.max(f, 0) + x;
+            
+            // Update state g (square operation used)
+            long newG = Math.max(Math.max(f, 0) + (long) x * x, g + x);
+            
+            f = newF;
+            g = newG;
+            
+            // Track the maximum sum found across all states
+            ans = Math.max(ans, Math.max(f, g));
+        }
+        
+        return (int) ans;
+    }
+}
