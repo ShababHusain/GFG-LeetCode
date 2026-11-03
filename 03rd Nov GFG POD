@@ -1,0 +1,86 @@
+import java.util.*;
+
+class Solution {
+    static class DSU {
+        int[] parent;
+        int[] size;
+        long totalPaths;
+
+        public DSU(int n) {
+            parent = new int[n + 1];
+            size = new int[n + 1];
+            for (int i = 1; i <= n; i++) {
+                parent[i] = i;
+                size[i] = 1;
+            }
+            totalPaths = 0;
+        }
+
+        public int find(int i) {
+            if (parent[i] == i)
+                return i;
+            return parent[i] = find(parent[i]);
+        }
+
+        public void union(int u, int v) {
+            int rootU = find(u);
+            int rootV = find(v);
+            if (rootU != rootV) {
+                // Subtract old component path contributions
+                totalPaths -= (long) size[rootU] * (size[rootU] - 1) / 2;
+                totalPaths -= (long) size[rootV] * (size[rootV] - 1) / 2;
+
+                // Merge smaller tree into larger tree
+                if (size[rootU] < size[rootV]) {
+                    parent[rootU] = rootV;
+                    size[rootV] += size[rootU];
+                    totalPaths += (long) size[rootV] * (size[rootV] - 1) / 2;
+                } else {
+                    parent[rootV] = rootU;
+                    size[rootU] += size[rootV];
+                    totalPaths += (long) size[rootU] * (size[rootU] - 1) / 2;
+                }
+            }
+        }
+    }
+
+    public ArrayList<Integer> maximumWeight(int n, int[][] edges, int[] queries) {
+        int m = edges.length;
+        // Sort edges by weight in ascending order
+        Arrays.sort(edges, Comparator.comparingInt(a -> a[2]));
+
+        // Pair queries with their original indices
+        int qLen = queries.length;
+        int[][] sortedQueries = new int[qLen][2];
+        for (int i = 0; i < qLen; i++) {
+            sortedQueries[i][0] = queries[i];
+            sortedQueries[i][1] = i;
+        }
+        Arrays.sort(sortedQueries, Comparator.comparingInt(a -> a[0]));
+
+        int[] resultArr = new int[qLen];
+        DSU dsu = new DSU(n);
+        int edgeIdx = 0;
+
+        for (int i = 0; i < qLen; i++) {
+            int limit = sortedQueries[i][0];
+            int originalIdx = sortedQueries[i][1];
+
+            // Add all edges with weight <= current query limit
+            while (edgeIdx < m && edges[edgeIdx][2] <= limit) {
+                dsu.union(edges[edgeIdx][0], edges[edgeIdx][1]);
+                edgeIdx++;
+            }
+
+            resultArr[originalIdx] = (int) dsu.totalPaths;
+        }
+
+        // Convert result array to ArrayList
+        ArrayList<Integer> result = new ArrayList<>(qLen);
+        for (int val : resultArr) {
+            result.add(val);
+        }
+
+        return result;
+    }
+}
