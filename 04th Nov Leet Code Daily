@@ -1,0 +1,111 @@
+import java.util.*;
+
+class Solution {
+    static class DualMap {
+        TreeMap<Integer, Integer> lowerMap = new TreeMap<>();
+        TreeMap<Integer, Integer> upperMap = new TreeMap<>();
+        long lowerSum = 0;
+        long upperSum = 0;
+        int lowerSize = 0;
+        int upperSize = 0;
+
+        void add(int val) {
+            if (lowerSize == 0 || val <= lowerMap.lastKey()) {
+                lowerMap.put(val, lowerMap.getOrDefault(val, 0) + 1);
+                lowerSum += val;
+                lowerSize++;
+            } else {
+                upperMap.put(val, upperMap.getOrDefault(val, 0) + 1);
+                upperSum += val;
+                upperSize++;
+            }
+            balance();
+        }
+
+        void remove(int val) {
+            if (lowerMap.containsKey(val)) {
+                lowerMap.put(val, lowerMap.get(val) - 1);
+                if (lowerMap.get(val) == 0) lowerMap.remove(val);
+                lowerSum -= val;
+                lowerSize--;
+            } else {
+                upperMap.put(val, upperMap.get(val) - 1);
+                if (upperMap.get(val) == 0) upperMap.remove(val);
+                upperSum -= val;
+                upperSize--;
+            }
+            balance();
+        }
+
+        void balance() {
+            if (lowerSize < upperSize) {
+                int val = upperMap.firstKey();
+                upperMap.put(val, upperMap.get(val) - 1);
+                if (upperMap.get(val) == 0) upperMap.remove(val);
+                upperSize--;
+                upperSum -= val;
+
+                lowerMap.put(val, lowerMap.getOrDefault(val, 0) + 1);
+                lowerSize++;
+                lowerSum += val;
+            } else if (lowerSize - upperSize > 1) {
+                int val = lowerMap.lastKey();
+                lowerMap.put(val, lowerMap.get(val) - 1);
+                if (lowerMap.get(val) == 0) lowerMap.remove(val);
+                lowerSize--;
+                lowerSum -= val;
+
+                upperMap.put(val, upperMap.getOrDefault(val, 0) + 1);
+                upperSize++;
+                upperSum += val;
+            }
+        }
+
+        long getMedianCost() {
+            int median = lowerMap.lastKey();
+            return ((long) median * lowerSize - lowerSum) + (upperSum - (long) median * upperSize);
+        }
+    }
+
+    public long minOperations(int[] nums, int x, int k) {
+        int n = nums.length;
+        List<Long> minOps = new ArrayList<>();
+        DualMap dm = new DualMap();
+
+        for (int i = 0; i < n; i++) {
+            dm.add(nums[i]);
+            if (i >= x) {
+                dm.remove(nums[i - x]);
+            }
+            if (i >= x - 1) {
+                minOps.add(dm.getMedianCost());
+            }
+        }
+
+        int m = minOps.size();
+        Long[][] memo = new Long[m][k + 1];
+        return solve(0, k, minOps, x, memo);
+    }
+
+    private long solve(int i, int remK, List<Long> minOps, int x, Long[][] memo) {
+        if (remK == 0) return 0;
+        if (i >= minOps.size()) {
+            return Long.MAX_VALUE / 2;
+        }
+        if (memo[i][remK] != null) return memo[i][remK];
+
+        // Option 1: Skip starting a subarray at index i
+        long skip = solve(i + 1, remK, minOps, x, memo);
+
+        // Option 2: Pick a subarray starting at index i (next valid index is i + x)
+        long pick = minOps.get(i);
+        long nextVal = solve(i + x, remK - 1, minOps, x, memo);
+        if (nextVal < Long.MAX_VALUE / 2) {
+            pick += nextVal;
+        } else {
+            pick = Long.MAX_VALUE / 2;
+        }
+
+        return memo[i][remK] = Math.min(skip, pick);
+    }
+}
