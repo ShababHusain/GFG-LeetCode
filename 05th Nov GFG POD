@@ -1,0 +1,23 @@
+class Solution {
+    public int getMinimumDays(String s, int[] p) {
+        int n = s.length();
+        int[] dayOf = new int[n];
+        
+        // Record the 0-based day each index is replaced
+        for (int i = 0; i < n; i++) {
+            dayOf[p[i]] = i;
+        }
+        
+        int maxDays = 0;
+        
+        // Check all adjacent pairs
+        for (int i = 0; i < n - 1; i++) {
+            if (s.charAt(i) == s.charAt(i + 1)) {
+                int breakDay = Math.min(dayOf[i], dayOf[i + 1]);
+                maxDays = Math.max(maxDays, breakDay + 1);
+            }
+        }
+        
+        return maxDays;
+    }
+}
