@@ -1,0 +1,35 @@
+import java.util.*;
+
+class Solution {
+    public ArrayList<String> generateUsernames(String[] arr) {
+        ArrayList<String> res = new ArrayList<>();
+        HashSet<String> used = new HashSet<>(Arrays.asList(arr));
+        HashMap<String, Integer> nextSuffix = new HashMap<>();
+        HashSet<String> processed = new HashSet<>();
+
+        for (String s : arr) {
+            // If the username has not been encountered before, keep it unchanged
+            if (!processed.contains(s)) {
+                processed.add(s);
+                res.add(s);
+                nextSuffix.put(s, 1);
+            } else {
+                // Otherwise, find the smallest available suffix
+                int suffix = nextSuffix.get(s);
+                String name = s + suffix;
+                
+                while (used.contains(name)) {
+                    suffix++;
+                    name = s + suffix;
+                }
+                
+                // Reserve the generated username and add to result
+                used.add(name);
+                res.add(name);
+                nextSuffix.put(s, suffix + 1);
+            }
+        }
+
+        return res;
+    }
+}
