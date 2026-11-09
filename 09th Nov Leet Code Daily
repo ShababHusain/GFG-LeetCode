@@ -1,0 +1,53 @@
+import java.util.*;
+
+class Solution {
+    public List<Integer> busiestServers(int k, int[] arrival, int[] load) {
+        TreeSet<Integer> available = new TreeSet<>();
+        for (int i = 0; i < k; i++) {
+            available.add(i);
+        }
+        
+        // Priority queue for busy servers: sorted by freeTime ascending
+        PriorityQueue<long[]> busy = new PriorityQueue<>(Comparator.comparingLong(a -> a[0]));
+        int[] reqCount = new int[k];
+        int maxRequests = 0;
+        
+        for (int i = 0; i < arrival.length; i++) {
+            long currTime = arrival[i];
+            int duration = load[i];
+            
+            // Release servers that have finished their tasks by currTime
+            while (!busy.isEmpty() && busy.peek()[0] <= currTime) {
+                long[] serverInfo = busy.poll();
+                available.add((int) serverInfo[1]);
+            }
+            
+            // If all servers are busy, drop the request
+            if (available.isEmpty()) {
+                continue;
+            }
+            
+            int target = i % k;
+            Integer server = available.ceiling(target);
+            if (server == null) {
+                server = available.first(); // Wrap around
+            }
+            
+            available.remove(server);
+            reqCount[server]++;
+            maxRequests = Math.max(maxRequests, reqCount[server]);
+            
+            busy.offer(new long[]{currTime + duration, server});
+        }
+        
+        // Collect all servers that handled the maximum number of requests
+        List<Integer> result = new ArrayList<>();
+        for (int i = 0; i < k; i++) {
+            if (reqCount[i] == maxRequests) {
+                result.add(i);
+            }
+        }
+        
+        return result;
+    }
+}
