@@ -1,0 +1,15 @@
+class Solution {
+    public int firstElementKTime(int[] arr, int k) {
+        // Since constraints state arr[i] <= 10^6, we can use a direct frequency array for speed
+        int[] freq = new int[1000001];
+        
+        for (int num : arr) {
+            freq[num]++;
+            if (freq[num] == k) {
+                return num;
+            }
+        }
+        
+        return -1;
+    }
+}
