@@ -1,0 +1,17 @@
+class Solution {
+    public long minimumCost(int cost1, int cost2, int costBoth, int need1, int need2) {
+        // Strategy 1: Buy only individual type 1 and type 2 items
+        long costOnlySingles = (long) need1 * cost1 + (long) need2 * cost2;
+        
+        // Strategy 2: Buy only type 3 items to cover the maximum need
+        long costOnlyBoth = (long) costBoth * Math.max(need1, need2);
+        
+        // Strategy 3: Buy type 3 items for the overlap, and individual items for the remainder
+        long minNeed = Math.min(need1, need2);
+        long costMixed = (long) costBoth * minNeed + 
+                         (long) (need1 - minNeed) * cost1 + 
+                         (long) (need2 - minNeed) * cost2;
+                         
+        return Math.min(costOnlySingles, Math.min(costOnlyBoth, costMixed));
+    }
+}
