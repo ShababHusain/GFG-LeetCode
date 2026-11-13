@@ -1,0 +1,67 @@
+import java.util.ArrayList;
+import java.util.Stack;
+
+/* Structure of a Binary Search Tree node
+class Node {
+  public int data;
+  public Node left;
+  public Node right;
+
+  public Node(int val) {
+      data = val;
+      left = right = null;
+  }
+};
+*/
+
+class Solution {
+    public ArrayList<Integer> findCommon(Node r1, Node r2) {
+        ArrayList<Integer> result = new ArrayList<>();
+        Stack<Node> s1 = new Stack<>();
+        Stack<Node> s2 = new Stack<>();
+        
+        Node curr1 = r1;
+        Node curr2 = r2;
+        
+        while ((curr1 != null || !s1.isEmpty()) && (curr2 != null || !s2.isEmpty())) {
+            // Reach the leftmost node of tree 1
+            while (curr1 != null) {
+                s1.push(curr1);
+                curr1 = curr1.left;
+            }
+            
+            // Reach the leftmost node of tree 2
+            while (curr2 != null) {
+                s2.push(curr2);
+                curr2 = curr2.left;
+            }
+            
+            curr1 = s1.peek();
+            curr2 = s2.peek();
+            
+            // If values match, it's a common node
+            if (curr1.data == curr2.data) {
+                result.add(curr1.data);
+                s1.pop();
+                s2.pop();
+                
+                curr1 = curr1.right;
+                curr2 = curr2.right;
+            } 
+            // If tree 1's value is smaller, advance in tree 1
+            else if (curr1.data < curr2.data) {
+                s1.pop();
+                curr1 = curr1.right;
+                curr2 = null; // Do not advance curr2 in the next iteration
+            } 
+            // If tree 2's value is smaller, advance in tree 2
+            else {
+                s2.pop();
+                curr2 = curr2.right;
+                curr1 = null; // Do not advance curr1 in the next iteration
+            }
+        }
+        
+        return result;
+    }
+}
