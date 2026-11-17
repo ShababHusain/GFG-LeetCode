@@ -1,0 +1,34 @@
+class Solution {
+    public boolean findPattern(String s) {
+        int n = s.length();
+        int i = 0;
+        
+        while (i < n) {
+            // Each segment must start with 'x'
+            if (s.charAt(i) != 'x') {
+                return false;
+            }
+            
+            // Count consecutive 'x's
+            int cx = 0;
+            while (i < n && s.charAt(i) == 'x') {
+                cx++;
+                i++;
+            }
+            
+            // Count consecutive 'y's following the 'x's
+            int cy = 0;
+            while (i < n && s.charAt(i) == 'y') {
+                cy++;
+                i++;
+            }
+            
+            // The counts of 'x' and 'y' must be equal
+            if (cx != cy) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+}
