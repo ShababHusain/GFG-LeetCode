@@ -1,0 +1,37 @@
+import java.util.ArrayList;
+import java.util.List;
+
+class Solution {
+    public char posInfinite(String s, int pos) {
+        long baseLen = s.length();
+        long currPos = pos;
+        List<Long> lens = new ArrayList<>();
+        lens.add(baseLen);
+
+        long step = 1;
+        while (lens.get(lens.size() - 1) < currPos) {
+            long nextLen = 2 * lens.get(lens.size() - 1) + step;
+            lens.add(nextLen);
+            step++;
+        }
+
+        for (int i = lens.size() - 1; i >= 1; i--) {
+            if (currPos <= baseLen) {
+                break;
+            }
+            long prevLen = lens.get(i - 1);
+            long dollars = i;
+
+            if (currPos <= prevLen) {
+                // Remains in the left copy
+            } else if (currPos <= prevLen + dollars) {
+                return '$';
+            } else {
+                long offset = currPos - (prevLen + dollars);
+                currPos = prevLen - offset + 1;
+            }
+        }
+
+        return s.charAt((int) currPos - 1);
+    }
+}
