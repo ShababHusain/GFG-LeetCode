@@ -1,0 +1,127 @@
+class Solution {
+    private static final long MOD = 1_000_000_007L;
+
+    private long normalTime(long x, long a, long b, long g) {
+        if (x <= 0) return 0;
+        if (x <= a) return x;
+        long k = (x - a + g - 1) / g;
+        return x + 2 * k * b;
+    }
+
+    // Sum of integers from start to end inclusive (start <= end)
+    private long rangeSum(long start, long end) {
+        if (start > end) return 0;
+        long cnt = end - start + 1;
+        long aVal = cnt;
+        long bVal = start + end;
+        if ((aVal & 1L) == 0) {
+            aVal /= 2;
+        } else {
+            bVal /= 2;
+        }
+        return ((aVal % MOD) * (bVal % MOD)) % MOD;
+    }
+
+    // Sum of floor(m / g) for m in [0, M], M >= -1, g >= 1
+    private long sumFloorDiv(long M, long g) {
+        if (M < 0) return 0;
+        long totalTerms = M + 1;
+        long q = totalTerms / g;
+        long rem = totalTerms % g;
+        // Full blocks: g * (0 + 1 + ... + q - 1) = g * q * (q - 1) / 2
+        long qMinus1 = (q > 0) ? (q - 1) : 0;
+        long fullSum;
+        if ((q & 1L) == 0) {
+            fullSum = (((q / 2) % MOD) * (qMinus1 % MOD)) % MOD * (g % MOD) % MOD;
+        } else {
+            fullSum = ((q % MOD) * ((qMinus1 / 2) % MOD)) % MOD * (g % MOD) % MOD;
+        }
+        long remSum = ((rem % MOD) * (q % MOD)) % MOD;
+        return (fullSum + remSum) % MOD;
+    }
+
+    // Sum of ceil((x - a) / g) for x in [L, R] where L > a, g >= 1
+    private long sumCeilShift(long L, long R, long a, long g) {
+        if (L > R) return 0;
+        long cnt = R - L + 1;
+        // ceil((x - a) / g) = 1 + floor((x - a - 1) / g) for x - a >= 1
+        long rIdx = (R - a) - 1;
+        long lIdx = (L - a) - 2;
+        long floorRange = (sumFloorDiv(rIdx, g) - sumFloorDiv(lIdx, g) + MOD) % MOD;
+        return (cnt % MOD + floorRange) % MOD;
+    }
+
+    // Sum of (x + 1 + 2*b*ceil((x - a)/g)) for x in [L, R] where L > a
+    private long sumHighX(long L, long R, long a, long b, long g) {
+        if (L > R) return 0;
+        long cnt = R - L + 1;
+        long sumX = rangeSum(L, R);
+        long sumOne = cnt % MOD;
+        long ceilSum = sumCeilShift(L, R, a, g);
+        long jumpExtra = (((2 * (b % MOD)) % MOD) * ceilSum) % MOD;
+        return (sumX + sumOne + jumpExtra) % MOD;
+    }
+
+    // Largest x >= start such that normalTime(x) + 1 < td, or start - 1 if none
+    private long findLastBelowTd(long start, long end, long td, long a, long b, long g) {
+        long lo = start, hi = end, best = start - 1;
+        while (lo <= hi) {
+            long mid = lo + (hi - lo) / 2;
+            if (normalTime(mid, a, b, g) + 1 < td) {
+                best = mid;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        return best;
+    }
+
+    public int minTime(int aInt, int bInt, int dInt, int lInt, int rInt) {
+        long a = aInt, b = bInt, d = dInt, l = lInt, r = rInt;
+        long g = a - b;
+        long td = normalTime(d, a, b, g);
+
+        long xLo = Math.max(1L, d - r);
+        long xHi = Math.max(0L, d - l);
+
+        long ans = 0;
+
+        if (xHi >= xLo) {
+            // Segment 1: x in [xLo, min(xHi, a)] -> f(x) = x + 1
+            if (xLo <= a) {
+                long hi1 = Math.min(xHi, a);
+                long cut1 = Math.min(hi1, td - 1);
+                if (cut1 >= xLo) {
+                    ans = (ans + rangeSum(xLo + 1, cut1 + 1)) % MOD;
+                }
+                if (hi1 > cut1) {
+                    long capCnt = hi1 - Math.max(xLo, cut1 + 1) + 1;
+                    ans = (ans + ((capCnt % MOD) * (td % MOD)) % MOD) % MOD;
+                }
+            }
+
+            // Segment 2: x in [max(xLo, a + 1), xHi] -> f(x) = x + 1 + 2*b*ceil((x - a)/g)
+            long start2 = Math.max(xLo, a + 1);
+            if (start2 <= xHi) {
+                long cut2 = findLastBelowTd(start2, xHi, td, a, b, g);
+                if (cut2 >= start2) {
+                    ans = (ans + sumHighX(start2, cut2, a, b, g)) % MOD;
+                }
+                if (xHi > cut2) {
+                    long capCnt = xHi - Math.max(start2, cut2 + 1) + 1;
+                    ans = (ans + ((capCnt % MOD) * (td % MOD)) % MOD) % MOD;
+                }
+            }
+        }
+
+        // Any jump j >= d reaches/passes d in 1 second
+        if (r >= d) {
+            long startZero = Math.max(l, d);
+            long cnt = r - startZero + 1;
+            ans = (ans + (cnt % MOD)) % MOD;
+        }
+
+        return (int) ans;
+    }
+}
