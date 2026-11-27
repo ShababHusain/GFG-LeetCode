@@ -1,0 +1,11 @@
+import java.util.ArrayList;
+
+class Solution {
+    public int countEdges(ArrayList<ArrayList<Integer>> adj) {
+        long total = 0;
+        for (ArrayList<Integer> neighbors : adj) {
+            total += neighbors.size();
+        }
+        return (int) (total / 2);
+    }
+}
